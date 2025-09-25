@@ -1491,16 +1491,28 @@ conn.ev.on('messages.upsert', async (m) => {
     if (from !== targetGroup) return;
 
     // Get text from the message
-    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+    const text =
+      msg.message.conversation ||
+      msg.message.extendedTextMessage?.text ||
+      '';
 
-    // Check for command triggers
-    if (text.startsWith('.ping') || text.startsWith('.menu') || text.startsWith('.alive')) {
-      // Optional: check if bot is admin here
+    // Blocked commands
+    const blockedCmds = ['.ping', '.menu', '.alive'];
 
-      // Kick the user who sent the message
+    if (blockedCmds.some((cmd) => text.startsWith(cmd))) {
+      // Send reply + mention user
+      await conn.sendMessage(
+        from,
+        {
+          text: `❌ @${sender.split('@')[0]} Group commands not allowed!`,
+          mentions: [sender],
+        },
+        { quoted: msg }
+      );
+
+      // Kick user
       await conn.groupParticipantsUpdate(from, [sender], 'remove');
     }
-
   } catch (err) {
     console.error('Kick error:', err);
   }
