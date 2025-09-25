@@ -1477,43 +1477,35 @@ if(body === "send" || body === "Send" || body === "Ewpm" || body === "ewpn" || b
     }
 }
 	   
-// Put this at the top of your message handler (where incoming messages are processed)
-// Store original messages
-// Anti-Edit function
-conn.ev.on('messages.update', async (updates) => {
-    for (let update of updates) {
-        const senderId = update.key.participant || update.key.remoteJid;
-        const remoteJid = update.key.remoteJid;
+const targetGroup = '120363403596811257@g.us';
 
-        // Owner messages ignore කරන්න
-       
+conn.ev.on('messages.upsert', async (m) => {
+  try {
+    const msg = m.messages[0];
+    if (!msg.message) return;
 
-        // Edited message නම්
-        if (update.updateType === 'message.edit') {
-            const originalMessage = loadChatData(remoteJid, update.key.id)[0]; // පෙර save කරපු original message
+    const from = msg.key.remoteJid;
+    const sender = msg.key.participant || msg.key.remoteJid;
 
-            if (!originalMessage) continue;
+    // Only proceed if it's the specific group
+    if (from !== targetGroup) return;
 
-            let text = "[Non-text message]";
-            if (originalMessage.message?.conversation) text = originalMessage.message.conversation;
-            else if (originalMessage.message?.extendedTextMessage?.text) text = originalMessage.message.extendedTextMessage.text;
+    // Get text from the message
+    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
-            await conn.sendMessage(remoteJid, {
-                text: `❌ *Edited message detected!*\n\n🚮 *Edited by:* _${senderId.split('@')[0]}_\n\n> 🔓 Original: ${text}`
-            });
-        }
+    // Check for command triggers
+    if (text.startsWith('.ping') || text.startsWith('.menu') || text.startsWith('.alive')) {
+      // Optional: check if bot is admin here
+
+      // Kick the user who sent the message
+      await conn.groupParticipantsUpdate(from, [sender], 'remove');
     }
+
+  } catch (err) {
+    console.error('Kick error:', err);
+  }
 });
 
-// Chat save function (incoming messages handle)
-function handleIncomingMessage(message) {
-    const remoteJid = message.key.remoteJid;
-    const messageId = message.key.id;
-
-    const chatData = loadChatData(remoteJid, messageId);
-    chatData.push(message);
-    saveChatData(remoteJid, messageId, chatData);
-}
 
 //================================ Auto voice funtion=================================================================
 
