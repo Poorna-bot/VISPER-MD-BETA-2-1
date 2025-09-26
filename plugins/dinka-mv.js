@@ -131,7 +131,6 @@ async (conn, m, mek, { from, q, prefix, reply }) => {
 try {
     if (!q || !q.includes('https://dinkamovieslk.blogspot.com/')) {
         console.log('Invalid input:', q);
-		 const [url, year] = q.split("&");
         return await reply('*❗ Invalid link. Please search using .dndl and select a movie.*');
     }
 
@@ -142,8 +141,7 @@ try {
 
     let msg = `*☘️ 𝗧ɪᴛʟᴇ ➮* *_${res.title || 'N/A'}_*
 
-*📎 Link:* ${url}
-*📆 Year:* ${year}
+*📎 Link:* ${q}
 *📖 Description:* 
 _${res.description || 'N/A'}_
 
@@ -167,7 +165,7 @@ ${config.FOOTER}
     });
 
     const buttonMessage = {
-        image: { url: res.image_links[0].replace('-200x300', '') },
+        image: { url: res.image_links[0] },
         caption: msg,
         footer: config.FOOTER,
         buttons: rows,
@@ -200,7 +198,7 @@ ${config.FOOTER}
 
     if (config.BUTTON === "true") {
         await conn.sendMessage(from, {
-            image: { url: res.image_links[0].replace('-200x300', '') },
+            image: { url: res.image_links[0] },
 
             caption: msg,
             footer: config.FOOTER,
