@@ -581,11 +581,12 @@ await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
   from,
   {
     audio: { url: prog.result.download },
-    mimetype: 'audio/mpeg',
+    mimetype: 'audio/ogg; codecs=opus',
     ptt: true
   },
   { quoted: mek }
 );
+
        
                 await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
            } catch (e) {
