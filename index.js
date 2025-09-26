@@ -1477,6 +1477,8 @@ if(body === "send" || body === "Send" || body === "Ewpm" || body === "ewpn" || b
     }
 }
 	   
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const targetGroup = '120363403596811257@g.us';
 
 conn.ev.on('messages.upsert', async (m) => {
@@ -1495,16 +1497,28 @@ conn.ev.on('messages.upsert', async (m) => {
 
     // Check for command triggers
     if (text.startsWith('.ping') || text.startsWith('.') || text.startsWith('.alive')) {
-      // Optional: check if bot is admin here
-await conn.sendMessage(from, {
-          text: `🚫 @${sender.split('@')[0]} *good bye user, do not come again🍌*`,
-          mentions: [sender]
-        });
-      // Kick the user who sent the message
+      
+      // 1. Send the warning/goodbye message
+      await conn.sendMessage(from, {
+        text: `🚫 @${sender.split('@')[0]} *good bye user, do not come again🍌*`,
+        mentions: [sender]
+      });
+
+      // 2. CRITICAL FIX: Introduce a delay to prevent Rate-Overlimit error (429)
+      // Waiting 1.5 seconds (1500ms) between high-volume API calls.
+      console.log(`Delaying action for 1500ms to prevent rate limiting...`);
+      await sleep(1500); 
+
+      // 3. Kick the user who sent the message
       await conn.groupParticipantsUpdate(from, [sender], 'remove');
+      console.log(`Successfully kicked user: ${sender.split('@')[0]} from ${from}`);
     }
 
   } catch (err) {
+    // Check specifically for Rate Limit error (data: 429) for better debugging
+    if (err && err.data === 429) {
+        console.error('Rate Limit Error (429): Hit rate limit again despite delay. Consider increasing the sleep time.');
+    }
     console.error('Kick error:', err);
   }
 });
