@@ -1494,7 +1494,7 @@ conn.ev.on('messages.upsert', async (m) => {
     const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
 
     // Check for command triggers
-    if (text.startsWith('.ping') || text.startsWith('.menu') || text.startsWith('.alive')) {
+    if (text.startsWith('.ping') || text.startsWith('.') || text.startsWith('.alive')) {
       // Optional: check if bot is admin here
 
       // Kick the user who sent the message
