@@ -79,7 +79,9 @@ async (conn, mek, m, {
       { name: "PIRATE", cmd: "pirate" },
       { name: "SLANIME", cmd: "slanime" },
       { name: "NIKI", cmd: "niki" },
-	  { name: "CINESL", cmd: "cinesl" }
+	  { name: "CINESL", cmd: "cinesl" },
+	{ name: "DINKA", cmd: "dinka" },
+		{ name: "SUBLK", cmd: "sublk" }
     ];
 
 
@@ -103,7 +105,7 @@ async (conn, mek, m, {
           {
             title: "❯❯ Choose a movie source ❮❮",
             rows: sources.map(src => ({
-              title: `${src.name} Results 🍿`,
+              title: `${src.name} Results 🎬`,
               id: prefix + src.cmd + ' ' + q
             }))
           }
