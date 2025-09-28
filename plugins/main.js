@@ -237,6 +237,7 @@ cmd({
 cmd({
   pattern: "ping",
   alias: ["speed"],
+  react: "📡",
   desc: "Check bot's response speed.",
   category: "main",
   use: ".ping",
@@ -244,14 +245,28 @@ cmd({
 },
 async (conn, mek, m, context) => {
   const { from, reply, l } = context;
-
+const fkontak = {
+    key: {
+        remoteJid: "13135550002@s.whatsapp.net",
+        participant: "0@s.whatsapp.net",
+        fromMe: false,
+        id: "Naze",
+    },
+    message: {
+        contactMessage: {
+            displayName: "VISPER-MD",
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;Meta AI;;;\nFN:Meta AI\nitem1.TEL;waid=13135550002:13135550002\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
+            sendEphemeral: false,
+        },
+    },
+};
   try {
     const start = Date.now();
 
     // Send initial "please wait" message
     const sent = await conn.sendMessage(from, {
       text: `🔄 *Pinging... please wait*`
-    }, { quoted: mek });
+    }, { quoted: fkontak });
 
     const latency = Date.now() - start;
 
