@@ -935,7 +935,7 @@ cmd({
 
 
 cmd({
-    pattern: "online",
+    pattern: "onlinemem",
     alias: ["whosonline", "onlinemembers"],
     desc: "Check who's online in the group (Admins & Owner only)",
     category: "main",
