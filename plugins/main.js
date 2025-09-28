@@ -1103,7 +1103,21 @@ cmd({
 async (conn, mek, m, { reply, from }) => {
   try {
     const os = require('os');
-
+const fkontakg = {
+    key: {
+        remoteJid: "94711451319@s.whatsapp.net",
+        participant: "0@s.whatsapp.net",
+        fromMe: false,
+        id: "Naze",
+    },
+    message: {
+        contactMessage: {
+            displayName: "VISPER-MD",
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;Meta AI;;;\nFN:Meta AI\nitem1.TEL;waid=13135550002:13135550002\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
+            sendEphemeral: false,
+        },
+    },
+};
     // Detect hosting platform
     let hostname;
     const hnLength = os.hostname().length;
@@ -1132,7 +1146,7 @@ async (conn, mek, m, { reply, from }) => {
 
 `;
 
-    await conn.sendMessage(m.chat, { text: sysInfo.trim() }, { quoted: mek });
+    await conn.sendMessage(m.chat, { text: sysInfo.trim() }, { quoted: fkontakg });
     m.react('🌙');
   } catch (e) {
     await reply('*❌ Error fetching system info!*');
