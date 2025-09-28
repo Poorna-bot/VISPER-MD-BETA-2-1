@@ -1027,7 +1027,7 @@ const fkontattk = {
                     { vcard: vcard1 },
 					{ vcard: vcard3 },
 					{ vcard: vcard4 }
-        { vcard: vcard5 },
+    { vcard: vcard5 }
                     { vcard: vcard2 }
                 ]
             } 
