@@ -197,17 +197,6 @@ async (conn, mek, m, {
 
 
 
-// Command 1: Search for TV shows
- 
-// Helper function to fetch JSON data
-async function fetchJson(url) {
-    try {
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        throw new Error(`Failed to fetch data from ${url}: ${error.message}`);
-    }
-}
 
 cmd({
     pattern: "tvsub",
