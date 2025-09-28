@@ -933,6 +933,56 @@ cmd({
 
 
 
+cmd({
+    pattern: "onlinemem",
+    react: "⚪",
+    alias: ["whoonline"],
+    desc: "Detect & tag online members in group",
+    category: "group",
+    filename: __filename,
+    use: ''
+},
+async (conn, mek, m, {
+    from, l, quoted, body, isCmd, command, args, q,
+    isGroup, sender, senderNumber, botNumber2, botNumber,
+    pushname, isMe, isOwner, groupMetadata, groupName,
+    participants, isItzcp, groupAdmins, isBotAdmins, isAdmins, reply
+}) => {
+
+    if (!isGroup) return reply('Group only command ⛔');
+    if (!isBotAdmins) return reply('I need to be admin ⛔');
+
+    try {
+        let onlineMembers = [];
+
+        // participants => groupMetadata.participants
+        for (let p of participants) {
+            // Baileys sometimes updates presence in conn.presence object
+            let pres = conn.presence?.[from]?.[p.id];
+            if (pres && (pres.lastKnownPresence === 'available' || pres.presence === 'available')) {
+                onlineMembers.push(p.id);
+            }
+        }
+
+        if (onlineMembers.length === 0) {
+            return reply("🚫 No members are online right now.");
+        }
+
+        // Build message text with mentions
+        let msgText = "⚪ Online Members:\n";
+        msgText += onlineMembers.map(jid => `@${jid.split('@')[0]}`).join("\n");
+
+        await conn.sendMessage(m.chat, {
+            text: msgText,
+            mentions: onlineMembers
+        }, { quoted: mek });
+
+    } catch (e) {
+        reply('*Error !!*');
+        l(e);
+    }
+});
+
 
 
 
