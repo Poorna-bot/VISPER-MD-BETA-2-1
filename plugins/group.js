@@ -1024,6 +1024,110 @@ async (conn, mek, m, { from, quoted, isGroup, isAdmins, isCreator, fromMe, reply
 });
 
 
+// ==========================
+// ONLINE ACTIVITY TRACKER
+// ==========================
+
+cmd({
+    pattern: "active",
+    alias: ["typing", "recording"],
+    desc: "Check currently active members (typing/recording in last 15s)",
+    category: "main",
+    react: "⌨️",
+    filename: __filename
+},
+async (conn, mek, m, { from, isGroup, reply }) => {
+    try {
+        if (!isGroup) return reply("❌ This command only works in groups!");
+
+        await reply("🔎 Listening for *active members* (typing/recording) for 15s...");
+
+        const activeMembers = new Set();
+
+        const handler = (json) => {
+            for (const id in json.presences) {
+                const presence = json.presences[id]?.lastKnownPresence;
+                if (["composing", "recording"].includes(presence)) {
+                    activeMembers.add(id);
+                }
+            }
+        };
+
+        conn.ev.on("presence.update", handler);
+
+        setTimeout(async () => {
+            conn.ev.off("presence.update", handler);
+
+            if (activeMembers.size === 0) {
+                return reply("⚠️ No members are actively typing or recording right now.");
+            }
+
+            const members = Array.from(activeMembers);
+            const list = members.map((u, i) => `${i + 1}. @${u.split("@")[0]}`).join("\n");
+
+            await conn.sendMessage(from, {
+                text: `⌨️ *Currently Active Members* (${members.length}):\n\n${list}`,
+                mentions: members
+            }, { quoted: mek });
+        }, 15000); // 15s timeout
+
+    } catch (e) {
+        console.error("Error in active command:", e);
+        reply(`❌ Error: ${e.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "lastactive",
+    alias: ["seen", "lastseen"],
+    desc: "Show last active time of group members",
+    category: "main",
+    react: "🕒",
+    filename: __filename
+},
+async (conn, mek, m, { from, isGroup, reply }) => {
+    try {
+        if (!isGroup) return reply("❌ This command only works in groups!");
+
+        const groupData = await conn.groupMetadata(from);
+        let report = `🕒 *Last Active Report* (${groupData.subject})\n\n`;
+
+        for (const p of groupData.participants) {
+            const id = p.id;
+            if (lastActive[id]) {
+                const time = new Date(lastActive[id]).toLocaleString();
+                report += `✅ @${id.split("@")[0]} - ${time}\n`;
+            } else {
+                report += `❌ @${id.split("@")[0]} - No activity recorded\n`;
+            }
+        }
+
+        await conn.sendMessage(from, {
+            text: report,
+            mentions: groupData.participants.map(p => p.id)
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.error("Error in lastactive command:", e);
+        reply(`❌ Error: ${e.message}`);
+    }
+});
+
+// Track messages for "lastactive"
+conn.ev.on("messages.upsert", async (msgUpdate) => {
+    try {
+        const mek = msgUpdate.messages[0];
+        if (!mek.key.remoteJid.endsWith("@g.us")) return; // groups only
+        if (!mek.key.participant) return;
+
+        const user = mek.key.participant;
+        lastActive[user] = Date.now(); // Save current time
+    } catch (e) {
+        console.error("Error tracking last active:", e);
+    }
+});
+
 
 
 
