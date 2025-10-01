@@ -1029,7 +1029,7 @@ async (conn, mek, m, { from, quoted, isGroup, isAdmins, isCreator, fromMe, reply
 // ==========================
 
 cmd({
-    pattern: "active",
+    pattern: "activemem",
     alias: ["typing", "recording"],
     desc: "Check currently active members (typing/recording in last 15s)",
     category: "main",
