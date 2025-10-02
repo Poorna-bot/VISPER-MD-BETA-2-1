@@ -1,7 +1,7 @@
 {
-  "name": "NADEEN-MD",
-  "description": "Javascript WhatsApp bot made by NADEEN POORNA",
-  "logo": "https://files.catbox.moe/2nmi9q.png",
+  "name": "VISPER-MD",
+  "description": "Javascript WhatsApp bot made by Asitha",
+  "logo": "https://telegra.ph/file/38a4ba6f7a51c15f5feaf.jpg",
   "keywords": ["bot"],
   "success_url": "/",
 
@@ -9,7 +9,8 @@
     "SESSION_ID": {
       "description": "Put the session-id here.",
       "required": true
-    },  
+    }
+},
 
      "buildpacks": [
         {
