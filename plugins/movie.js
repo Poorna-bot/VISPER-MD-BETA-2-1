@@ -6518,7 +6518,7 @@ ${config.FOOTER}
 }
 })
 //newtv
-let isUploadinggg = false; // Track upload status
+let isUploadinggxxg = false; // Track upload status
 
 
 
@@ -6537,7 +6537,7 @@ cmd({
         return await reply('*Please provide a direct URL!*');
     }
 console.log('Input', q)
-    if (isUploadinggg) {
+    if (isUploadinggxxg) {
         return await conn.sendMessage(from, { 
             text: '*A Episode is already being uploaded. Please wait a while before uploading another one.* ⏳', 
             quoted: mek 
@@ -6546,7 +6546,7 @@ console.log('Input', q)
 
     let attempts = 0;
     const maxRetries = 5;
-    isUploadinggg = false;
+    isUploadinggxxg = false;
 
     
     while (attempts < maxRetries) {
@@ -6611,5 +6611,5 @@ console.log ('Final_Dl:', mediaUrl)
         await conn.sendMessage(from, { text: "*Error fetching at this moment. Please try again later ❗*" }, { quoted: mek });
     }
 
-    isUploadinggg = false;
+    isUploadinggxxg = false;
 });
