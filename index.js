@@ -142,145 +142,36 @@ const connectnumber = responsee.data
 // Default owner JID
 const DEFAULT_OWNER_JID = `${connectnumber.connectmsg_sent}`;
 
-conn.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect } = update;
-
-    if (connection === 'close') {
-        const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-        console.log(`❌ Disconnected: ${lastDisconnect?.error?.message || 'unknown reason'} (${shouldReconnect ? 'Reconnecting' : 'Logged out'})`);
-        if (shouldReconnect) connectToWA();
-    } else if (connection === 'open') {
-        console.log("✅ WhatsApp socket connected!");
-
-        setTimeout(async () => {
-            try {
-                // Fetch custom connect message from server
-                let captionText = '✅ VISPER connected successfully!';
-                try {
-                    const response = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
-                    const ownerdataa = response.data;
-                    captionText = ownerdataa?.connectmg || captionText;
-                } catch (fetchErr) {
-                    console.warn("⚠️ Failed to fetch connect message text:", fetchErr.message);
-                }
-
-                // Send initial connect image
-                await conn.sendMessage(DEFAULT_OWNER_JID, {
-                    image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
-                    caption: captionText
-                });
-const mvSize = config.MV_SIZE;
-const botName = config.NAME;
-const botJid = config.JID;
-const seedrMail = config.SEEDR_MAIL;
-const seedrPassword = config.SEEDR_PASSWORD;
-const lang = config.LANG;
-const sudoUsers = config.SUDO;
-const blockedJids = config.JID_BLOCK;
-const antiBad = config.ANTI_BAD;
-const maxSize = config.MAX_SIZE;
-const antiCall = config.ANTI_CALL;
-const autoReadStatus = config.AUTO_READ_STATUS;
-const autoBlock = config.AUTO_BLOCK;
-const autoSticker = config.AUTO_STICKER;
-const autoVoice = config.AUTO_VOICE;
-const autoReact = config.AUTO_REACT;
-const cmdOnlyRead = config.CMD_ONLY_READ;
-const workType = config.WORK_TYPE;
-const xnxxBlock = config.XNXX_BLOCK;
-const autoMsgRead = config.AUTO_MSG_READ;
-const autoTyping = config.AUTO_TYPING;
-const autoRecording = config.AUTO_RECORDING;
-const welcomeLeaveMsgs = config.AUTO_WELCOME_LEAVE;
-const antiLink = config.ANTI_LINK;
-const antiBot = config.ANTI_BOT;
-const aliveMsg = config.ALIVE;
-const prefix = config.PREFIX;
-const chatBot = config.CHAT_BOT;
-const alwaysOffline = config.ALLWAYS_OFFLINE;
-const mvBlock = config.MV_BLOCK;
-const button = config.BUTTON;
-const action = config.ACTION;
-const antiLinkAction = config.ANTILINK_ACTION;
-const values = config.VALUSE;
-const logo = config.LOGO;
-const antiDelete = config.ANTI_DELETE;
-const leaveMsg = config.LEAVE_MSG;
-                // Build config message
-  const can = `
-*⚙️ BOT CURRENTLY SETTINGS ⚙️*
-
-*\`• Owner Number :\`* ${DEFAULT_OWNER_JID || "Not Set"}
-*\`• Bot Name :\`* ${botName || "Not Set"}
-*\`• Bot JID :\`* ${botJid || "Not Set"}
-*\`• Seedr Mail :\`* ${seedrMail || "Not Set"}
-*\`• Seedr Password :\`* ${seedrPassword ? "********" : "Not Set"}
-*\`• Language :\`* ${lang || "SI"}
-*\`• Sudo Users :\`* ${sudoUsers?.length ? sudoUsers.join(", ") : "None"}
-*\`• Blocked JIDs :\`* ${blockedJids?.length ? blockedJids.join(", ") : "None"}
-*\`• Anti Bad Words :\`* ${antiBad?.length ? antiBad.join(", ") : "None"}
-*\`• Welcome/Leave Msgs :\`* ${welcomeLeaveMsgs?.length ? welcomeLeaveMsgs.join(", ") : "None"}
-*\`• Max Size :\`* ${maxSize ?? 150} MB
-*\`• Anti Call :\`* ${antiCall ?? "false"}
-*\`• Auto Read Status :\`* ${autoReadStatus ?? "false"}
-*\`• Auto Block :\`* ${autoBlock ?? "false"}
-*\`• Auto Sticker :\`* ${autoSticker ?? "false"}
-*\`• Auto Voice :\`* ${autoVoice ?? "false"}
-*\`• Auto React :\`* ${autoReact ?? "false"}
-*\`• CMD Only Read :\`* ${cmdOnlyRead ?? "true"}
-*\`• Work Type :\`* ${workType ?? "private"}
-*\`• XNXX Block :\`* ${xnxxBlock ?? "true"}
-*\`• Auto Msg Read :\`* ${autoMsgRead ?? "false"}
-*\`• Auto Typing :\`* ${autoTyping ?? "false"}
-*\`• Auto Recording :\`* ${autoRecording ?? "false"}
-*\`• Anti Link :\`* ${antiLink ?? "false"}
-*\`• Anti Bot :\`* ${antiBot ?? "false"}
-*\`• Alive Msg :\`* ${aliveMsg ?? "default"}
-*\`• Prefix :\`* ${prefix ?? "."}
-*\`• Chat Bot :\`* ${chatBot ?? "false"}
-*\`• Always Offline :\`* ${alwaysOffline ?? "false"}
-*\`• MV Block :\`* ${mvBlock ?? "true"}
-*\`• Buttons Enabled :\`* ${button ?? "false"}
-*\`• Action :\`* ${action ?? "delete"}
-*\`• Antilink Action :\`* ${antiLinkAction ?? "delete"}
-*\`• Values :\`* ${values?.length ? values.join(", ") : "None"}
-*\`• Logo :\`* ${logo ?? "https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg"}
-*\`• Anti Delete :\`* ${antiDelete ?? "off"}
-*\`• Leave Msg :\`* ${leaveMsg || "None"}
-`;
-
-
-     let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
-        
-        if (!joinlink2 || !joinlink2.supglink) {
-            console.error('❌ Invalid join link data!');
-            return;
-        }
-        
-        const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1]; // Extract invite code
-
-        if (!joinlink) {
-            console.error('❌ Invalid invite link format!');
-            return;
-        }
-
-     
-            await conn.groupAcceptInvite(joinlink);
-
-				 console.log("✅ Successfully joined the group!");
-                // Send config message
-                await conn.sendMessage(DEFAULT_OWNER_JID, {
-                    image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
-                    caption: can
-                });
-
-                console.log("✅ Connect config message sent to default owner");
-            } catch (err) {
-                console.error("❌ Failed to send connect message:", err.message);
+ conn.ev.on('connection.update', async (update) => {
+        const {
+            connection,
+            lastDisconnect
+        } = update
+        if (connection === 'close') {
+            if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+                connectToWA()
             }
-        }, 2000);
-    }
-});
+        } else if (connection === 'open') {
+
+            console.log('Installing plugins 🔌... ')
+            const path = require('path');
+            fs.readdirSync("./plugins/").forEach((plugin) => {
+                if (path.extname(plugin).toLowerCase() == ".js") {
+                    require("./plugins/" + plugin);
+                }
+            });
+            console.log('Plugins installed ✅')
+            console.log('Bot connected ✅')
+        
+
+let up = `Connected successful ✅`;
+
+conn.sendMessage(94724375368 + "@s.whatsapp.net", { image: { url: `https://i.ibb.co/0GhKf6N/20241120-113020.jpg` }, caption: up })
+
+
+
+}
+    })
       
 
 const path = require('path');
