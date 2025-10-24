@@ -192,7 +192,7 @@ cmd({
     }
 });
 
-const Jimp = require('jimp')
+
 
 cmd({
     pattern: "fullpp",
