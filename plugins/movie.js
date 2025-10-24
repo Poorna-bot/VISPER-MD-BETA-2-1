@@ -2740,23 +2740,29 @@ cmd({
             return await reply('*Please provide a direct URL!*');
         }
 
-        const [datae, datas, dat] = q.split("±");
+        const parts = q.split("±"); // Renamed for clarity
 
-
-	    
-        if (!datae || !datas || !dat) {
+        // Ensure we have all three parts: imageURL, pixelDrainURL, movieName
+        if (parts.length !== 3) {
             return await reply('*Invalid format! Please provide input like: imageURL±pixelDrainURL±movieName*');
-		 return await reply('*❗ Sorry, This download url is incorrect. please send another number..*');
         }
-if (!datas || !datas.includes('https://pixeldrain.com/u/')) {
-    console.log('Invalid input:', q);
-    return await reply('*❗ Sorry, This download url is incorrect. please send another number..*');
-	await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-}
+
+        const [datae, datas, dat] = parts; // Destructure the parts
+
+        // Validate PixelDrain URL
+        if (!datas || !datas.includes('https://pixeldrain.com/u/')) {
+            console.log('Invalid input (PixelDrain check failed):', q);
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            // Keep only the clearer error message
+            return await reply('*❗ Sorry, The download URL is incorrect. Please ensure it is a valid PixelDrain link.*');
+        }
+
+        // Extract the file ID
         const da = datas.split("https://pixeldrain.com/u/")[1];
 
         if (!da) {
-            return await reply('*Invalid PixelDrain link!*');
+            // This is technically redundant if the includes check above passed, but good for safety
+            return await reply('*Invalid PixelDrain link! Could not extract file ID.*');
         }
 
         const mediaUrl = `https://pixeldrain.com/api/file/${da}`.trim();
@@ -2766,28 +2772,56 @@ if (!datas || !datas.includes('https://pixeldrain.com/u/')) {
 
         const up_mg = await conn.sendMessage(from, { text: '*Uploading your movie..⬆️*' });
 
-        await conn.sendMessage(config.JID || from, {
+        // --- Fetch thumbnail buffer safely ---
+        let thumbnailBuffer;
+        try {
+            // Use await fetch and .buffer() for better error handling and proper async/await flow
+            const response = await fetch(botimg);
+            if (!response.ok) {
+                 throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            thumbnailBuffer = await response.buffer();
+        } catch (fetchError) {
+            console.error('Error fetching thumbnail:', fetchError);
+            // Optionally, continue without a thumbnail or send an error reply
+            // For now, we'll log and continue with no thumbnail buffer (it will be undefined)
+        }
+        // --- End of thumbnail fetch ---
+        
+        // Use an object to dynamically include the thumbnail if it was successfully fetched
+        const mediaOptions = {
             document: { url: mediaUrl },
             caption: `*🎬 Name :* ${dat}\n\n${config.NAME}`,
             mimetype: "video/mp4",
-            jpegThumbnail: await (await fetch(botimg)).buffer(),
             fileName: `${dat}.mp4`
-        });
+        };
+
+        if (thumbnailBuffer) {
+            mediaOptions.jpegThumbnail = thumbnailBuffer;
+        }
+
+        // Send the document
+        await conn.sendMessage(config.JID || from, mediaOptions);
 
         await conn.sendMessage(from, { delete: up_mg.key });
         await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
-        await conn.sendMessage(from, {
-            text: `*Movie sent successfully to JID ${config.JID} ✔*`
-        }, { quoted: mek });
+        
+        // Only send this message if it was NOT sent to the original `from` chat
+        if (config.JID && config.JID !== from) {
+             await conn.sendMessage(from, {
+                 text: `*Movie sent successfully to JID ${config.JID} ✔*`
+             }, { quoted: mek });
+        }
 
     } catch (e) {
-        console.error(e);
+        console.error('Command execution error:', e); // Added context to the log
         await conn.sendMessage(from, {
-            text: '🚩 *Error !!*',
+            text: '🚩 *An unexpected error occurred during download/upload!*', // Improved error message
         }, { quoted: mek });
+        // Send a failure reaction
+        await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
     }
 });
-
 
 
 cmd({
