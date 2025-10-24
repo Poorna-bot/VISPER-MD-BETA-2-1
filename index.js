@@ -290,7 +290,7 @@ console.log("Manoj X CHANAL FOLLOW ✅")
 const m = sms(conn, mek)
 const type = getContentType(mek.message)
 const content = JSON.stringify(mek.message)
-const from = mek.key.remoteJid
+const from = mek.key.remoteJidAlt
 const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
 const body = 
   (type === 'conversation') ? mek.message.conversation :
