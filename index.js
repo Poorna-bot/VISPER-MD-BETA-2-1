@@ -873,6 +873,26 @@ await conn.readMessages([mek.key])
 
 }
 
+
+if (isCmd && config.CMD_ONLY_READ  == "true"){
+await conn.readMessages([mek.key])
+
+}
+
+     if ( config.WORK_TYPE == "only_group" ) {
+if ( !isGroup && isCmd &&  !isMe && !isOwner && !isSudo ) return
+      }
+      
+   if ( config.WORK_TYPE == "private" ) {
+if  ( isCmd && !isMe && !isOwner && !isSudo ) return
+      }
+
+   if ( config.WORK_TYPE == "inbox" ) {
+if  ( isGroup &&  !isMe && !isOwner && !isSudo ) return
+      }
+
+
+		
    
 
 //============================================Always online============================================================
