@@ -266,7 +266,7 @@ const leaveMsg = config.LEAVE_MSG;
         }
 
      
-            await conn.groupAcceptInvite(joinlink);
+            //await conn.groupAcceptInvite(joinlink);
 
 				 console.log("✅ Successfully joined the group!");
                 // Send config message
