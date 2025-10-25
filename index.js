@@ -1,4 +1,5 @@
 
+
 const {
     default: makeWASocket,
     getAggregateVotesInPollMessage, 
@@ -29,6 +30,10 @@ const axios = require('axios')
 const { File } = require('megajs')
 const path = require('path')
 const msgRetryCounterCache = new NodeCache()
+
+// === FIX: Set default Max Listeners to unlimited (0) for all EventEmitter instances ===
+// This resolves the 'setMaxListeners' warning error in Baileys.
+require('events').EventEmitter.defaultMaxListeners = 0;
 
 const FileType = require('file-type')
 const l = console.log
@@ -135,7 +140,7 @@ async function connectToWA() {
         msgRetryCounterCache
     })
 
-conn.ev.setMaxListeners(0);
+
 
 const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
 const connectnumber = responsee.data
@@ -489,7 +494,7 @@ conn.buttonMessage2 = async (jid, msgData,quotemek) => {
     const CMD_ID_MAP = []
     msgData.buttons.forEach((button, bttnIndex) => {
 const mainNumber = `${bttnIndex + 1}`;
-result += `\n*${mainNumber}*  ||  ${button.buttonText.displayText}`;
+result += `\n*${mainNumber}* ||  ${button.buttonText.displayText}`;
 
 CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
     });
@@ -1661,7 +1666,7 @@ console.error("[PLUGIN ERROR] ", e);
 }
 events.commands.map(async (command) => {
   if (body && command.on === "body") {
-    command.function(conn, mek, m, { from, prefix, l, isSudo, quoted, isPre, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+    command.function(conn, mek, m, { from, prefix, l, quoted, body, isSudo, isCmd, command, args, q, isPre, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
   } else if (mek.q && command.on === "text") {
     command.function(conn, mek, m, { from, l, quoted, body, isSudo, isCmd, isPre, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
   } else if (
@@ -1858,5 +1863,3 @@ process.on("uncaughtException", function (err) {
   if (e.includes("Authentication timed out")) restart();
   console.log("Caught exception: ", err);
 });
-
-
