@@ -11,7 +11,7 @@
     "@adiwajshing/keyed-db": "latest",
     "@ffmpeg-installer/ffmpeg": "latest",
     "@google-cloud/translate": "latest",
-    "@whiskeysockets/baileys": "npm:wileys",
+    "@whiskeysockets/baileys": "npm:baileys-elite",
     "adm-zip": "latest",
     "axios": "latest",
     "buffer": "latest",
