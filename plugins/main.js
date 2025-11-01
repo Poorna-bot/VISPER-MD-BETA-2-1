@@ -89,6 +89,7 @@ I am alive now 🎈\n✨ Thank you for choosing \`Visper-MD\` — your trusted W
   \`• Co-Develper\` : 𝗗arksadas YT
   \`• Co-Developer\` : 𝗡adeen Poorna
   \`• System Leader\` : 𝗔lex-ID
+  \`• API Developer\` : 𝗣athum 𝗥ajapakshe
 *└────────────────────┘*
 *🫟 Your all-in-one WhatsApp assistant — fast, reliable, and easy to use!* 
 *🔗 Official Links:*  
@@ -918,7 +919,7 @@ async (conn, mek, m, {
                    + 'VERSION:3.0\n' 
                    + 'FN: Themi Sadas\n' 
                    + 'ORG: Web Developer;\n' 
-                   + 'TEL;type=CELL;type=VOICE;waid=94778500326:+94778500326\n' 
+                   + 'TEL;type=CELL;type=VOICE;waid=94724375368:+94724375368\n' 
                    + 'END:VCARD';
 
         let vcard2 = 'BEGIN:VCARD\n' 
@@ -932,6 +933,13 @@ async (conn, mek, m, {
                    + 'FN: Nadeen Poorna\n' 
                    + 'ORG: Co-Developer;\n' 
                    + 'TEL;type=CELL;type=VOICE;waid=94711451319:+9471451319\n' 
+                   + 'END:VCARD';
+
+		let vcard3 = 'BEGIN:VCARD\n' 
+                   + 'VERSION:3.0\n' 
+                   + 'FN: Pathum Rajapakshe\n' 
+                   + 'ORG: API-Developer;\n' 
+                   + 'TEL;type=CELL;type=VOICE;waid=94766863255:+94766863255\n' 
                    + 'END:VCARD';
 
         await conn.sendMessage(from, { 
