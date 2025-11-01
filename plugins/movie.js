@@ -1240,7 +1240,7 @@ cmd({
     while (attempts < maxRetries) {
         try {
             const [datae, datas, dat] = q.split("±");
-            let url = datas;
+           let url = dat;
             let mediaUrl = url;
             let downloadUrls = null;
 
