@@ -1,5 +1,5 @@
-const { cmd } = require('../lib/command');
-const config = require('../settings');
+const { cmd } = require('../command');
+const config = require('../config');
 const fs = require("fs");
 const { TelegramClient } = require("telegram");
 const { StringSession } = require("telegram/sessions");
