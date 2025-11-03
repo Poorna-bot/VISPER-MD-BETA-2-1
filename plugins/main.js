@@ -2840,3 +2840,42 @@ async (conn, mek, m, {
         reply("⚠️ Order monitoring දැනට ක්‍රියාත්මක නොවේ.");
     }
 });
+
+cmd({
+    pattern: "developer",
+    react: "👨‍💻",
+    category: "main",
+    use: ".developer",
+    filename: __filename
+}, async (conn, mek, m, { from }) => {
+    try {
+        const devList = [
+            { name: "🧠 Saviya", role: "Founder", number: "94722617699" },
+            { name: "⚡ Sadas", role: "Co-Developer", number: "94724375368" },
+            { name: "💻 Nadeen", role: "Co-Developer", number: "94711451319" },
+            { name: "🧩 Pathum", role: "API-Developer", number: "94766863255" },
+            { name: "🎯 Poorna", role: "Supplier", number: "94719255382" },
+            { name: "👑 Alex", role: "System Leader", number: "94742524701" }
+        ];
+
+        let text = `*👨‍💻 ${config.BOT_NAME || "VISPER-MD"} Developer Team*\n\n`;
+
+        for (let dev of devList) {
+            const mention = `@${dev.number}`;
+            text += `> ${dev.name}\n    ┗ ${dev.role}\n    📞 wa.me/${dev.number}\n\n`;
+        }
+
+        text += `${config.FOOTER}`;
+
+        const mentions = devList.map(d => `${d.number}@s.whatsapp.net`);
+
+        await conn.sendMessage(from, {
+            text,
+            mentions
+        }, { quoted: m });
+
+    } catch (e) {
+        console.error(e);
+        await conn.sendMessage(from, { text: "❌ Couldn't load developer info." }, { quoted: m });
+    }
+});
