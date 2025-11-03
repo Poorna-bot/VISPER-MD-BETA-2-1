@@ -14,9 +14,9 @@ if (config.LANG === 'SI') {
 
 cmd({
     pattern: "settings",
-    //react: "⚙️",
+    react: "⚙️",
     alias: ["setting",'botsetting'],
-    //desc: desc2,
+    desc: 'bot settings',
     category: "owner",
     use: '.settings',
     filename: __filename
@@ -111,6 +111,17 @@ rowId: prefix +'autoblock on'
 {
 title: '_OFF ❌_',
 rowId: prefix +'autoblock off'
+}
+]},
+{
+title: "`🔮 ANTI_SPAM 🔮`",
+rows: [{
+title: '_ON ✔️_',
+rowId: prefix +'anti-spam on'
+},
+{
+title: '_OFF ❌_',
+rowId: prefix +'anti-spam off'
 }
 ]},
 {
@@ -2161,3 +2172,43 @@ l(e)
 }
 
 })
+
+cmd({
+    pattern: "anti-spam",
+    alias: ["spamguard", "no-spam"],
+    react: '🛡️',
+    desc: "Toggle Anti-Spam feature ON/OFF",
+    category: "main",
+    use: ".anti-spam on/off",
+    filename: __filename
+}, 
+async (conn, mek, m, { reply, args, config }) => {
+    try {
+        const action = args[0]?.toLowerCase();
+        if (!action || !["on", "off"].includes(action)) {
+            return reply(`⚠️ Usage: .anti-spam on/off\n\nBot Footer: ${config.FOOTER}`);
+        }
+
+        antiSpamStatus = action === "on";
+        reply(`✅ Anti-Spam has been turned *${antiSpamStatus ? "ON" : "OFF"}*\n\nBot Footer: ${config.FOOTER}`);
+    } catch (e) {
+        console.error(e);
+        reply(`❌ Failed to toggle anti-spam.\n\nBot Footer: ${config.FOOTER}`);
+    }
+});
+
+// Optional: Function to check spam when anti-spam is ON
+function checkSpam(sender) {
+    if (!antiSpamStatus) return false; // Skip if anti-spam is OFF
+
+    const COOLDOWN = 10000; // 10 seconds
+    if (spamMap.has(sender)) {
+        const lastTime = spamMap.get(sender);
+        const now = Date.now();
+        if (now - lastTime < COOLDOWN) {
+            return true; // User is spamming
+        }
+    }
+    spamMap.set(sender, Date.now());
+    return false;
+}
