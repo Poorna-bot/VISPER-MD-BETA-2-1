@@ -1671,7 +1671,7 @@ async (conn, mek, m, { from, q, reply }) => {
         const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
 
         // Fetch the video download information
-        const prog = await fetchJson(`https://tharuzz-ofc-api-v3.vercel.app/api/ytdl/yt?url=${url}&format=240);
+        const prog = await fetchJson(`https://tharuzz-ofc-api-v3.vercel.app/api/ytdl/yt?url=${url}&format=240`);
 
         const videoUrl = prog.url;
 
