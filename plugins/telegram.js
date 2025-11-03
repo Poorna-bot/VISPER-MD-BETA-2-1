@@ -80,7 +80,7 @@ cmd({
             fileName: fileName
         }, { quoted: mek });
 
-        reply(✅ File sent from Telegram!\n📁 ${fileName}\n📦 ${(fileSize / (1024 * 1024)).toFixed(2)} MB);
+        reply(`✅ File sent from Telegram!\n📁 ${fileName}\n📦 ${(fileSize / (1024 * 1024)).toFixed(2)} MB`);
 
     } catch (e) {
         console.error(e);
