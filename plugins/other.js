@@ -563,7 +563,7 @@ cmd({
 
             const text = progress < 100
                 ? `⚙️ Loading... ${progress}%\n[${bar}]`
-                : `✅ *Loading Completed!*\n[██████████]\n\n${config.FOOTER}`;
+                : `✅ *Loading Completed!*\n\nලෝඩ් උනාට මුකුත් නෑ 👾\n\n${config.FOOTER}`;
 
             await conn.sendMessage(from, {
                 edit: msg.key,
@@ -574,4 +574,57 @@ cmd({
         console.error(e);
         await conn.sendMessage(from, { text: "❌ Loading animation failed." }, { quoted: m });
     }
+});
+
+cmd({
+  pattern: "story",
+  desc: "Post a WhatsApp status (story) as text, image, or video",
+  category: "owner",
+  use: ".story <text|url> [caption]",
+  filename: __filename
+}, async (conn, mek, m, { isOwner, args, quoted }) => {
+  if (!isOwner) return await m.reply("🚫 Only bot owner can use this command!");
+
+  try {
+    // If quoted image or video
+    if (quoted?.message?.imageMessage || quoted?.message?.videoMessage) {
+      const media = await conn.downloadMediaMessage(quoted);
+      const caption = args.join(" ") || "";
+      const type = quoted.message.imageMessage ? "image" : "video";
+      await conn.sendMessage("status@broadcast", { [type]: media, caption });
+      return await m.reply(`✅ ${type.toUpperCase()} status uploaded successfully!`);
+    }
+
+    // If URL is provided
+    if (args.length && /^https?:\/\/\S+/i.test(args[0])) {
+      const url = args[0];
+      const caption = args.slice(1).join(" ") || "";
+      const res = await axios.head(url);
+      const mime = res.headers["content-type"];
+
+      if (mime.startsWith("image")) {
+        await conn.sendMessage("status@broadcast", { image: { url }, caption });
+        return await m.reply("✅ Image status uploaded successfully!");
+      } else if (mime.startsWith("video")) {
+        await conn.sendMessage("status@broadcast", { video: { url }, caption });
+        return await m.reply("✅ Video status uploaded successfully!");
+      } else {
+        return await m.reply("⚠️ Unsupported file type! Please send an image or video link.");
+      }
+    }
+
+    // If only text
+    if (args.length > 0) {
+      const text = args.join(" ");
+      await conn.sendMessage("status@broadcast", { text });
+      return await m.reply("✅ Text status uploaded successfully!");
+    }
+
+    // No valid input
+    return await m.reply("❗ Use: `.story <text|url>` or reply to image/video with `.story [caption]`");
+
+  } catch (e) {
+    console.error(e);
+    await m.reply("❌ Failed to post status. Check console for error details.");
+  }
 });
