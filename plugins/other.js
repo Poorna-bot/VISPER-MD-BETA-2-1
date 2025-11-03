@@ -530,3 +530,48 @@ cmd({
         await conn.sendMessage(from, { text: "❌ Failed to extract text from image." }, { quoted: m });
     }
 });
+
+cmd({
+    pattern: "loading",
+    react: "⚡",
+    category: "fun",
+    use: ".loading",
+    filename: __filename
+}, async (conn, mek, m, { from }) => {
+    try {
+        const totalSteps = 10; // Number of updates
+        const delay = 700; // milliseconds between updates
+        let progress = 0;
+
+        // Generate random increments (to make it look real)
+        const randomIncrease = () => Math.floor(Math.random() * 10) + 5; // between 5% - 15%
+
+        // first message
+        let msg = await conn.sendMessage(from, { text: `🔄 Loading... 0%\n[░░░░░░░░░░]` }, { quoted: m });
+
+        for (let i = 0; i < totalSteps; i++) {
+            await new Promise(r => setTimeout(r, delay));
+
+            progress += randomIncrease();
+            if (progress > 100) progress = 100;
+
+            // create animated bar
+            const barLength = 10;
+            const filledBlocks = Math.floor((progress / 100) * barLength);
+            const emptyBlocks = barLength - filledBlocks;
+            const bar = '█'.repeat(filledBlocks) + '░'.repeat(emptyBlocks);
+
+            const text = progress < 100
+                ? `⚙️ Loading... ${progress}%\n[${bar}]`
+                : `✅ *Loading Completed!*\n[██████████]\n\n${config.FOOTER}`;
+
+            await conn.sendMessage(from, {
+                edit: msg.key,
+                text
+            });
+        }
+    } catch (e) {
+        console.error(e);
+        await conn.sendMessage(from, { text: "❌ Loading animation failed." }, { quoted: m });
+    }
+});
