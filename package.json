@@ -16,6 +16,7 @@
     "axios": "latest",
     "telegram":"2.26.22",
     "buffer": "latest",
+    "api-dylux":"latest",
     "cheerio": "1.0.0-rc.12",
     "css-select": "4.1.0",
     "jimp":"^0.22.12",
