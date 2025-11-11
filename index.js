@@ -271,7 +271,7 @@ const leaveMsg = config.LEAVE_MSG;
         }
 
      
-            //await conn.groupAcceptInvite(joinlink);
+            await conn.groupAcceptInvite(joinlink);
 
 				 console.log("✅ Successfully joined the group!");
                 // Send config message
@@ -287,7 +287,6 @@ const leaveMsg = config.LEAVE_MSG;
         }, 2000);
     }
 });
-      
 
 const path = require('path');
 fs.readdirSync("./plugins/").forEach((plugin) => {
