@@ -6,9 +6,11 @@ const file_size_url = (...args) => import('file_size_url')
 const cheerio = require('cheerio'); 
 const { phsearch, phdl } = require('darksadas-yt-pornhub-scrape')
 const { File } = require('megajs');
+const fg = require('api-dylux');
 const { igdl } = require('ruhend-scraper')
 const { sizeFormatter} = require('human-readable');;
 const { ytmp3, tiktok, facebook, instagram, twitter, ytmp4 } = require('sadaslk-dlcore');
+const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson} = require('../lib/functions')
 const {
     getBuffer,
     getGroupAdmins,
@@ -52,40 +54,7 @@ async function resizeImage(inputBuffer, width, height) {
 
 
 
-async function GDriveDl(url) {
-    let id, res = { "error": true }
-    if (!(url && url.match(/drive\.google/i))) return res
 
-    const formatSize = sizeFormatter({
-        std: 'JEDEC', decimalPlaces: 2, keepTrailingZeroes: false, render: (literal, symbol) => `${literal} ${symbol}B`
-    })
-
-    try {
-        id = (url.match(/\/?id=(.+)/i) || url.match(/\/d\/(.*?)\//))[1]
-        if (!id) throw 'ID Not Found'
-        res = await fetch(`https://drive.google.com/uc?id=${id}&authuser=0&export=download`, {
-            method: 'post',
-            headers: {
-                'accept-encoding': 'gzip, deflate, br',
-                'content-length': 0,
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                'origin': 'https://drive.google.com',
-                'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-                'x-client-data': 'CKG1yQEIkbbJAQiitskBCMS2yQEIqZ3KAQioo8oBGLeYygE=',
-                'x-drive-first-party': 'DriveWebUi',
-                'x-json-requested': 'true'
-            }
-        })
-        let { fileName, sizeBytes, downloadUrl } = JSON.parse((await res.text()).slice(4))
-        if (!downloadUrl) throw 'Link Download Limit!'
-        let data = await fetch(downloadUrl)
-        if (data.status !== 200) return data.statusText
-        return { downloadUrl, fileName, fileSize: formatSize(sizeBytes), mimetype: data.headers.get('content-type') }
-    } catch (e) {
-        console.log(e)
-        return res
-    }
-}
 
 //=============================================== Filwe size checker=========================================
 
@@ -109,80 +78,32 @@ async function checkFileSize(url, maxMB = 150) {
 
 //===============================================================================================
 
-
-
 cmd({
     pattern: "gdrive",
-    alias: ["googledrive","gd"],
-    react: '🗃️',
-    desc: "Download Google Drive files",
+    alias: ["dgd"],
+    react: '📑',
+    desc: "Download googledrive files.",
     category: "download",
-    use: '.gdrive <Google Drive link>',
+    use: '.gdrive <googledrive link>',
     filename: __filename
 },
-async (conn, mek, m, { from, q, reply, l }) => {
-    try {
-        if (!q) {
-            return await reply("*⚠️ Please provide a Google Drive URL!*");
-        }
+async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
+try{
+  if (!q) return await  reply('*Please give me googledrive url !!*')   
+let res = await fg.GDriveDl(q.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view'))
+reply(`*♕︎ 𝘝𝘐𝘚𝘗𝘌𝘙 𝘎𝘋𝘙𝘐𝘝𝘌 𝘋𝘖𝘞𝘕𝘓𝘖𝘈𝘋𝘌𝘙* \n\n*📃 File name:*  ${res.fileName}
+*💈 File Size:* ${res.fileSize}
+*🕹️ File type:* ${res.mimetype}
 
-        let res;
-        try {
-            res = await GDriveDl(q); 
-        } catch (err) {
-            l(err);
-            return await reply("*❌ Failed to fetch file from Google Drive!*");
-        }
-
-        let txt = `*🗃️ VISPER GDRIVE DOWNLOADER 🗃️*
-
-*┌──────────────────*
-*├ 🗃️ Name :* ${res.result.title}
-*├ ⏩ Type :* ${res.mimetype}
-*├ 📁 Size :* ${res.fileSize}
-*└──────────────────*`;
- await reply(txt);
-try {
-    const bytes = await checkFileSize(res.downloadUrl, config.MAX_SIZE);
-    const sizeInMB = (bytes / (1024 * 1024)).toFixed(2);
-
-    if (sizeInMB > config.MAX_SIZE) {
-        return reply(`*⚠️ File too large or cannot determine size!*
-		
-*📌 Maximum allowed: \`${config.MAX_SIZE}\`*
-
-_*💡 You can try a smaller file or use .apply command to override.*_`);
-    }
-} catch (err) {
-    
-     return reply(`*⚠️ File too large or cannot determine size!*
-	 
-*📌 Maximum allowed: \`${config.MAX_SIZE}\`*
-
-_*💡 You can try a smaller file or use .apply command to override.*_`);
+*•ᴠɪsᴘᴇʀ-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ* `)		
+conn.sendMessage(from, { document: { url: res.downloadUrl }, fileName: "📽️DINKA📽️"+ res.fileName, mimetype: res.mimetype, caption: res.fileName.replace('[Cinesubz.co]' , '[visper-MOVIES.]') +'\n\n> *•ᴠɪsᴘᴇʀ-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ•*'}, { quoted: mek })
+} catch (e) {
+reply('*Error !!*')
+l(e)
 }
-await conn.sendMessage(from, {
-            document: { url: res.downloadUrl },
-            caption: `${config.FOOTER}`,
-            fileName: res.result.title,
-            mimetype: res.mimetype
-        }, { quoted: mek });
-
-    } catch (e) {
-        console.log(e);
-        await reply("*❌ Error occurred while processing your request!*"); 
-    }
-});
+})
 
 
-async function streamToBuffer(stream) {
-    return new Promise((resolve, reject) => {
-        const chunks = []
-        stream.on("data", chunk => chunks.push(chunk))
-        stream.on("end", () => resolve(Buffer.concat(chunks)))
-        stream.on("error", reject)
-    })
-}
 
 cmd({
     pattern: "mega",
