@@ -1071,7 +1071,7 @@ cmd({
 },
 async (conn, m, mek, { from, q, isMe, prefix, reply }) => {
 try{
-if (!q || !q.includes('https://cinesubz.net/movies/')) {
+if (!q || !q.includes('https://cinesubz.co/movies/')) {
     console.log('Invalid input:', q);
     return await reply('*❗ This is a TV series, please use .tv command.*');
 }
@@ -1894,7 +1894,7 @@ cmd({
 },
 async (conn, m, mek, { from, q, isMe, prefix, reply }) => {
 try{
-if (!q || !q.includes('https://cinesubz.net/tvshows')) {
+if (!q || !q.includes('https://cinesubz.co/tvshows')) {
     console.log('Invalid input:', q);
     return await reply('*❗ This is a movie, please use .mv command.*');
 }
