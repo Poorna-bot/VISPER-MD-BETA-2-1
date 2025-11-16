@@ -1101,7 +1101,7 @@ rows.push(
 	
   sadas.dl_links.map((v) => {
 	rows.push({
-        buttonId: prefix + `pakatv ${sadas.data.image}±${sadas.data.title}±${v.link}
+        buttonId: prefix + `paka ${sadas.data.image}±${sadas.data.title}±${v.link}
 	
 	*\`[ ${v.quality} ]\`*`,
         buttonText: { 
@@ -1151,7 +1151,7 @@ const rowss = sadas.dl_links.map((v, i) => {
 
     return {
       title: cleanText,
-      id: prefix + `pakatv ${sadas.data.image}±${sadas.data.title}±${v.link}
+      id: prefix + `paka ${sadas.data.image}±${sadas.data.title}±${v.link}
 	
 	*\`[ ${v.quality} ]\`*` // Make sure your handler understands this format
     };
