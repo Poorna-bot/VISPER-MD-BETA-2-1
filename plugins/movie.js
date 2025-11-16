@@ -1250,7 +1250,7 @@ cmd({
 
                 if (check?.isUploaded === false) {
                     // New upload case
-                    const urlApi = `https://manojapi.infinityapi.org/api/v1/cinesubz-download?url=${encodeURIComponent(url)}&apiKey=sadasthemi20072000`; 
+                    const urlApi = `https://manojapi.infinityapi.org/api/v1/cinesubz-download?url=${encodeURIComponent(url)}&apiKey=855c2451-6bd1-4729-9d7b-8aac40de95af`; 
                     const getDownloadUrls = await axios.get(urlApi);
 
                     downloadUrls = getDownloadUrls.data.results;
