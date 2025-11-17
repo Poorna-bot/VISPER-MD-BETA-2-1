@@ -10,7 +10,6 @@ const fg = require('api-dylux');
 const { igdl } = require('ruhend-scraper')
 const { sizeFormatter} = require('human-readable');;
 const { ytmp3, tiktok, facebook, instagram, twitter, ytmp4 } = require('sadaslk-dlcore');
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson} = require('../lib/functions')
 const {
     getBuffer,
     getGroupAdmins,
