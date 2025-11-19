@@ -57,7 +57,7 @@ const df = __dirname + '/auth_info_baileys/creds.json';
 
 if (!fs.existsSync(df)) {
   if (config.SESSION_ID) {
-    const sessdata = config.SESSION_ID.replace("VISPER-MD&", "");
+    const sessdata = config.SESSION_ID.replace("VISPER-MD&", "").replace("𝙽𝙰𝙳𝙴𝙴𝙽-𝙼𝙳=", "");
 
     if (sessdata.includes("#")) {
       const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
@@ -298,7 +298,7 @@ fs.readdirSync("./plugins/").forEach((plugin) => {
 console.log('All Plugins installed ⚡')
 await connectdb()
 await updb()		
-console.log('VISPER MOVIE DL CONNECTED ✅')
+console.log('VISPER-MD BOT CONNECTED ✅')
 
 
 
