@@ -340,6 +340,129 @@ if (config.BUTTON === 'true') {
 
 
 
+cmd({
+    pattern: "anhvideo",
+    react: '🔥',
+    category: "nsfw",
+    alias: ["nsfwanime", "hentaimp4"],
+    desc: "Download random NSFW anime video as original MP4",
+    use: ".anhvideo",
+    filename: __filename
+},
+async (conn, m, mek, { from, prefix, isPre, isMe, isSudo, isOwner, reply }) => {
+    try {
+        // 🧩 Premium check (reuse from existing logic if needed, assuming same checks apply)
+        const pr = (await axios.get('https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/master.json')).data;
+        const isFree = pr.mvfree === "true";  // Reuse mvfree or add nsfwfree if needed
+
+        if (!isFree && !isMe && !isPre) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, {
+                text: "*`You are not a premium user⚠️`*\n\n" +
+                      "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
+                      "_Price : 200 LKR ✔️_\n\n" +
+                      "*👨‍💻Contact us : 0778500326 , 0722617699*"
+            }, { quoted: mek });
+        }
+
+        if (config.NSFW_BLOCK == "true" && !isMe && !isSudo && !isOwner) {  // Assuming config.NSFW_BLOCK similar to MV_BLOCK
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, { 
+                text: "*This command currently only works for the Bot owner. To disable it for others, use the .settings command 👨‍🔧.*" 
+            }, { quoted: mek });
+        }
+
+        // ⚠️ NSFW Warning
+        await conn.sendMessage(from, { 
+            text: '*⚠️ This is NSFW content. Proceed with caution! 18+ only.*' 
+        }, { quoted: mek });
+
+        const apiUrl = 'https://apis.prexzyvilla.site/random/anhvideonsfw';
+        const filename = 'nsfw_anime_video.mp4';  // Generic filename
+
+        // 📹 Send as document (original MP4 file) directly via URL
+        await conn.sendMessage(from, {
+            document: { url: apiUrl },
+            caption: `*🔥 NSFW Anime Video*\n\n*🤖 Random from PrexzyVilla API*\n\n*⚠️ Viewer discretion advised! Download to play.*`,
+            mimetype: "video/mp4",
+            fileName: filename
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
+
+    } catch (e) {
+        console.error("🔥 NSFW Anime Video Error:", e);
+        reply('🚫 *Error Occurred !!*\n\n' + e.message + '\n\n*API might be down or blocked. Try again later.*');
+    }
+});
+
+
+
+
+
+cmd({
+    pattern: "animevideo",
+    react: '🎬',
+    category: "anime",
+    alias: ["anime", "anivideo"],
+    desc: "Download random anime video status",
+    use: ".animevideo",
+    filename: __filename
+},
+async (conn, m, mek, { from, prefix, isPre, isMe, isSudo, isOwner, reply }) => {
+    try {
+        // 🧩 Premium check (reuse from existing logic if needed, assuming same checks apply)
+        const pr = (await axios.get('https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/master.json')).data;
+        const isFree = pr.mvfree === "true";  // Reuse mvfree or add animefree if needed
+
+        if (!isFree && !isMe && !isPre) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, {
+                text: "*`You are not a premium user⚠️`*\n\n" +
+                      "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
+                      "_Price : 200 LKR ✔️_\n\n" +
+                      "*👨‍💻Contact us : 0778500326 , 0722617699*"
+            }, { quoted: mek });
+        }
+
+        if (config.ANIME_BLOCK == "true" && !isMe && !isSudo && !isOwner) {  // Assuming config.ANIME_BLOCK similar to MV_BLOCK
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, { 
+                text: "*This command currently only works for the Bot owner. To disable it for others, use the .settings command 👨‍🔧.*" 
+            }, { quoted: mek });
+        }
+
+        // 🔗 Fetch Anime Video API (no query param needed)
+        const { data: apiRes } = await axios.get('https://apis.sandarux.sbs/api/anime/animevideo', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            timeout: 10000 // 10s timeout
+        });
+
+        if (!apiRes || !apiRes.status || !apiRes.result || !apiRes.result.download_link) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, { text: '*No anime video available right now! Try again later. 😔*' }, { quoted: mek });
+        }
+
+        const { title, download_link } = apiRes.result;
+        const filename = title.substring(0, 50).replace(/[^a-zA-Z0-9.\s-]/g, '_') + '.mp4';  // Sanitize filename
+
+        // 📹 Send video directly to WhatsApp
+        await conn.sendMessage(from, {
+            video: { url: download_link },
+            caption: `*🎬 Anime Video Status*\n\n_${title}_\n\n*🤖 Powered by Sandarux*`,
+            mimetype: "video/mp4",
+            fileName: filename
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
+
+    } catch (e) {
+        console.error("🔥 Anime Video Error:", e);
+        reply('🚫 *Error Occurred !!*\n\n' + e.message);
+    }
+});
 
 
 
