@@ -19,7 +19,7 @@
     "api-dylux":"latest",
     "cheerio": "1.0.0-rc.12",
     "css-select": "4.1.0",
-    "jimp":"^0.16.1",
+    "jimp":"^0.22.12",
     "darksadas-yt-pornhub-scrape": "latest",
     "darksadasyt-anime": "latest",
     "anime-heaven": "latest",
@@ -36,10 +36,11 @@
     "human-readable": "latest",
     "image-size": "latest",
     "javascript-obfuscator": "latest",
-    
+
     "link-preview-js": "latest",
     "megajs": "latest",
     "mongoose": "latest",
+    "mumaker": "^2.0.0",
     "node-cache": "latest",
     "node-fetch": "latest",
     "pino": "latest",
