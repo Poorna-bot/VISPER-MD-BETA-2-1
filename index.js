@@ -154,7 +154,7 @@ async function connectToWA() {
     })
     
     // ... rest of your connection logic ...
-}
+
 
 
 const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
