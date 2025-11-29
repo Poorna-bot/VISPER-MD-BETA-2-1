@@ -114,26 +114,48 @@ async function connectToWA() {
 
    
 
-//const groupCache = new NodeCache({ stdTTL: 7200, checkperiod: 1200 })
-const { version, isLatest } = await fetchLatestWaWebVersion();
+
        const {
         state,
         saveCreds
     } = await useMultiFileAuthState(__dirname + `/auth_info_baileys`)
     
-    const conn = makeWASocket({
-        logger: P({ level: "silent" }),
-        printQRInTerminal: false,
-        browser: Browsers.windows("Chrome"),
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, P({ level: "fatal" })),
+     var { version } = await fetchLatestBaileysVersion()
+  const latestWebVersion = () => {
+          let version
+          try {
+              let a = fetchJson('https://web.whatsapp.com/check-update?version=1&platform=web')
+              version = [a.currentVersion.replace(/[.]/g, ', ')]
+          } catch {
+              version = [2, 2204, 13]
+          }
+          return version
+   }
+  const store = makeInMemoryStore({
+          logger: P({ level: "silent", stream: "store" }),
+      });
+
+  const msgRetryCounterCache = new NodeCache()
+  
+      const conn = makeWASocket({
+          logger: P({ level: 'silent' }),
+          printQRInTerminal: false,     
+       auth: {
+           creds: state.creds,
+           keys: makeCacheableSignalKeyStore(state.keys, P({ level: "fatal" }).child({ level: "fatal" })),
         },
-        version,
-		//cachedGroupMetadata: async (jid) => groupCache.get(jid),
-        generateHighQualityLinkPreview: true,
-        markOnlineOnConnect: false
-    });
+        browser: Browsers.macOS("Safari"),
+        getMessage: async (key) => {
+           let jid = jidNormalizedUser(key.remoteJid)
+           let msg = await store.loadMessage(jid, key.id)
+  
+           return msg?.message || ""
+        },
+        msgRetryCounterCache,
+        defaultQueryTimeoutMs: undefined, 
+        syncFullHistory: false,
+        latestWebVersion,
+     })
 
 const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
 const connectnumber = responsee.data
