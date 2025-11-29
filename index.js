@@ -114,7 +114,7 @@ async function connectToWA() {
 
    
 
-
+const groupCache = new NodeCache({ stdTTL: 7200, checkperiod: 1200 })
 const { version, isLatest } = await fetchLatestWaWebVersion();
        const {
         state,
@@ -130,6 +130,7 @@ const { version, isLatest } = await fetchLatestWaWebVersion();
             keys: makeCacheableSignalKeyStore(state.keys, P({ level: "fatal" })),
         },
         version,
+		cachedGroupMetadata: async (jid) => groupCache.get(jid),
         generateHighQualityLinkPreview: true,
         markOnlineOnConnect: false
     });
