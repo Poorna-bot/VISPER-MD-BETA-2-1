@@ -127,7 +127,7 @@ const { version, isLatest } = await fetchLatestWaWebVersion();
         browser: Browsers.windows("Chrome"),
         auth: {
             creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })),
+            keys: makeCacheableSignalKeyStore(state.keys, P({ level: "fatal" })),
         },
         version,
         generateHighQualityLinkPreview: true,
