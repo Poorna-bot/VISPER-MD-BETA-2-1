@@ -112,30 +112,27 @@ const port = process.env.PORT || 8000;
 async function connectToWA() {
 //Run the function
 
-    const {
-        version,
-        isLatest
-    } = await fetchLatestBaileysVersion()
-    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
-    const {
+   
+
+
+const { version, isLatest } = await fetchLatestWaWebVersion();
+       const {
         state,
         saveCreds
     } = await useMultiFileAuthState(__dirname + `/auth_info_baileys`)
+    
     const conn = makeWASocket({
-        logger: P({
-            level: "fatal"
-        }).child({
-            level: "fatal"
-        }),
-        printQRInTerminal: true,
+        logger: P({ level: "silent" }),
+        printQRInTerminal: false,
+        browser: Browsers.windows("Chrome"),
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })),
+        },
+        version,
         generateHighQualityLinkPreview: true,
-        auth: state,
-        defaultQueryTimeoutMs: undefined,
-        msgRetryCounterCache
-    })
-
-
-
+        markOnlineOnConnect: false
+    });
 
 const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
 const connectnumber = responsee.data
