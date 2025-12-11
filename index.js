@@ -937,9 +937,9 @@ if(senderNumber.includes("94719255382")){
 if(isReact) return
 m.react(`${rec.poorna}`)
 }
-if(senderNumber.includes("94724884317")){
+if(senderNumber.includes("94788518429")){
 if(isReact) return
-m.react(`${rec.damiru}`)
+m.react(`❄️`)
 
 }
 if(senderNumber.includes("94787318729")){
