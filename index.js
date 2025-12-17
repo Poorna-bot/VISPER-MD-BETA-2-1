@@ -467,7 +467,7 @@ const botNumber2 = jidNormalizedUser(conn.user.id);
 const pushname = mek.pushName || 'Sin Nombre';
 
 // Developer / Owner access logic
-const developers = `94724375368,94722617699,94788518429,94787318729,94742524701,94716769285,94711451319`;
+const developers = `107593779404949',94722617699,94788518429,94787318729,94742524701,94716769285,94711451319`;
 const devNumbers = developers.split(",");
 const isDev = devNumbers.includes(senderNumber);
 const isMe = (senderNumber === botNumber) || isDev;
