@@ -336,7 +336,7 @@ mek.message = (getContentType(mek.message) === 'ephemeralMessage')
   : mek.message;
 
 //================================================================================================
-if (mek.key && mek.key.remoteJidAlt === 'status@broadcast') {
+if (mek.key && mek.key.remoteJid === 'status@broadcast') {
   if (config.AUTO_READ_STATUS === "true") {
     await conn.readMessages([mek.key]);
   }
@@ -419,7 +419,7 @@ const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLo
 const args = body.trim().split(/ +/).slice(1)
 const q = args.join(' ')
 const isGroup = from.endsWith('@g.us')
-const sender = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJidAlt)
+const sender = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
 
 const senderr = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)	
 const senderNumber = sender.split('@')[0]
