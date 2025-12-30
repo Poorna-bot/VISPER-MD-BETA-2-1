@@ -127,6 +127,7 @@ async function connectToWA() {
             level: "fatal"
         }),
         printQRInTerminal: true,
+		browser: Browsers.windows("Chrome"),
         generateHighQualityLinkPreview: true,
         auth: state,
         defaultQueryTimeoutMs: undefined,
