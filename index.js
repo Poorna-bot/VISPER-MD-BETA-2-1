@@ -989,33 +989,7 @@ await conn.readMessages([mek.key])
             	    
        }
 
-//==============================================CHATBOT=========================================================
-
-if (config.CHAT_BOT == "true") { // Enable or disable this feature via config
-     if (m.quoted) { // Works for both group and inbox
-        let query = m.body ? m.body.toLowerCase() : ""; // Ensure 'body' is defined
-        try {
-            let datae = await fetchJson(`https://saviya-kolla-api.koyeb.app/ai/saviya-ai?query=${query}`);
-            await conn.sendMessage(from, { text: datae.result.data }); // Send AI response
-        } catch (error) {
-            console.error("AI Chat Error:", error); // Handle errors
-            await conn.sendMessage(from, { text: "." });
-        }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-	    
+    
     //==================================ANTI DELETE========================================
 if(!isOwner) {	
     if(config.ANTI_DELETE  == "true") {
