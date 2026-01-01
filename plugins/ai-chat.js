@@ -387,7 +387,7 @@ async (conn, mek, m, { from, args, reply, prefix }) => {
 cmd({ on: "body" },
     async (conn, mek, m, { from, body, isCmd, isOwner, botNumber2, sender, pushname, isGroup, reply, senderNumber, isBotAdmins, isAdmins, botNumber }) => {
         try{
-        if (config.CHAT_BOT){
+        
         if(m.fromMe) return;
         const isMsgImage = m.type === 'imageMessage' || m.imageMessage;
         const isQuotedImage = m.quoted && (m.quoted.type === 'imageMessage' || m.quoted.imageMessage);
@@ -427,7 +427,7 @@ cmd({ on: "body" },
             } else {
                 await reply(`❌ *Error:* ${response.error}`);
             }
-            }
+            
         } catch (e) {
             console.error(e);
             await reply("❌ *An error occurred while processing your request.*" + e);
