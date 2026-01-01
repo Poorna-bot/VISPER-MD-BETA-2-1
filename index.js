@@ -47,7 +47,14 @@ var {
 const ownerNumber = [`${config.OWNER_NUMBER}`];
 //===================SESSION======.===========kj===h========
 
-const df = __dirname + '/auth_info_baileys/creds.json';
+
+const authFolder = path.join(__dirname, 'auth_info_baileys');
+const df = path.join(authFolder, 'creds.json');
+
+// 1. මුලින්ම ෆෝල්ඩර් එක තියෙනවද බලලා නැත්නම් ඒක හදනවා
+if (!fs.existsSync(authFolder)) {
+    fs.mkdirSync(authFolder, { recursive: true });
+}
 
 if (!fs.existsSync(df)) {
   if (config.SESSION_ID) {
@@ -57,6 +64,7 @@ if (!fs.existsSync(df)) {
       const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
       filer.download((err, data) => {
         if (err) throw err;
+        // මෙතනදී දැන් Folder එක තියෙන නිසා අවුලක් වෙන්නේ නැහැ
         fs.writeFile(df, data, () => {
           console.log("✅ Mega session download completed and saved to creds.json !!");
         });
@@ -86,6 +94,7 @@ async function downloadSession(sessdata, df) {
 
       if (response.data && Object.keys(response.data).length > 0) {
         await sleep(1000);
+        // JSON format එකෙන් හරියටම save කරනවා
         fs.writeFileSync(df, JSON.stringify(response.data, null, 2));
         console.log(`✅ Session file downloaded successfully and saved to creds.json`);
         success = true;
@@ -93,7 +102,6 @@ async function downloadSession(sessdata, df) {
       } else {
         console.warn(`⚠️ Empty or invalid session data from DB-${i + 1}, attempting next DB...`);
       }
-
     } catch (err) {
       console.error(`❌ Failed to download local DB session file: ${err.message}`);
     }
