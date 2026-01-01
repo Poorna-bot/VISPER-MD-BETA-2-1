@@ -244,12 +244,12 @@ async(conn, mek, m, {
     const wm = config.FOOTER;
 
  
-  let caption = `*🎶 VISPER MD SONG DOWNLODER 🎶*
+  let caption = `*🎶VISPER MD SONG DOWNLODER🎶*
 
-*☘️ Title :* ${result.title}
-*👁️ Views :* ${result.views}
-*⏰ Duration :* ${result.duration}
-*💃 Url :* ${result.url}`;
+*☘️ Title :* *${result.title}*
+*👁️ Views :* *${result.views}*
+*⏰ Duration :* *${result.duration}*
+*💃 Url :* *${result.url}*`;
 	  
 
     const buttons = [
