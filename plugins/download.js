@@ -250,21 +250,28 @@ async(conn, mek, m, {
 *├ \`⌛ Duration\` : ${result.duration}*
 *├ \`📎 URL\` : ${result.url}*
 *└────────────────────┘*`;
+  let caption = `*🎶 VISPER MD SONG DOWNLODER 🎶*
+
+*☘️ Title :* ${result.title}
+*👁️ Views :* ${result.views}
+*⏰ Duration :* ${result.duration}
+*💃 Url :* ${result.url}`;
+	  
 
     const buttons = [
       {
         buttonId: `${prefix}ytaa ${result.url}`,
-        buttonText: { displayText: '*Audio Format 🎶*' },
+        buttonText: { displayText: 'Audio Format 🎶' },
         type: 1
       },
       {
         buttonId: `${prefix}ytad ${result.url}&${result.thumbnail}&${result.title}`,
-        buttonText: { displayText: '*Document Format 📂*' },
+        buttonText: { displayText: 'Document Format 📂' },
         type: 1
       },
 		 {
         buttonId: `${prefix}ytaap ${result.url}`,
-        buttonText: { displayText: '*Voice Format 🎤*' },
+        buttonText: { displayText: 'Voice Format 🎤' },
         type: 1
       }
     ];
