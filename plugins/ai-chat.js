@@ -386,97 +386,51 @@ async (conn, mek, m, { from, args, reply, prefix }) => {
 
 cmd({ on: "body" },
     async (conn, mek, m, { from, body, isCmd, isOwner, botNumber2, sender, pushname, isGroup, reply, senderNumber, isBotAdmins, isAdmins, botNumber }) => {
-        try {
-            
-                if (m.fromMe) return;
-                const isMsgImage = m.type === 'imageMessage' || m.imageMessage;
-                const isQuotedImage = m.quoted && (m.quoted.type === 'imageMessage' || m.quoted.imageMessage);
+        try{
+        if (config.CHAT_BOT){
+        if(m.fromMe) return;
+        const isMsgImage = m.type === 'imageMessage' || m.imageMessage;
+        const isQuotedImage = m.quoted && (m.quoted.type === 'imageMessage' || m.quoted.imageMessage);
 
-                let isTrue = (
-                    m?.mentionUser?.includes(botNumber2) ||
-                    (m.quoted && m.quoted.sender === botNumber2)
-                );
+        let isTrue = (
+            m?.mentionUser?.includes(botNumber2) || 
+            (m.quoted && m.quoted.sender === botNumber2)
+        );
 
-               
-                if (!isNaN(m.body) || isCmd) return;
+        if (!isTrue) return;
 
-                let inputText = m.body ? m.body : m.imageMessage?.caption;
-                if (!inputText && (isMsgImage || isQuotedImage)) inputText = "Describe this image";
-                if (!inputText) inputText = "";
+        if (!isNaN(m.body) || isCmd) return;
 
-                // --- සන්දර්භය (Context) සකස් කිරීම ---
-                const contextText = `User: ${pushname} (@${senderNumber}), Admin: ${isAdmins}, Group: ${from}`;
-                const fullPrompt = `Context: ${contextText}\n\nMessage: ${inputText}`;
+        let inputText = m.body ? m.body : m.imageMessage?.caption;
 
-                let imageBuffer = null;
-                if (isMsgImage) {
-                    imageBuffer = await m.download();
-                } else if (isQuotedImage) {
-                    imageBuffer = await m.quoted.download();
-                }
+        if (!inputText && (isMsgImage || isQuotedImage)) {
+            inputText = "Describe this image";
+        }
 
-                const response = await getGeminiResponse(fullPrompt, m.sender, { img: imageBuffer });
+        if (!inputText) inputText = "";
+        inputText = inputText.replace(/@\d+/g, '').trim();
+        const lowerCaseText = inputText.toLowerCase(); 
 
-                if (response.status) {
-                    let aiReply = response.text;
+        let imageBuffer = null;
 
-                    // --- Action Code Logic එක මෙතැන් සිට ---
-                    if (aiReply.includes("ACTION_CODE:")) {
-                        const actionLine = aiReply.split('\n').find(l => l.includes("ACTION_CODE:"));
-                        const oxpLine = aiReply.split('\n').find(l => l.includes("OXP:"));
-                        const msgLine = aiReply.split('\n').find(l => l.includes("MSG:"));
 
-                        const action = actionLine?.split(":")[1]?.trim();
-                        const target = oxpLine?.split(":")[1]?.trim().replace('@', '') + "@s.whatsapp.net";
-                        const confirmationMsg = msgLine ? msgLine.split(":")[1]?.trim() : aiReply;
+            if (isMsgImage) {
+                imageBuffer = await m.download();
+            } else if (isQuotedImage) {
+                imageBuffer = await m.quoted.download();
+            }
 
-                        // Admin හෝ Sudo ද යන්න පරීක්ෂාව
-                        if (isAdmins || isOwner) {
-                            switch (action) {
-                                case "kick_user":
-                                    if (!isBotAdmins) return reply("අනේ බබා, මට Admin power නැහැනේ මේක කරන්න 🥺");
-                                    await conn.groupParticipantsUpdate(from, [target], "remove");
-                                    await reply(confirmationMsg);
-                                    break;
+            const response = await getGeminiResponse(lowerCaseText, m.sender, { img: imageBuffer });
 
-                                case "promote_user":
-                                    if (!isBotAdmins) return reply("මට Admin දුන්නොත් විතරයි බබා මේක කරන්න පුළුවන් 😒");
-                                    await conn.groupParticipantsUpdate(from, [target], "promote");
-                                    await reply(confirmationMsg);
-                                    break;
-
-                                case "demote_user":
-                                    await conn.groupParticipantsUpdate(from, [target], "demote");
-                                    await reply(confirmationMsg);
-                                    break;
-
-                                case "mute_group":
-                                    await conn.groupSettingUpdate(from, 'announcement');
-                                    await reply(confirmationMsg);
-                                    break;
-
-                                case "unmute_group":
-                                    await conn.groupSettingUpdate(from, 'not_announcement');
-                                    await reply(confirmationMsg);
-                                    break;
-
-                                default:
-                                    await reply(aiReply); // වෙනත් codes (DL_YT වගේ) තිබේ නම් සාමාන්‍ය පරිදි යවන්න
-                            }
-                        } else {
-                            await reply("ඔයාට මේක කරන්න අවසර නැහැ මැණික 😒");
-                        }
-                    } else {
-                        // සාමාන්‍ය Chat response එකක් නම්
-                        await reply(aiReply);
-                    }
-                } else {
-                    await reply(`❌ *Error:* ${response.error}`);
-                }
-            
+            if (response.status) {
+                await reply(response.text);
+            } else {
+                await reply(`❌ *Error:* ${response.error}`);
+            }
+            }
         } catch (e) {
             console.error(e);
-            await reply("❌ *An error occurred:* " + e.message);
+            await reply("❌ *An error occurred while processing your request.*" + e);
         }
     }
 );
