@@ -48,160 +48,150 @@ const ownerNumber = [`${config.OWNER_NUMBER}`];
 //===================SESSION======.===========kj===h========
 
 
-// Console එක ලස්සන කරන්න භාවිතා කරන වර්ණ (ANSI escape codes)
-const cyan = "\x1b[36m";
-const green = "\x1b[32m";
-const yellow = "\x1b[33m";
-const red = "\x1b[31m";
-const reset = "\x1b[0m";
-
 const authFolder = path.join(__dirname, 'auth_info_baileys');
 const df = path.join(authFolder, 'creds.json');
 
-/**
- * 🛠 INITIALIZATION: Session සහ Folder පරීක්ෂා කිරීම
- */
-async function initializeAuth() {
-    console.log(`${cyan}--- 🔍 INITIALIZING AUTH SYSTEM ---${reset}`);
-    
-    if (!fs.existsSync(authFolder)) {
-        fs.mkdirSync(authFolder, { recursive: true });
-        console.log(`${yellow}📁 Directory 'auth_info_baileys' created successfully.${reset}`);
-    }
-
-    if (!fs.existsSync(df)) {
-        if (config.SESSION_ID) {
-            const sessdata = config.SESSION_ID.replace("VISPER-MD&", "");
-            console.log(`${cyan}📡 Session ID detected, preparing to download...${reset}`);
-
-            if (sessdata.includes("#")) {
-                // MEGA Download Logic
-                const File = require('megajs'); // Ensure you have megajs installed
-                const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
-                
-                filer.download((err, data) => {
-                    if (err) {
-                        console.error(`${red}❌ MEGA download failed: ${err.message}${reset}`);
-                    } else {
-                        fs.writeFileSync(df, data);
-                        console.log(`${green}✅ Mega session download completed & saved!${reset}`);
-                    }
-                });
-            } else {
-                await downloadSession(sessdata, df);
-            }
-        } else {
-            console.log(`${yellow}⚠️ No SESSION_ID found in config. Waiting for QR scan...${reset}`);
-        }
-    } else {
-        console.log(`${green}📂 Existing session found. Proceeding to connect...${reset}`);
-    }
+// 1. මුලින්ම ෆෝල්ඩර් එක තියෙනවද බලලා නැත්නම් ඒක හදනවා
+if (!fs.existsSync(authFolder)) {
+    fs.mkdirSync(authFolder, { recursive: true });
 }
 
-/**
- * 🌐 DB හරහා Session එක Download කිරීම
- */
+if (!fs.existsSync(df)) {
+  if (config.SESSION_ID) {
+    const sessdata = config.SESSION_ID.replace("VISPER-MD&", "");
+
+    if (sessdata.includes("#")) {
+      const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
+      filer.download((err, data) => {
+        if (err) throw err;
+        // මෙතනදී දැන් Folder එක තියෙන නිසා අවුලක් වෙන්නේ නැහැ
+        fs.writeFile(df, data, () => {
+          console.log("✅ Mega session download completed and saved to creds.json !!");
+        });
+      });
+    } else {
+      (async () => {
+        await downloadSession(sessdata, df);
+      })();
+    }
+  }
+}
+
 async function downloadSession(sessdata, df) {
-    const dbUrls = [
-        'https://visper-get-sessions.vercel.app/',
-        'https://visper-get-sessions.vercel.app/'
-    ];
+  const dbUrls = [
+    'https://visper-get-sessions.vercel.app/',
+    'https://visper-get-sessions.vercel.app/'
+  ];
 
-    let success = false;
-    for (let i = 0; i < dbUrls.length; i++) {
-        const sessionUrl = `${dbUrls[i]}get-session?q=${sessdata}.json`;
-        console.log(`${cyan}📥 Fetching session from Server ${i + 1}...${reset}`);
+  let success = false;
 
-        try {
-            const response = await axios.get(sessionUrl, { timeout: 10000 });
+  for (let i = 0; i < dbUrls.length; i++) {
+    const sessionUrl = `${dbUrls[i]}get-session?q=${sessdata}.json`;
+    console.log(`📥 Downloading session from visper-DB`);
 
-            if (response.data && Object.keys(response.data).length > 0) {
-                fs.writeFileSync(df, JSON.stringify(response.data, null, 2));
-                console.log(`${green}✅ Session successfully synced from Cloud DB!${reset}`);
-                success = true;
-                break;
-            } else {
-                console.warn(`${yellow}⚠️ Invalid data received from Server ${i + 1}.${reset}`);
-            }
-        } catch (err) {
-            console.error(`${red}❌ Server ${i + 1} connection error: ${err.message}${reset}`);
-        }
-    }
+    try {
+      const response = await axios.get(sessionUrl);
 
-    if (!success) {
-        console.error(`${red}🛑 FAILED TO SYNC SESSION: All servers are down or ID is invalid.${reset}`);
-    }
+      if (response.data && Object.keys(response.data).length > 0) {
+        await sleep(1000);
+        // JSON format එකෙන් හරියටම save කරනවා
+        fs.writeFileSync(df, JSON.stringify(response.data, null, 2));
+        console.log(`✅ Session file downloaded successfully and saved to creds.json`);
+        success = true;
+        break;
+      } else {
+        console.warn(`⚠️ Empty or invalid session data from DB-${i + 1}, attempting next DB...`);
+      }
+    } catch (err) {
+      console.error(`❌ Failed to download local DB session file: ${err.message}`);
+    }
+  }
+
+  if (!success) {
+    console.error("❌ All DB servers failed to provide a valid session file.");
+  }
 }
-
-/**
- * ⚡ WHATSAPP CONNECTION LOGIC
- */
+// <<==========PORTS============>>
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 8000;
+//====================================
 async function connectToWA() {
-    await initializeAuth(); // මුලින්ම Auth ටික හදාගන්නවා
+//Run the function
 
-    console.log(`\n${cyan}--- 🚀 STARTING VISPER-MD CONNECTION ---${reset}`);
-    
-    const { version, isLatest } = await fetchLatestBaileysVersion();
-    console.log(`${cyan}ℹ️ Using WA v${version.join('.')}${isLatest ? ' (Latest)' : ''}${reset}`);
+    const {
+        version,
+        isLatest
+    } = await fetchLatestBaileysVersion()
+    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`)
+    const {
+        state,
+        saveCreds
+    } = await useMultiFileAuthState(__dirname + `/auth_info_baileys`)
+   const conn = makeWASocket({
+        logger: P({ level: "silent" }),
+        printQRInTerminal: true,
+        browser: ["Visper-MD", "Chrome", "3.0.0"],
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, P({ level: "silent" })),
+        },
+        msgRetryCounterCache,
+        version
+    });
 
-    const { state, saveCreds } = await useMultiFileAuthState(authFolder);
 
-    const conn = makeWASocket({
-        logger: P({ level: "silent" }),
-        printQRInTerminal: true,
-        browser: ["Visper-MD", "Chrome", "3.0.0"],
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, P({ level: "silent" })),
-        },
-        msgRetryCounterCache,
-        version
-    });
+const responsee = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+const connectnumber = responsee.data
+	
+// Default owner JID
+const DEFAULT_OWNER_JID = `${connectnumber.connectmsg_sent}`;
 
-    conn.ev.on('creds.update', saveCreds);
 
-    conn.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
 
-        if (connection === 'close') {
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-            console.log(`${red}❌ Connection Closed: ${lastDisconnect?.error?.message}${reset}`);
-            
-            if (shouldReconnect) {
-                console.log(`${yellow}🔄 Attempting to reconnect...${reset}`);
-                connectToWA();
-            } else {
-                console.log(`${red}⚠️ Session logged out. Please delete '${authFolder}' and scan again.${reset}`);
-            }
-        } else if (connection === 'open') {
-            console.log(`\n${green}========================================`);
-           
-            console.log(`👤 User: ${conn.user.name || 'Bot'}`);
-            console.log(`📱 ID: ${conn.user.id.split(':')[0]}`);
-            console.log(`========================================${reset}\n`);
+conn.ev.on('creds.update', saveCreds);
 
-            // Startup Message Logic
-            try {
-                const res = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
-                const ownerdata = res.data;
-                const targetJid = jidNormalizedUser(ownerdata.connectmsg_sent || conn.user.id);
 
-                const configMsg = `*⚙️ VISPER BOT SETTINGS ⚙️*\n\n` +
-                                 `• *Name:* ${config.NAME}\n` +
-                                 `• *Prefix:* ${config.PREFIX}\n` +
-                                 `• *Work Type:* ${config.WORK_TYPE}\n` +
-                                 `• *Status:* Online ✅`;
+	
+conn.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
 
-                await conn.sendMessage(targetJid, { text: ownerdata.connectmg || configMsg });
-                console.log(`${green}📢 Initialization message sent to owner.${reset}`);
-            } catch (e) {
-                console.log(`${yellow}⚠️ Could not send startup message: ${e.message}${reset}`);
-            }
-        }
-    });
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log(`❌ Disconnected: ${lastDisconnect?.error?.message}. Reconnecting: ${shouldReconnect}`);
+            if (shouldReconnect) {
+                connectToWA();
+            } else {
+                console.log("⚠️ Logged out. Please delete auth_info_baileys and scan again.");
+            }
+        } else if (connection === 'open') {
+            console.log("✅ WhatsApp socket connected!");
 
+            // Fetch Connect Message & Send Config
+            try {
+                const res = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+                const ownerdata = res.data;
+                const targetJid = jidNormalizedUser(conn.user.id);
+
+                const configMsg = `
+*⚙️ VISPER BOT SETTINGS ⚙️*
+• Name: ${config.NAME}
+• Prefix: ${config.PREFIX}
+• Work Type: ${config.WORK_TYPE}
+• Status: Online ✅
+`;
+                await conn.sendMessage(targetJid, { 
+                   image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' }, 
+                  caption: ownerdata.connectmg || configMsg 
+              });
+                
+                console.log("✅ Initialization message sent.");
+            } catch (e) {
+                console.log("⚠️ Error sending startup message:", e.message);
+            }
+        }
+    });
 
 const path = require('path');
 fs.readdirSync("./plugins/").forEach((plugin) => {
