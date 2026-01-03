@@ -208,24 +208,34 @@ await updb()
 
 
 
-  let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
-        
-        if (!joinlink2 || !joinlink2.supglink) {
-            console.error('❌ Invalid join link data!');
-            return;
-        }
-        
-        const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1]; // Extract invite code
+let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
 
-        if (!joinlink) {
-            console.error('❌ Invalid invite link format!');
-            return;
-        }
+if (!joinlink2 || !joinlink2.supglink) {
+    console.error('❌ Invalid join link data!');
+    return;
+}
 
-     
-            await conn.groupAcceptInvite(joinlink);
+// 1. Get the Invite Code
+const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1];
 
-				 console.log("✅ Successfully joined the group!");
+// 2. Get the Group Metadata via the invite code to find the Group ID (JID)
+const info = await conn.groupGetInviteInfo(joinlink);
+const groupId = info.id; // This is the '12345678@g.us' format
+
+// 3. Get the list of groups the bot is already in
+const allGroups = await conn.groupFetchAllParticipating();
+const isAlreadyIn = Object.keys(allGroups).includes(groupId);
+
+if (isAlreadyIn) {
+    console.log("ℹ️ Already a member of this group. Skipping join.");
+} else {
+    try {
+        await conn.groupAcceptInvite(joinlink);
+        console.log("✅ Successfully joined the group!");
+    } catch (err) {
+        console.error('❌ Failed to join group:', err);
+    }
+}
 
 
 	
