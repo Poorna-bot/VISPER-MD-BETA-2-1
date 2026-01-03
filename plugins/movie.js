@@ -795,9 +795,7 @@ async (conn, m, mek, { from, q, isMe, reply }) => {
 
 
 
-const axios = require('axios');
-const { cmd, commands } = require('../command');
-const config = require('../config');
+
 
 cmd({
     pattern: "cine",
@@ -885,9 +883,7 @@ async (conn, m, mek, {
 
 
 
-const axios = require('axios');
-const { cmd, commands } = require('../command');
-const config = require('../config');
+
 
 cmd({
     pattern: "cinedl2",
