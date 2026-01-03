@@ -6441,10 +6441,10 @@ cmd({
 
         const message = {
             document: { url: directDownloadUrl },
-            caption: `🎬 *${title}*\n\n[*${quality || 'N/A'}*]\n\n> *VISPER MD Films 🎥*`,
+            caption: `🎬 *${title}*\n\n*\`${quality}\`*\n\n> *VISPER MD Films 🎥*`,
             mimetype: "video/mp4",
             jpegThumbnail: await (await fetch(imglink.trim())).buffer(),
-            fileName: `🎬${fileName}.mp4`,
+            fileName: `🎬 ${fileName}.mp4`,
         };
 
         await conn.sendMessage(config.JID || from, message);
