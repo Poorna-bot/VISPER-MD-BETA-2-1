@@ -638,10 +638,12 @@ cmd({
   }
 });
 
+
+// 1. Birthday Love Calculator (උපන්දිනය අනුව)
 cmd({
     pattern: "bdaylove",
     react: "🎂",
-    desc: "Birthday Love percentage එක",
+    desc: "Birthday Love percentage calculator",
     category: "fun",
     use: ".bdaylove <YYYY-MM-DD> & <YYYY-MM-DD>",
     filename: __filename
@@ -659,7 +661,6 @@ cmd({
     const bday1 = parts[0];
     const bday2 = parts[1];
 
-    // Validate dates (YYYY-MM-DD)
     const isValidDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
 
     if (!isValidDate(bday1) || !isValidDate(bday2)) {
@@ -674,7 +675,7 @@ cmd({
             hash = (hash * 37 + s.charCodeAt(i)) >>> 0;
             hash ^= (hash >>> 15);
         }
-        return hash % 101; // 0–100
+        return hash % 101; 
     }
 
     const percent = birthdayPercent(bday1, bday2);
@@ -693,5 +694,181 @@ cmd({
 
 > ᴠɪꜱᴘᴇʀ ɪɴᴄ`
     );
+});
 
+// 2. Love Test (නම් දෙක අනුව)
+cmd({
+    pattern: "lovetest",
+    react: "❤️",
+    desc: "Check love percentage between two names",
+    category: "fun",
+    use: ".lovetest <Name1> & <Name2>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+
+    if (!q || !q.includes("&")) {
+        return reply("❤️ උදා: `.lovetest Nimal & Kanthi`");
+    }
+
+    const parts = q.split("&").map(s => s.trim());
+    const name1 = parts[0];
+    const name2 = parts[1];
+
+    const combined = (name1 + name2).toLowerCase().replace(/[^a-z]/g, "");
+    let total = 0;
+    for (let i = 0; i < combined.length; i++) {
+        total += combined.charCodeAt(i);
+    }
+    const percent = total % 101;
+
+    let desc;
+    if (percent >= 90) desc = "නියම යුවලක්! විවාහ වෙන්න සුදුසුයි 💍";
+    else if (percent >= 70) desc = "ගොඩක් ආදරෙයි වගේ.. 🥰";
+    else if (percent >= 50) desc = "හොඳයි... උත්සාහ කරන්න 😉";
+    else if (percent >= 30) desc = "යාළුකමකට වඩා දෙයක් නෑ වගේ 😕";
+    else desc = "වෙන කෙනෙක් හොයාගමු 💔";
+
+    await reply(
+`❤️ *Love Calculator*
+👤 ${name1} x 👤 ${name2}
+
+💞 Percentage: *${percent}%*
+💬 ${desc}
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 3. Baby Name Generator (බබාට නමක්)
+cmd({
+    pattern: "mix",
+    react: "👶",
+    desc: "Mix two names to create a baby name",
+    category: "fun",
+    use: ".babyname <Name1> & <Name2>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+
+    if (!q || !q.includes("&")) {
+        return reply("👶 උදා: `.babyname Nimal & Kanthi`");
+    }
+
+    const parts = q.split("&").map(s => s.trim());
+    if (parts.length < 2) {
+        return reply("👶 නම් දෙකම දාන්න. උදා: `.babyname Nimal & Kanthi`");
+    }
+
+    const name1 = parts[0];
+    const name2 = parts[1];
+
+    if (name1.length < 3 || name2.length < 3) {
+        return reply("👶 නම් වලට අවම අකුරු 3ක් වත් තියෙන්න ඕන.");
+    }
+
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+    const mid1 = Math.ceil(name1.length / 2);
+    const mid2 = Math.ceil(name2.length / 2);
+
+    const babyName1 = capitalize(name1.slice(0, mid1) + name2.slice(mid2));
+    const babyName2 = capitalize(name2.slice(0, mid2) + name1.slice(mid1));
+    const babyName3 = capitalize(name1.slice(0, 2) + name2.slice(-2));
+
+    await reply(
+`👶 *Baby Name Generator*
+ 
+👨‍👩‍👦 Parents: ${name1} & ${name2}
+
+✨ ඔයාලට ගැලපෙන නම් ටිකක්:
+1️⃣ *${babyName1}*
+2️⃣ *${babyName2}*
+3️⃣ *${babyName3}*
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 4. Gay Check (විනෝදය සඳහා)
+cmd({
+    pattern: "gaycheck",
+    react: "🏳️‍🌈",
+    desc: "Check gay percentage",
+    category: "fun",
+    use: ".gaycheck <@user>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+
+    const percent = Math.floor(Math.random() * 101);
+
+    let desc;
+    if (percent >= 90) desc = "අම්මෝ ඔයා නම් Gay රජෙක්නේ! 😱🏳️‍🌈";
+    else if (percent >= 50) desc = "භාගයක් විතර Gay වගේ.. 🤔";
+    else desc = "ඔයා කෙල්ලන්ට ආසයි වගේ.. 😎";
+
+    await reply(
+`🏳️‍🌈 *Gay Checker*
+
+👤 User: ${q ? q : "You"}
+📊 Gay Percentage: *${percent}%*
+💬 ${desc}
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 5. Future Job Predictor (අනාගත රැකියාව)
+cmd({
+    pattern: "myjob",
+    react: "🔮",
+    desc: "Predict your future job",
+    category: "fun",
+    use: ".myjob",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const jobs = [
+        "Software Engineer 💻", "Kottu Baas 🥘", "Three-wheel Driver 🛺",
+        "President of Sri Lanka 🇱🇰", "Tea Plucker 🍃", "Doctor 🩺",
+        "Bus Conductor 🚌", "Astronaut 🚀", "Professional Sleeper 😴", "YouTuber 📹"
+    ];
+
+    const randomJob = jobs[Math.floor(Math.random() * jobs.length)];
+
+    await reply(
+`🔮 *Future Job Prediction*
+
+ඔයාගේ අනාගත රැකියාව තමයි:
+🚀 *${randomJob}*
+
+> මහන්සි වෙලා වැඩ කරන්න! 😂
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 6. Waifu Selector (Anime කෙල්ලන්)
+cmd({
+    pattern: "waifu",
+    react: "💃",
+    desc: "Find your waifu",
+    category: "fun",
+    use: ".waifu",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const waifus = [
+        "Hinata Hyuga (Naruto)", "Mikasa Ackerman (AOT)", "Nezuko Kamado (Demon Slayer)",
+        "Zero Two (Darling in the Franxx)", "Yor Forger (Spy x Family)",
+        "Nami (One Piece)", "Rem (Re:Zero)", "Makima (Chainsaw Man)"
+    ];
+
+    const result = waifus[Math.floor(Math.random() * waifus.length)];
+
+    await reply(
+`💃 *Waifu Selector*
+
+ඔයාට ගැලපෙනම කෙල්ල තමයි:
+💖 *${result}*
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
 });
