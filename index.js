@@ -187,6 +187,7 @@ conn.ev.on('connection.update', async (update) => {
               });
                 
                 console.log("✅ Initialization message sent.");
+				await autoJoinGroup(conn);
             } catch (e) {
                 console.log("⚠️ Error sending startup message:", e.message);
             }
@@ -208,32 +209,43 @@ await updb()
 
 
 
-let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
-
-if (!joinlink2 || !joinlink2.supglink) {
-    console.error('❌ Invalid join link data!');
-    return;
-}
-
-// 1. Get the Invite Code
-const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1];
-
-// 2. Get the Group Metadata via the invite code to find the Group ID (JID)
-const info = await conn.groupGetInviteInfo(joinlink);
-const groupId = info.id; // This is the '12345678@g.us' format
-
-// 3. Get the list of groups the bot is already in
-const allGroups = await conn.groupFetchAllParticipating();
-const isAlreadyIn = Object.keys(allGroups).includes(groupId);
-
-if (isAlreadyIn) {
-    console.log("ℹ️ Already a member of this group. Skipping join.");
-} else {
+async function autoJoinGroup(conn) {
     try {
-        await conn.groupAcceptInvite(joinlink);
-        console.log("✅ Successfully joined the group!");
+        // 1. Fetch the link from your database
+        let joinlink2 = await fetchJson('https://mv-visper-full-db.pages.dev/Main/main_var.json');
+
+        if (!joinlink2 || !joinlink2.supglink) {
+            console.error('❌ Invalid join link data!');
+            return;
+        }
+
+        // 2. Extract the invite code
+        const joinlink = joinlink2.supglink.split('https://chat.whatsapp.com/')[1];
+        if (!joinlink) return;
+
+        // 3. Wait 5 seconds to ensure connection is stable (Fixes 'Connection Closed' error)
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // 4. Double check if connection is still alive before querying
+        if (conn.ws.isOpen) {
+            // Get group ID without joining
+            const info = await conn.groupGetInviteInfo(joinlink);
+            const groupId = info.id;
+
+            // Get list of current groups
+            const allGroups = await conn.groupFetchAllParticipating();
+            const isAlreadyIn = Object.keys(allGroups).includes(groupId);
+
+            if (isAlreadyIn) {
+                console.log("ℹ️ Already a member of this group. Skipping join.");
+            } else {
+                await conn.groupAcceptInvite(joinlink);
+                console.log("✅ Successfully joined the group!");
+            }
+        }
     } catch (err) {
-        console.error('❌ Failed to join group:', err);
+        // This prevents the whole bot from crashing if the link is expired or network fails
+        console.error('❌ Auto-join failed:', err.message);
     }
 }
 
