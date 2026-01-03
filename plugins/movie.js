@@ -1012,7 +1012,11 @@ cmd({
 
                 // Thumbnail handle
                 const botimg = dat;
-
+ const botimgResponse = await fetch(botimg);
+        const botimgBuffer = await botimgResponse.buffer();
+        
+        // Resize image to 200x200 before sending
+        const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
                 await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
                 const up_mg = await conn.sendMessage(from, { text: '*Uploading your movie..⬆️*' });
 
@@ -1020,7 +1024,7 @@ cmd({
                 await conn.sendMessage(config.JID || from, { 
                     document: { url: downloadUrl },
                     caption: `*🎬 Name :* *${datas}*\n\n*\`${qa}\`*\n\n${config.NAME}`,
-					jpegThumbnail: await (await fetch(botimg)).buffer(),
+					jpegThumbnail: resizedBotImg,
                     mimetype: "video/mp4",
                     fileName: `🎬 ${datas}.mp4`
                 });
