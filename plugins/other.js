@@ -576,3 +576,122 @@ cmd({
     }
 });
 
+cmd({
+  pattern: "love",
+  react: "💘",
+  desc: "Love percentage එක",
+  category: "fun",
+  use: ".love <name1> & <name2>",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+  try {
+    if (!q) return reply("💘 උදා: `.love Amal & Kavindi`");
+    if (!q.includes("&")) return reply("💘 නම දෙකක් & වෙතින් වෙන් කර දෙන්න. උදා: `.love Amal & Kavindi`");
+
+    const parts = q.split("&").map(s => s.trim()).filter(Boolean);
+    if (parts.length < 2) return reply("💘 දෙවැනි නම දාන්න. උදා: `.love Amal & Kavindi`");
+
+    const name1 = parts[0];
+    const name2 = parts.slice(1).join(" & "); // in case user uses extra &'s keep rest as 2nd name
+
+    // --- Option A: Deterministic percent (same names => same percent) ---
+    function deterministicPercent(a, b) {
+      const s = (a + "|" + b).toLowerCase().replace(/\s+/g, "");
+      // simple hash: char codes sum with some mixing, then mod 101
+      let hash = 0;
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 31 + s.charCodeAt(i)) >>> 0; // unsigned
+        hash = (hash ^ (hash >>> 16));
+      }
+      return hash % 101; // 0..100
+    }
+
+    // --- Option B: Random percent ---
+    function randomPercent() {
+      return Math.floor(Math.random() * 101); // 0..100
+    }
+
+    // Choose mode: "deterministic" or "random"
+    const MODE = "deterministic"; // change to "random" if you prefer
+
+    const percent = MODE === "random"
+      ? randomPercent()
+      : deterministicPercent(name1, name2);
+
+    // A little fun message flair based on percent
+    let emoji = "🤍";
+    if (percent >= 85) emoji = "💖";
+    else if (percent >= 65) emoji = "💘";
+    else if (percent >= 40) emoji = "🙂";
+    else if (percent >= 20) emoji = "😅";
+    else emoji = "💔";
+
+    const replyText =
+      `💞 ${name1} ❤️ ${name2}\n` +
+      `🔢 Love Compatibility: *${percent}%* ${emoji}\n\n` +
+      `> ᴠɪꜱᴘᴇʀ ɪɴᴄ`;
+
+    await reply(replyText);
+  } catch (err) {
+    console.error(err);
+    await reply("අවස්ථාවක් තිබුනා — නැවත උත්සාහ කරන්න.");
+  }
+});
+
+cmd({
+    pattern: "bdaylove",
+    react: "🎂",
+    desc: "Birthday Love percentage එක",
+    category: "fun",
+    use: ".bdaylove <YYYY-MM-DD> & <YYYY-MM-DD>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+
+    if (!q || !q.includes("&")) {
+        return reply("🎂 උදා: `.bdaylove 2002-05-11 & 2004-10-28`");
+    }
+
+    const parts = q.split("&").map(s => s.trim());
+    if (parts.length < 2) {
+        return reply("🎂 උපන්දිනය දෙකම දාන්න. උදා: `.bdaylove 2002-05-11 & 2004-10-28`");
+    }
+
+    const bday1 = parts[0];
+    const bday2 = parts[1];
+
+    // Validate dates (YYYY-MM-DD)
+    const isValidDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
+
+    if (!isValidDate(bday1) || !isValidDate(bday2)) {
+        return reply("🎂 දින වලට වසර-මාසය-දිනය (YYYY-MM-DD) format එක භාවිතා කරන්න.");
+    }
+
+    // Deterministic percent based on birthdays
+    function birthdayPercent(a, b) {
+        const s = (a + "|" + b).replace(/-/g, "");
+        let hash = 0;
+        for (let i = 0; i < s.length; i++) {
+            hash = (hash * 37 + s.charCodeAt(i)) >>> 0;
+            hash ^= (hash >>> 15);
+        }
+        return hash % 101; // 0–100
+    }
+
+    const percent = birthdayPercent(bday1, bday2);
+
+    let emoji = "🤍";
+    if (percent >= 85) emoji = "💖";
+    else if (percent >= 65) emoji = "💘";
+    else if (percent >= 40) emoji = "😊";
+    else if (percent >= 20) emoji = "😅";
+    else emoji = "💔";
+
+    await reply(
+`🎂 Birthday Match
+📅 ${bday1} ❤️ ${bday2}
+💞 Compatibility: *${percent}%* ${emoji}
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+
+});
