@@ -638,7 +638,7 @@ rows.push(
         dlLinks.map((v) => {
             rows.push({
                 buttonId: prefix + `cdl ${v.directLinkUrl}±${movie.title}±${datas}±${v.quality}`,
-                buttonText: { displayText: `📥 ${v.quality} (${v.size})` },
+                buttonText: { displayText: `${v.quality} (${v.size})` },
                 type: 1
             });
         });
@@ -795,375 +795,250 @@ async (conn, m, mek, { from, q, isMe, reply }) => {
 
 
 
+const axios = require('axios');
+const { cmd, commands } = require('../command');
+const config = require('../config');
+
 cmd({
-  pattern: "cine",	
-  react: '🔎',
-  category: "movie",
-  alias: ["cz"],
-  desc: "cinesubz.co movie search",
-  use: ".cine 2025",
-  filename: __filename
+    pattern: "cine",
+    react: '🔎',
+    category: "movie",
+    alias: ["cz"],
+    desc: "cinesubz.co movie search",
+    use: ".cine 2025",
+    filename: __filename
 },
 async (conn, m, mek, {
-  from, q, prefix, isPre, isSudo, isOwner, isMe, reply
+    from, q, prefix, isPre, isSudo, isOwner, isMe, reply
 }) => {
-  try {
-    const pr = (await axios.get('https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/master.json')).data;
-    const isFree = pr.mvfree === "true";
+    try {
+        // Premium check
+        const pr = (await axios.get('https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/master.json')).data;
+        const isFree = pr.mvfree === "true";
 
-    // Premium check
-    if (!isFree && !isMe && !isPre) {
-      await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-      return await conn.sendMessage(from, {
-        text: "*`You are not a premium user⚠️`*\n\n" +
-              "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
-              "_Price : 200 LKR ✔️_\n\n" +
-              "*👨‍💻Contact us : 0778500326 , 0722617699*"
-      }, { quoted: mek });
-    }
-
-    // Block check
-    if (config.MV_BLOCK === "true" && !isMe && !isSudo && !isOwner) {
-      await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-      return await conn.sendMessage(from, {
-        text: "*This command currently only works for the Bot owner. To disable it for others, use the .settings command 👨‍🔧.*"
-      }, { quoted: mek });
-    }
-
-    if (!q) return await reply('*Please give me a movie name 🎬*');
-
-    const url = await cinesubz_tv(q);
-
-    if (!url || !url.data || url.data.length === 0) {
-      await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-      return await conn.sendMessage(from, { text: '*No results found ❌*' }, { quoted: mek });
-    }
-
-   var srh = [];  
-for (var i = 0; i < url.data.length; i++) {
-srh.push({
-title: (url.data[i].title || "No result")
-    .replace("Sinhala Subtitles | සිංහල උපසිරැසි සමඟ", "")
-    .replace("Sinhala Subtitle | සිංහල උපසිරැසි සමඟ", ""),
-
-description: '',
-rowId: prefix + 'cinedl2 ' + url.data[i].link
-});
-}
-
-const sections = [{
-title: "cinesubz.co results",
-rows: srh
-}	  
-]
-const listMessage = {
-text: `_*CINESUBZ MOVIE SEARCH RESULTS 🎬*_
-
-*\`Input :\`* ${q}`,
-footer: config.FOOTER,
-title: 'cinesubz.co results',
-buttonText: '*Reply Below Number 🔢*',
-sections
-}
-
-
-    const caption = `_*CINESUBZ.CO MOVIE SEARCH RESULTS 🎬*_ 
-
-*\`💃🏻Input :\`* ${q}`;
-
-    // ✅ Button mode toggle
-    const rowss = url.data.map((v, i) => {
-    // Clean size and quality text by removing common tags
-    const cleanText = `${url.data[i].title}`
-      .replace(/WEBDL|WEB DL|BluRay HD|BluRay SD|BluRay FHD|Telegram BluRay SD|Telegram BluRay HD|Direct BluRay SD|Direct BluRay HD|Direct BluRay FHD|FHD|HD|SD|Telegram BluRay FHD/gi, "")
-      .trim() || "No info";
-
-    return {
-      title: cleanText,
-      id: prefix + `cinedl2 ${url.data[i].link}` // Make sure your handler understands this format
-    };
-  });
-
-  // Compose the listButtons object
-  const listButtons = {
-    title: "Choose a Movie :)",
-    sections: [
-      {
-        title: "Available Links",
-        rows: rowss
-      }
-    ]
-  };
-
-	
-if (config.BUTTON === "true") {
-      await conn.sendMessage(from, {
-    image: { url: config.LOGO },
-    caption: caption,
-    footer: config.FOOTER,
-    buttons: [
-
-	    
-      {
-        buttonId: "download_list",
-        buttonText: { displayText: "🎥 Select Option" },
-        type: 4,
-        nativeFlowInfo: {
-          name: "single_select",
-          paramsJson: JSON.stringify(listButtons)
+        if (!isFree && !isMe && !isPre) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, {
+                text: "*`You are not a premium user⚠️`*\n\n" +
+                      "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
+                      "_Price : 200 LKR ✔️_\n\n" +
+                      "*👨‍💻Contact us : 0778500326 , 0722617699*"
+            }, { quoted: mek });
         }
-      }
-	    
-    ],
-    headerType: 1,
-    viewOnce: true
-  }, { quoted: mek });
-    } else {
-      await conn.listMessage(from, listMessage,mek)
-    }
 
-  } catch (e) {
-    console.log(e);
-    await conn.sendMessage(from, { text: '🚩 *Error !!*' }, { quoted: mek });
-  }
+        // Block check
+        if (config.MV_BLOCK === "true" && !isMe && !isSudo && !isOwner) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, {
+                text: "*This command currently only works for the Bot owner.*"
+            }, { quoted: mek });
+        }
+
+        if (!q) return await reply('*Please give me a movie name 🎬*');
+
+        // Fetching Data from API
+        const apiUrl = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-search?q=${encodeURIComponent(q)}&apikey=82406ca340409d44`;
+        const response = await axios.get(apiUrl);
+        const result = response.data;
+
+        if (!result.status || !result.data || result.data.length === 0) {
+            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
+            return await conn.sendMessage(from, { text: '*No results found ❌*' }, { quoted: mek });
+        }
+
+        let srh = [];
+        result.data.forEach((movie) => {
+            // Clean title
+            const cleanTitle = movie.title
+                .replace("Sinhala Subtitles | සිංහල උපසිරැසි සමඟ", "")
+                .replace("Sinhala Subtitle | සිංහල උපසිරැසි සමඟ", "")
+                .trim();
+
+            srh.push({
+                title: cleanTitle,
+                description: `Quality: ${movie.quality} | Rating: ${movie.rating}`,
+                rowId: `${prefix}cinedl2 ${movie.link}`
+            });
+        });
+
+        const sections = [{
+            title: "Cinesubz.lk Search Results",
+            rows: srh
+        }];
+
+        const listMessage = {
+            text: `_*CINESUBZ MOVIE SEARCH RESULTS 🎬*_\n\n*\`Input :\`* ${q}\n\n*Select a movie from the list below to download.*`,
+            footer: config.FOOTER,
+            title: 'Cinesubz Movie Downloader',
+            buttonText: 'Click here to view',
+            sections
+        };
+
+        // Sending the list
+        await conn.listMessage(from, listMessage, mek);
+
+    } catch (e) {
+        console.log(e);
+        await conn.sendMessage(from, { text: '🚩 *Error occurred while fetching data!*' }, { quoted: mek });
+    }
 });
 
 
 
+const axios = require('axios');
+const { cmd, commands } = require('../command');
+const config = require('../config');
 
 cmd({
-    pattern: "cinedl2",	
+    pattern: "cinedl2",
     react: '🎥',
-     desc: "moive downloader",
+    desc: "movie downloader info",
     filename: __filename
 },
 async (conn, m, mek, { from, q, isMe, prefix, reply }) => {
-try{
-if (!q || !q.includes('https://cinesubz.co/movies/')) {
-    console.log('Invalid input:', q);
-    return await reply('*❗ This is a TV series, please use .tv command.*');
-}
+    try {
+        if (!q) return await reply('*Please provide a link!*');
 
-let sadass = await fetchJson(`https://visper-md-ap-is.vercel.app/movie/cine/info?q=${q}`)
-const sadas = sadass.result;
-	console.log(cinesubz_info)
-let msg = `*🍿 𝗧ɪᴛʟᴇ ➮* *_${sadas.data.title  || 'N/A'}_*
+        // ලින්ක් එක encode කර API එකට යැවීම
+        const apiUrl = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-info?url=${encodeURIComponent(q)}&apikey=82406ca340409d44`;
+        
+        const res = await axios.get(apiUrl);
+        const sadas = res.data;
 
-*📅 𝗥ᴇʟᴇꜱᴇᴅ ᴅᴀᴛᴇ ➮* _${sadas.data.date  || 'N/A'}_
-*🌎 𝗖ᴏᴜɴᴛʀʏ ➮* _${sadas.data.country  || 'N/A'}_
-*💃 𝗥ᴀᴛɪɴɢ ➮* _${sadas.data.imdb  || 'N/A'}_
-*⏰ 𝗥ᴜɴᴛɪᴍᴇ ➮* _${sadas.data.runtime  || 'N/A'}_
-*💁 𝗦ᴜʙᴛɪᴛʟᴇ ʙʏ ➮* _${sadas.data.subtitle_author  || 'N/A'}_
-*🎭 𝗚ᴇɴᴀʀᴇꜱ ➮* ${sadas.data.genres.join(', ')  || 'N/A'}
-`
-
-if (sadas.length < 1) return await conn.sendMessage(from, { text: 'erro !' }, { quoted: mek } )
-
-var rows = [];  
-
-rows.push(
-    { buttonId: prefix + 'ctdetails2 ' + q, buttonText: { displayText: 'Details Card\n' }, type: 1 }
-    
-);
-
-	
-  sadas.dl_links.map((v) => {
-	rows.push({
-        buttonId: prefix + `nadeendl ${sadas.data.image}±${v.link}±${sadas.data.title}
-	
-	*\`[ ${v.quality} ]\`*`,
-        buttonText: { 
-    displayText: `${v.size}  (${v.quality} )`
-        .replace("WEBDL", "")
-	     .replace("WEB DL", "")
-        .replace("BluRay HD", "") 
-	.replace("BluRay SD", "") 
-	.replace("BluRay FHD", "") 
-	.replace("Telegram BluRay SD", "") 
-	.replace("Telegram BluRay HD", "") 
-		.replace("Direct BluRay SD", "") 
-		.replace("Direct BluRay HD", "") 
-		.replace("Direct BluRay FHD", "") 
-		.replace("FHD", "") 
-		.replace("HD", "") 
-		.replace("SD", "") 
-		.replace("Telegram BluRay FHD", "") 
-		
-},
-        type: 1
-          }
-		 
-		 
-		 );
-        })
-
-
-
-  
-const buttonMessage = {
- 
-image: {url: sadas.data.image.replace(/-\d+x\d+(?=\.jpg)/, '')},	
-  caption: msg,
-  footer: config.FOOTER,
-  buttons: rows,
-  headerType: 4
-}
-
-
-
-const rowss = sadas.dl_links.map((v, i) => {
-    // Clean size and quality text by removing common tags
-    const cleanText = `${v.size} (${v.quality})`
-      .replace(/WEBDL|WEB DL|BluRay HD|BluRay SD|BluRay FHD|Telegram BluRay SD|Telegram BluRay HD|Direct BluRay SD|Direct BluRay HD|Direct BluRay FHD|FHD|HD|SD|Telegram BluRay FHD/gi, "")
-      .trim() || "No info";
-
-    return {
-      title: cleanText,
-      id: prefix + `nadeendl ${sadas.data.image}±${v.link}±${sadas.data.title}
-	
-	*\`[ ${v.quality} ]\`*` // Make sure your handler understands this format
-    };
-  });
-
-  // Compose the listButtons object
-  const listButtons = {
-    title: "🎬 Choose a download link:",
-    sections: [
-      {
-        title: "Available Links",
-        rows: rowss
-      }
-    ]
-  };
-
-	
-if (config.BUTTON === "true") {
-      await conn.sendMessage(from, {
-    image: { url: sadas.data.image.replace(/-\d+x\d+(?=\.jpg)/, '') },
-    caption: msg,
-    footer: config.FOOTER,
-    buttons: [
-{
-            buttonId: prefix + 'ctdetails ' + q,
-            buttonText: { displayText: "Details Send" },
-            type: 1
-        },
-	    
-      {
-        buttonId: "download_list",
-        buttonText: { displayText: "🎥 Select Option" },
-        type: 4,
-        nativeFlowInfo: {
-          name: "single_select",
-          paramsJson: JSON.stringify(listButtons)
+        if (!sadas.status || !sadas.data) {
+            return await conn.sendMessage(from, { text: '🚩 *Error fetching movie details!*' }, { quoted: mek });
         }
-      }
-	    
-    ],
-    headerType: 1,
-    viewOnce: true
-  }, { quoted: mek });
-    } else {
-      return await conn.buttonMessage(from, buttonMessage, mek)
-    }
-} catch (e) {
-    console.log(e)
-  await conn.sendMessage(from, { text: '🚩 *Error !!*' }, { quoted: mek } )
+
+        const movie = sadas.data;
+
+        // Message Format එක (ඔබ ඉල්ලූ පරිදි)
+        // සටහන: මෙම API එකෙන් දැනට ලැබෙන්නේ title සහ size පමණක් බැවින් අනෙක්වා default අගයන් ලෙස තබා ඇත.
+        let msg = `*🍿 𝗧ɪᴛʟᴇ ➮* *_${movie.title || 'N/A'}_*
+
+*📅 𝗥ᴇʟᴇꜱᴇᴅ ᴅᴀᴛᴇ ➮* _${movie.date || 'N/A'}_
+*🌎 𝗖ᴏᴜɴᴛʀʏ ➮* _${movie.country || 'N/A'}_
+*💃 𝗥ᴀᴛɪɴɢ ➮* _${movie.imdb || 'N/A'}_
+*⏰ 𝗥ᴜɴᴛɪᴍᴇ ➮* _${movie.runtime || 'N/A'}_
+*⚖️ 𝗦ɪᴢᴇ ➮* _${movie.size || 'N/A'}_
+*💁 𝗦ᴜʙᴛɪᴛʟᴇ ʙʏ ➮* _CineSubz_
+*🎭 𝗚ᴇɴᴀʀᴇꜱ ➮* _Movie_`
+
+        let rows = [];
+
+       // Download Links බොත්තම් ලෙස සැකසීම
+if (movie.downloads && movie.downloads.length > 0) {
+    movie.downloads.forEach((dl) => {
+        // JSON එකේ dl.name නැති නිසා quality සහ size එක බොත්තම සඳහා භාවිතා කරමු
+        // අවශ්ය නම් siteName එකට static අගයක් දිය හැක (උදා: "DOWNLOAD")
+        
+        rows.push({
+            buttonId: `${prefix}nadeendl ${dl.link}±${movie.title}±${movie.image}±${dl.quality}`, 
+            buttonText: { 
+                displayText: `${dl.quality} - ${dl.size}` 
+            },
+            type: 1
+        });
+    });
 }
-})
+
+        // පින්තූරය සහිත බොත්තම් පණිවිඩය
+        const buttonMessage = {
+            image: { url: movie.image.replace(/-\d+x\d+(?=\.jpg)/, '') }, // API එකේ පින්තූරය නැති නිසා default logo එක
+            caption: msg,
+            footer: config.FOOTER,
+            buttons: rows,
+            headerType: 4
+        };
+
+        return await conn.buttonMessage(from, buttonMessage, mek);
+
+    } catch (e) {
+        console.log(e);
+        await conn.sendMessage(from, { text: '🚩 *Error !!*' }, { quoted: mek });
+    }
+});
 
 
-let isUploadingg = false; // Track upload status
-
-
-
-const cinesubzDownBase = "https://drive2.cscloud12.online";
-const apilinkcine = "https://cinesubz-store.vercel.app/";
+// Variable එක මුලින්ම define කර ගන්න (Global scope එකේ තිබීම වඩාත් සුදුසුයි)
+let isUploadingg = false; 
 
 cmd({
     pattern: "nadeendl",
     react: "⬇️",
     dontAddCommandList: true,
     filename: __filename
-}, async (conn, mek, m, { from, q, isMe, reply }) => {
-    if (!q) {
-        return await reply('*Please provide a direct URL!*');
-    }
+}, async (conn, mek, m, { from, q, isMe, reply, fetchJson }) => {
+    try {
+        if (!q) {
+            return await reply('*Please provide a direct URL!*');
+        }
 
-    if (isUploadingg) {
-        return await conn.sendMessage(from, { 
-            text: '*A movie is already being uploaded. Please wait a while before uploading another one.* ⏳', 
-            quoted: mek 
-        });
-    }
+        if (isUploadingg) {
+            return await conn.sendMessage(from, { 
+                text: '*A movie is already being uploaded. Please wait a while before uploading another one.* ⏳', 
+                quoted: mek 
+            });
+        }
 
-    let attempts = 0;
-    const maxRetries = 5;
-    isUploadingg = true;
+        let attempts = 0;
+        const maxRetries = 5;
+        isUploadingg = true;
+
+        const [datae, datas, dat, qa] = q.split("±");
+        if (!datae || !datas) {
+            isUploadingg = false;
+            return await reply('*Invalid URL format!*');
+        }
 
         while (attempts < maxRetries) {
-        try {
-            const [datae, datas, dat] = q.split("±");
-            let url = datas;
-            let mediaUrl = url;
-            let downloadUrls = null;
+            try {
+                // Movie Details Fetching
+                const finaldl = await fetchJson(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${datae}&apikey=cd0d0874c61d4a80`);
+                
+                if (!finaldl || !finaldl.data) throw new Error("API Response Error");
 
-            // 🔹 Check only if it's from Cinesubz
-            if (url.includes(cinesubzDownBase)) {
-                const check = await fetchJson(`${apilinkcine}api/get/?url=${encodeURIComponent(url)}`);
+                const megaUrl = finaldl.data.download.find(link => link.name === "mega")?.url;
+                if (!megaUrl) throw new Error("Mega URL not found");
 
-                if (check?.isUploaded === false) {
-                    // New upload case
-                    const urlApi = `https://manojapi.infinityapi.org/api/v1/cinesubz-download?url=${encodeURIComponent(url)}&apiKey=855c2451-6bd1-4729-9d7b-8aac40de95af`; 
-                    const getDownloadUrls = await axios.get(urlApi);
+                // Mega DL Fetching
+                const apiUrl = `https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(megaUrl)}`;
+                const response = await axios.get(apiUrl);
+                const downloadUrl = response.data.download;
 
-                    downloadUrls = getDownloadUrls.data.results;
+                if (!downloadUrl) throw new Error("Download link not found from Mega API");
 
-                    // Save in DB
-                    const payload = { url, downloadUrls, uploader: "VISPER-MD" }; 
-                    await axios.post(`${apilinkcine}api/save`, payload);
+                // Thumbnail handle
+                const botimg = dat;
 
-                } else {
-                    // Already uploaded
-                    downloadUrls = check.downloadUrls;
+                await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
+                const up_mg = await conn.sendMessage(from, { text: '*Uploading your movie..⬆️*' });
+
+                // Send document
+                await conn.sendMessage(config.JID || from, { 
+                    document: { url: downloadUrl },
+                    caption: `*🎬 Name :* *${datas}*\n\n*\`${qa}\`*\n\n${config.NAME}`,
+                    mimetype: "video/mp4",
+                    fileName: `🎬 ${datas}.mp4`
+                });
+
+                await conn.sendMessage(from, { delete: up_mg.key });
+                await conn.sendMessage(from, { react: { text: '☑️', key: mek.key } });
+
+                break; // ✅ Success - loop එකෙන් ඉවත් වේ.
+
+            } catch (error) {
+                attempts++;
+                console.error(`Attempt ${attempts} failed:`, error.message);
+                if (attempts >= maxRetries) {
+                    await conn.sendMessage(from, { text: "*Error fetching at this moment. Please try again later ❗*" }, { quoted: mek });
                 }
-
-                // Pick best available link
-                mediaUrl =
-                     downloadUrls.direct ||
-                    downloadUrls?.gdrive2 
             }
-
-            // 🔹 Thumbnail
-            const botimg = datae;
-
-            await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
-            const up_mg = await conn.sendMessage(from, { text: '*Uploading your movie..⬆️*' });
-
-            // 🔹 Send document
-            await conn.sendMessage(config.JID || from, { 
-                document: { url: mediaUrl },
-                caption: `🍕 ${dat}\n\n\`${config.NAME}\`\n\n> *•ɴᴀᴅᴇᴇɴ-ᴍᴅ•*`,
-                mimetype: "video/mp4",
-                jpegThumbnail: await (await fetch(botimg)).buffer(),
-                fileName: `📽️VISPER📽️${dat}.mp4`
-            });
-
-            await conn.sendMessage(from, { delete: up_mg.key });
-            await conn.sendMessage(from, { react: { text: '☑️', key: mek.key } });
-
-            break; // ✅ success → exit loop
-        } catch (error) {
-            attempts++;
-            console.error(`Attempt ${attempts}: Error fetching or sending:`, error);
         }
+    } catch (e) {
+        console.log(e);
+    } finally {
+        isUploadingg = false; // වැඩේ ඉවර වුනත් නැතත් flag එක reset කරන්න
     }
-
-    if (attempts >= maxRetries) {
-        await conn.sendMessage(from, { text: "*Error fetching at this moment. Please try again later ❗*" }, { quoted: mek });
-    }
-
-    isUploadingg = false;
 });
 
 
