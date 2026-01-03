@@ -989,7 +989,7 @@ cmd({
         while (attempts < maxRetries) {
             try {
                 // Movie Details Fetching
-               const finaldl = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${datae}&apikey=cd0d0874c61d4a80`);
+               const finaldl = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${datae}&apikey=82406ca340409d44`);
 
     // 1. Check if the response and the nested 'data' property exist
     if (!finaldl?.data?.data?.download) {
