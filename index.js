@@ -810,6 +810,8 @@ const SUDO = config.SUDO; // eg: [ '94778500326@s.whatsapp.net', '19455837791050
 const isSudo = SUDO.filter(jid => jid.endsWith('@lid') === sender.endsWith('@lid'))
                    .includes(sender);
 
+if ( isCmd && isBanvisper && isMe ) return		
+
 //=========================================BAN GROUPS=====================================================
 
 if ( isCmd && isBanGrp && !isMe && !isSudo) return
