@@ -147,10 +147,10 @@ async (conn, mek, m, { from, q, reply }) => {
             mp3: "audio/mpeg"
         };
         const mimetype = mimeTypes[ext] || "application/octet-stream";
-
+const dllink = fileData.download
         // 5. File එක යැවීම (fileName එකට mimetype එක එකතු කර ඇත)
         await conn.sendMessage(from, { 
-            document: { url: fileData.download }, // URL එක document විදිහට යැවීම
+            document: { url: dllink }, // URL එක document විදිහට යැවීම
             caption: `*Name:* ${fileData.name}\n*Type:* ${mimetype}\n*Size:* ${fileSizeMB}MB\n\n${config.FOOTER}`,
             mimetype: mimetype,
             fileName: `${fileData.name} (${mimetype})` // මෙතනින් නමේ අගට ටයිප් එක වැටේ
