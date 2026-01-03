@@ -1973,52 +1973,58 @@ async (conn, mek, m, { from, q, reply }) => {
     const url = q.trim();
     if (!/^https?:\/\//i.test(url)) return reply('❗ Invalid URL.');
 
-    // React ⬇️
     await conn.sendMessage(from, { react: { text: '⬇️', key: mek.key } });
+
+    // Pixeldrain wage sites walata Browser ekakin ena widiyata Headers danna ona
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+    };
 
     let mime = 'application/octet-stream';
     let fileName = 'file.bin';
     let fileSizeMB = 0;
 
     try {
-      const res = await axios.head(url, { timeout: 5000 });
+      const res = await axios.head(url, { headers, timeout: 10000 });
 
-      // Get MIME type
       mime = res.headers['content-type'] || mime;
-
-      // Get size & check limit (2GB)
       const size = parseInt(res.headers['content-length'] || 0);
       fileSizeMB = Math.floor(size / (1024 * 1024));
-      if (size > 2 * 1024 * 1024 * 1024) {
+
+      if (size > 2000 * 1024 * 1024) { // 2GB Limit
         return reply(`❗ File is too large: ~${fileSizeMB}MB. Max allowed is 2GB.`);
       }
 
-      // Extract filename
       const disposition = res.headers['content-disposition'];
       if (disposition && disposition.includes('filename=')) {
-        const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (match && match[1]) fileName = match[1].replace(/['"]/g, '');
+        fileName = disposition.split('filename=')[1].split(';')[0].replace(/['"]/g, '');
       } else {
-        const base = path.basename(new URL(url).pathname);
-        if (base) fileName = base;
+        fileName = path.basename(new URL(url).pathname) || 'file.bin';
       }
 
     } catch (err) {
-      const base = path.basename(new URL(url).pathname);
-      if (base) fileName = base;
+      fileName = path.basename(new URL(url).pathname) || 'file.bin';
     }
 
-    // Send file directly via URL (WhatsApp handles download)
+    // MEKA THAMAI FIX EKA: Axios use karala stream ekak widiyata file eka gannawa
+    const response = await axios({
+        method: 'get',
+        url: url,
+        headers: headers,
+        responseType: 'stream'
+    });
+
     await conn.sendMessage(from, {
-      document: { url },
+      document: response.data, // Kelinma stream eka pass karanawa
       fileName,
       mimetype: mime,
-      caption: `✅ File Ready\n\n📄 *Name:* ${fileName}\n📦 *Size:* ${fileSizeMB}MB\n🔗 *Link:* ${url}`
-    });
+      caption: `✅ *File Ready*\n\n📄 *Name:* ${fileName}\n📦 *Size:* ${fileSizeMB}MB`
+    }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
 
   } catch (e) {
+    console.log(e);
     reply(`❗ Error: ${e.message}`);
   }
 });
