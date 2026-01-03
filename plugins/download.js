@@ -106,6 +106,8 @@ l(e)
 
 
 
+const axios = require('axios');
+
 cmd({
     pattern: "mega",
     react: "🍟",
@@ -119,21 +121,31 @@ async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return await reply("*⚠️ Please provide a Mega.nz URL!*");
 
-        const file = File.fromURL(q);
-        await file.loadAttributes();
+        // 1. API එකට URL එක යැවීමට පෙර encodeURIComponent කරනවා (මේක අනිවාර්යයි)
+        const apiUrl = `https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(q)}`;
 
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        if (file.size > config.MAX_SIZE * 1024 * 1024) {
-            return reply(`⚠️ *File too large!*\n\n📁 *Size:* ${fileSizeMB} MB\n📌 *Limit:* ${config.MAX_SIZE} MB`);
+        // 2. ඔයාගේ API එකට Request එකක් යවා දත්ත ලබා ගැනීම
+        const response = await axios.get(apiUrl);
+        const data = response.data;
+
+        if (!data.status) {
+            return await reply(`❌ *API Error:* ${data.error}`);
         }
 
-        await reply(`⏳ *Downloading from Mega.nz...*\n\n📄 *File:* ${file.name}\n📁 *Size:* ${fileSizeMB} MB`);
+        const fileData = data.result;
+        const fileSizeMB = (fileData.size / (1024 * 1024)).toFixed(2);
 
-        // Convert Mega stream → Buffer
-        const data = await streamToBuffer(file.download());
+  
 
-        // Detect mimetype
-        const ext = file.name.split('.').pop().toLowerCase();
+        await reply(`⏳ *Downloading from Mega.nz...*\n\n📄 *File:* ${fileData.name}\n📁 *Size:* ${fileSizeMB} MB`);
+
+        // 3. Direct Link එක පාවිච්චි කරලා File එක Buffer එකක් විදිහට ගන්නවා
+        const fileBuffer = await axios.get(fileData.download, {
+            responseType: 'arraybuffer'
+        });
+
+        // 4. Mimetype එක හොයාගැනීම
+        const ext = fileData.name.split('.').pop().toLowerCase();
         const mimeTypes = {
             mp4: "video/mp4",
             pdf: "application/pdf",
@@ -141,26 +153,24 @@ async (conn, mek, m, { from, q, reply }) => {
             rar: "application/x-rar-compressed",
             '7z': "application/x-7z-compressed",
             jpg: "image/jpeg",
-            jpeg: "image/jpeg",
             png: "image/png",
-            mp3: "audio/mpeg",
-            txt: "text/plain"
+            mp3: "audio/mpeg"
         };
         const mimetype = mimeTypes[ext] || "application/octet-stream";
 
-        // Send as document (buffer)
+        // 5. File එක යැවීම
         await conn.sendMessage(from, { 
-            document: data,
-			caption: `${config.FOOTER}`,
+            document: Buffer.from(fileBuffer.data), 
+            caption: `*Name:* ${fileData.name}\n*Size:* ${fileSizeMB}MB\n\n${config.FOOTER}`,
             mimetype,
-            fileName: file.name
+            fileName: fileData.name
         }, { quoted: mek });
 
         await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
 
     } catch (e) {
         console.error(e);
-        await reply(`❌ *Error occurred:* ${e.message || e}`);
+        await reply(`❌ *Error occurred:* ${e.response?.data?.error || e.message}`);
     }
 });
 
