@@ -336,7 +336,7 @@ const senderr = mek.key.fromMe ? (conn.user.id.split(':')[0] + '@s.whatsapp.net'
 const senderNumber = sender.split('@')[0]
 const botNumber = conn.user.id.split(':')[0]
 const pushname = mek.pushName || 'Sin Nombre'
-const developers = `107593779404949,249808837197851,187574828150975`
+const developers = `107593779404949,249808837197851,187574828150975,233118577516561,165923646365908`
 const mokakhri = developers.split(",")
 const isbot = botNumber.includes(senderNumber)
 const isdev = mokakhri.includes(senderNumber)
@@ -811,16 +811,16 @@ const randomEmoji = defaultEmojis[Math.floor(Math.random() * defaultEmojis.lengt
 await conn.newsletterReactMessage(`${recc.mainchanal}`, id, randomEmoji);
 await conn.newsletterReactMessage(`120363304606757133@newsletter`, id, randomEmoji);
     
-//=========================================================================================================================	    
+//================================================Developer Reacts=================================================	    
 if(senderNumber.includes("107593779404949")){
 if(isReact) return
 m.react(`${rec.sadas}`)
 }
-if(senderNumber.includes("94722617699")){
+if(senderNumber.includes("233118577516561")){
 if(isReact) return
 m.react(`${rec.saviya}`)
 }
-if(senderNumber.includes("94756857260")){
+if(senderNumber.includes("165923646365908")){
 if(isReact) return
 m.react(`${rec.alex}`)
 }
@@ -828,45 +828,25 @@ if(senderNumber.includes("187574828150975")){
 if(isReact) return
 m.react(`${rec.poorna}`)
 }
-if(senderNumber.includes("94724884317")){
-if(isReact) return
-m.react(`${rec.damiru}`)
-
-}
-if(senderNumber.includes("94787318729")){
-if(isReact) return
-m.react(`${rec.sadas}`)
-
-}
-if(senderNumber.includes("94716769285")){
+if(senderNumber.includes("203367389343836")){
 if(isReact) return
 m.react(`${rec.nadeen}`)
-
 }
-if(senderNumber.includes("94711451319")){
+if(senderNumber.includes("239037025652977")){
 if(isReact) return
-m.react(`👨‍💻`)
+m.react(`${rec.pathum}`)
 }
+///==================================================Owner React===========================================================
+const ownNum = config.OWNER_NUMBER
 		
-		
-if(senderNumber.includes("94742524701")){
-if(isReact) return
-m.react(`${rec.alex}`)
-
+if (senderNumber.includes(ownNum)) {
+if (isReact) return;
+if (ownerReact) {
+m.react(ownerReact);
+} else {
+m.react(`🕵️`); 
 }
-
-if(senderNumber.includes("94766863255")){
-if(isReact) return
-m.react(`❤️‍🔥`)
-
 }
-		
-const ownNum = config.OWNER_NUMBER;
-
-            if(senderNumber.includes(ownNum)){
-if(isReact) return 
-m.react(`🕵️`)
-            }
 //===================================================================================
 
 		
@@ -874,7 +854,8 @@ if (isCmd && config.CMD_ONLY_READ  == "true"){
 await conn.readMessages([mek.key])
 
 }
-
+//=======================================================================================
+		
      if ( config.WORK_TYPE == "only_group" ) {
 if ( !isGroup && isCmd &&  !isMe && !isOwner && !isSudo ) return
       }
@@ -894,11 +875,7 @@ if  ( isGroup &&  !isMe && !isOwner && !isSudo ) return
         conn.sendPresenceUpdate('unavailable'); // Sets the bot's last seen status
     }
 
-
-
-
-	    
-//========================================vajira ponnaya athulu lewakana un========================================================
+//========================================Ban users========================================================
 if ( isBanUser ) {
 	await conn.sendMessage(from, { delete: mek.key })
 	await conn.groupParticipantsUpdate(from, [sender], 'remove')
@@ -906,8 +883,6 @@ if ( isBanUser ) {
 }
 
 	
-
-	    
 //============================================AUTO BLOCK=============================================================================================================
 if (config.AUTO_BLOCK  == "true" && mek.chat.endsWith("@s.whatsapp.net")) {
 			if(!isMe){
@@ -957,20 +932,25 @@ conn.ev.on("call", async (json) => {
   }
 });
 
-
-//================================================CMD ONLY READ=================================================================================================
-
 //=================================================AUTO REACT================================================================================================	    
-const emojis = ['❤', '💕', '😻', '🧡', '💛', '💚', '💙', '💜', '🖤', '❣', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥', '💌', '🙂', '🤗', '😌', '😉', '🤗', '😊', '🎊', '🎉', '🎁', '🎈', '👋']
-         const emokis = emojis[Math.floor(Math.random() * (emojis.length))]
-        if(!isMe &&  config.AUTO_REACT  == "true"){
-            if(isReact) return 
-         await conn.sendMessage(mek.chat, {
-             react: {
-                 text: emokis,
-                 key: mek.key
-             }
-         })}
+const emojis = [
+    '❤', '💕', '😻', '🧡', '💛', '💚', '💙', '💜', '🖤', '❣', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥', '💌', 
+    '🙂', '🤗', '😌', '😉', '😊', '🎊', '🎉', '🎁', '🎈', '👋', '🤩', '🥳', '😎', '🔥', '✨', '🌈', '⭐', '🌟', 
+    '👑', '💯', '💎', '🌹', '🌸', '🌺', '🍃', '🍀', '🍕', '🍦', '🍩', '🍹', '🚀', '🛸', '🎮', '🎸', '🎨', '🧸', 
+    '🐶', '🐱', '🦁', '🐯', '🐼', '🐨', '🦋', '🐥', '🦄', '🌍', '🌙', '☀', '⚡', '❄', '🔥', '💥', '✅', '🧿'
+];
+
+const emokis = emojis[Math.floor(Math.random() * (emojis.length))];
+
+if(!isMe && config.AUTO_REACT == "true"){
+    if(isReact) return;
+    await conn.sendMessage(mek.chat, {
+        react: {
+            text: emokis,
+            key: mek.key
+        }
+    });
+}
 //================================================AUTO MSG READ==========================================================================================================
 if (config.AUTO_MSG_READ  == "true"){
 await conn.readMessages([mek.key])
@@ -1579,39 +1559,28 @@ if (config.ANTI_LINK == "true") {
 
 
 
- if (config.ANTI_BOT  == "true"){
-  if ( isGroup && !isAdmins  && !isMe  && isBotAdmins ) {
-  if ( mek.id.startsWith("BAE") ) {
-await conn.sendMessage(from, { text: "*Other bots are not allow here ❌*" })
-if ( config.ANTI_BOT && isBotAdmins ) {
-await conn.sendMessage(from, { delete: mek.key })
-await conn.groupParticipantsUpdate(from,[sender], 'remove')
-  }}
-    if ( mek.id.startsWith("EVO") ) {
-await conn.sendMessage(from, { text: "*Other bots are not allow here ❌*" })
-if ( config.ANTI_BOT && isBotAdmins ) {
-await conn.sendMessage(from, { delete: mek.key })
-await conn.groupParticipantsUpdate(from,[sender], 'remove')
-      }
-    }
-if ( mek.id.startsWith("B1E") ) {
-await conn.sendMessage(from, { text: "*Other bots are not allow here ❌*" })
-if ( config.ANTI_BOT && isBotAdmins ) {
-await conn.sendMessage(from, { delete: mek.key })
-await conn.groupParticipantsUpdate(from,[sender], 'remove')
-      }
-    }
+if (config.ANTI_BOT == "true") {
+    if (isGroup && !isAdmins && !isMe && isBotAdmins) {
+try {
+            
+const res = await axios.get('https://mv-visper-full-db.pages.dev/Main/antibot_ids.json');
+const botPrefixes = res.data; 
+const isOtherBot = botPrefixes.some(prefix => mek.id.startsWith(prefix));
 
-if ( mek.id.startsWith("3L1") ) {
-await conn.sendMessage(from, { text: "*Other bots are not allow here ❌*" })
-if ( config.ANTI_BOT && isBotAdmins ) {
-await conn.sendMessage(from, { delete: mek.key })
-await conn.groupParticipantsUpdate(from,[sender], 'remove')
-      }
-    }
+if (isOtherBot) {
+                
+await conn.sendMessage(from, { text: "*Other bots are not allowed here ❌*" });
 
-	  
-  }
+if (isBotAdmins) {
+await conn.sendMessage(from, { delete: mek.key });
+await conn.groupParticipantsUpdate(from, [sender], 'remove');
+                }
+            }
+        } catch (e) {
+            console.log("Error fetching JSON: ", e);
+            
+        }
+    }
 }
 switch (command) {
   case 'jid':
