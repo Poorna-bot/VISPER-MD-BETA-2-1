@@ -6423,7 +6423,7 @@ cmd({
         }
 
         isUploadingggggggggg = true; 
-       // await conn.sendMessage(from, { text: '*Fetching direct link from Mega...* ⏳', quoted: mek });
+      await conn.sendMessage(from, { text: '*Fetching direct link from Mega...* ⏳', quoted: mek });
 
         // මෙතැනදී encodeURIComponent භාවිතා කර API Request එක යැවීම
         const apiUrl = `https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(megaUrl.trim())}`;
