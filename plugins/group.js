@@ -536,24 +536,36 @@ cmd({
     category: "group",
     react: "🚫",
     filename: __filename
-}, async (conn, mek, m, { from, isOwner, isAdmins, isBotAdmins, isMe, groupMetadata, reply }) => {
+}, async (conn, mek, m, { from, isGroup, isAdmins, isBotAdmins, isMe, groupMetadata, reply }) => {
     try {
-        if (!isOwner && !isMe && !isAdmins && !isBotAdmins) return reply("⚠️ *Permission Denied*\nThis command is restricted.");
+        // සමූහයක් (Group) තුළ පමණක් ක්‍රියා කිරීමට
+        if (!isGroup) return reply("⚠️ This command can only be used in groups.");
+        
+        // Admin හෝ Bot Owner (isMe) ද යන්න පරීක්ෂා කිරීම
+        if (!isAdmins && !isMe) return reply("⚠️ *Permission Denied: Only Admins or the Bot Owner can use this.*");
+
+        // Bot හට Admin බලතල තිබේදැයි පරීක්ෂා කිරීම (අත්‍යවශ්‍යයි)
+        if (!isBotAdmins) return reply("⚠️ *I need Admin privileges to remove members.*");
 
         const creator = groupMetadata.owner;
-        const botId = conn.user.id;
+        const botId = conn.user.id.split(':')[0] + '@s.whatsapp.net'; // Bot ID එක නිවැරදිව සකස් කිරීම
+        
         const participants = groupMetadata.participants
             .filter(p => p.id !== creator && p.id !== botId)
             .map(p => p.id);
 
+        if (participants.length === 0) return reply("ℹ️ No members to remove.");
+
+        // සාමාජිකයන් ඉවත් කිරීම
         await conn.groupParticipantsUpdate(from, participants, "remove");
-        reply("🚫 *All members have been removed from the group (except bot and creator).*");
+        
+        reply("🚫 *Successfully removed all members (except bot and creator).*");
+
     } catch (e) {
         console.error(e);
-        reply(`❌ Error: ${e}`);
+        reply(`❌ Error: ${e.message}`);
     }
 });
-
 // --- TAG ALL ADMINS ---
 cmd({
     pattern: "tagadmin",
