@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://git.io/typing-svg">
     <img
-      src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=900&color=8B8000&center=true&vCenter=true&width=650&lines=VISPER+MD+WHATSAPP+USER+BOT;VERSION+6.0.0+%E2%80%A2+MATRIX+EDITION;POWERED+BY+VISPER+INC;DARK+CYBER+AUTOMATION+SYSTEM"
+      src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=52&pause=900&color=8B8000&center=true&vCenter=true&width=650&lines=VISPER+MD+WHATSAPP+USER+BOT;VERSION+6.0.0+%E2%80%A2+AI+EDITION;POWERED+BY+VISPER+INC;DARK+CYBER+AUTOMATION+SYSTEM"
       alt="VISPER-MD Matrix Typing"
     />
   </a>
@@ -63,7 +63,7 @@
 
 ---
 
-## 👩‍💻 VISPER INC - VisperInc *[Since 2026]*
+## 👩‍💻 VISPER INC - Visper Inc *[Since 2026]*
 
 | <a href="https://github.com/Saviyakolla"><img src="https://raw.githubusercontent.com/Saviyakolla/Voice_Database/main/Random-Images_DB/img/myedit.png" width=80 height=80></a> | <a href="https://github.com/themisadas"><img src="https://raw.githubusercontent.com/Saviyakolla/Voice_Database/main/Random-Images_DB/img/image.png" width=80 height=80></a> | <a href="https://github.com/Nadeenpoorna-app"><img src="https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/footer/2036.jpg" width=80 height=80></a> | <a href="https://github.com/ALEX-ID-LK"><img src="https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/footer/alex.jpg" width=80 height=80></a> |
 |---|---|---|---|
