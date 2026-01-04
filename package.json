@@ -1,6 +1,7 @@
 {
   "name": "MOVIE-VISPER-MD",
   "version": "4.0.0",
+  "type": "module",
   "scripts": {
     "start": "pm2 start index.js --deep-monitoring --attach --name Movie-Visper",
     "stop": "pm2 stop Movie-Visper",
