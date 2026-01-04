@@ -1,9 +1,12 @@
-import config from '../config.js';
+import { fileURLToPath } from 'url';
+import { dirname, join, extname } from 'path';
+import fs from 'fs';
 import os from 'os';
 import axios from 'axios';
 import mimeTypes from 'mime-types';
-import fs from 'fs';
-import path from 'path';
+import config from '../config.js';
+
+// Baileys package eka import kirima
 import pkg from '@whiskeysockets/baileys';
 const { 
     generateForwardMessageContent, 
@@ -12,6 +15,7 @@ const {
     generateWAMessageFromContent 
 } = pkg;
 
+// Local files import kirima (Aniwarayenma .js extension eka danna)
 import { cmd, commands } from '../command.js';
 import { 
     getBuffer, 
@@ -25,9 +29,11 @@ import {
     fetchJson 
 } from '../lib/functions.js';
 
-const GEMINI_API_KEY = "AIzaSyB8xtFPtvG_N9S7bBZZOSfTyZW8rQyJQkY";
-import { URL } from 'url';
+// URL saha path setup eka
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
+const GEMINI_API_KEY = "AIzaSyB8xtFPtvG_N9S7bBZZOSfTyZW8rQyJQkY";
 
 cmd({
     pattern: "gemini",
