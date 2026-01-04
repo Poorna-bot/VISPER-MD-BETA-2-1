@@ -5,7 +5,7 @@ import {
     DisconnectReason,
     getDevice,
     fetchLatestBaileysVersion,
-    jidNormalizedUser,
+    //jidNormalizedUser,
     getContentType,
     Browsers,
     // makeInMemoryStore, <--- Me peliya methanin ain karanna
