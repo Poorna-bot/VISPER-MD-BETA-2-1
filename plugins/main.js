@@ -22,7 +22,7 @@ const fkontak = {
     message: {
         contactMessage: {
             displayName: "©VISPER-MD",
-            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;Meta AI;;;\nFN:Meta AI\nitem1.TEL;waid=94711451319:94711451319\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
+            vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;Meta AI;;;\nFN:Meta AI\nitem1.TEL;waid=94778138202:94778138202\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
             sendEphemeral: false,
         },
     },
