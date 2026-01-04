@@ -59,7 +59,12 @@ const l = console.log;
 const ownerNumber = [`${config.OWNER_NUMBER}`];
 //===================SESSION======.===========kj===h========
 
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// දැන් ඔබේ පැරණි කේතය ක්‍රියා කරයි
 const authFolder = path.join(__dirname, 'auth_info_baileys');
 const df = path.join(authFolder, 'creds.json');
 
