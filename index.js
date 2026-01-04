@@ -39,7 +39,7 @@ import { sms, downloadMediaMessage } from './lib/msg.js';
 import axios from 'axios';
 import { File } from 'megajs';
 import path from 'path';
-import FileType from 'file-type';
+import { fileTypeFromFile } from 'file-type';
 import express from 'express';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
