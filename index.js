@@ -209,13 +209,13 @@ conn.ev.on('connection.update', async (update) => {
 
 fs.readdirSync("./plugins/").forEach((plugin) => {
   if (path.extname(plugin).toLowerCase() == ".js") {
-      await import("./plugins/" + plugin);
+      import("./plugins/" + plugin);
   }
 });
 
 
-await connectdb()
-await updb()		
+connectdb()
+updb()		
  console.log(`✅ VISPER-MD SUCCESSFULLY CONNECTED!`);
 
 
