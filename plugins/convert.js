@@ -296,63 +296,91 @@ async(conn, mek, m, { from, l, quoted, prefix, body, isCmd, command, args, q, is
     }
 })
 
+// --- IMAGE SUB-COMMAND ---
 cmd({
-  pattern: "rbgi",
-  dontAddCommandList: true,
-  filename: __filename
+    pattern: "rbgi",
+    dontAddCommandList: true,
+    filename: __filename
 },
-async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
-try{
-await conn.sendMessage(from, { react: { text: '📥', key: mek.key }})
-await conn.sendMessage(from, { image: fs.readFileSync(q), caption: config.FOOTER }, { quoted: mek })
-await conn.sendMessage(from, { react: { text: '✔', key: mek.key }})
-} catch (e) {
-  reply('*ERROR !!*')
-l(e)
-}
+async(conn, mek, m, { from, q, reply }) => {
+    try {
+        if (!q) return reply("File reference missing.");
+        const filePath = path.join(__dirname, q); // Combine directory with filename
+        
+        await conn.sendMessage(from, { react: { text: '📥', key: mek.key }});
+        await conn.sendMessage(from, { 
+            image: fs.readFileSync(filePath), 
+            caption: config.FOOTER 
+        }, { quoted: mek });
+        
+        // Optional: Delete file after sending to save space
+        // fs.unlinkSync(filePath); 
+        
+        await conn.sendMessage(from, { react: { text: '✔', key: mek.key }});
+    } catch (e) {
+        console.error(e);
+        reply('*FILE NOT FOUND OR EXPIRED*');
+    }
 })
 
-
+// --- STICKER SUB-COMMAND ---
 cmd({
-  pattern: "rebgs",
-  dontAddCommandList: true,
-  filename: __filename
+    pattern: "rebgs",
+    dontAddCommandList: true,
+    filename: __filename
 },
-async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
-try{
-await conn.sendMessage(from, { react: { text: '📥', key: mek.key }})
-let sticker = new Sticker(q, {
-  pack: pushname, // The pack name
-  author: 'ɴᴀᴅᴇᴇɴ ᴘᴏᴏʀɴᴀ•', // The author name
-  type: q.includes("--crop" || '-c') ? StickerTypes.CROPPED : StickerTypes.FULL,
-  categories: ["🤩", "🎉"], // The sticker category
-  id: "12345", // The sticker id
-  quality: 75, // The quality of the output file
-  background: "transparent", // The sticker background color (only for full stickers)
-});
-const buffer = await sticker.toBuffer();
-await conn.sendMessage(from, {sticker: buffer}, {quoted: mek })
-await conn.sendMessage(from, { react: { text: '✔', key: mek.key }})
-} catch (e) {
-  reply('*ERROR !!*')
-l(e)
-}
+async(conn, mek, m, { from, q, pushname, reply }) => {
+    try {
+        const filePath = path.join(__dirname, q);
+        await conn.sendMessage(from, { react: { text: '📥', key: mek.key }});
+        
+        let sticker = new Sticker(filePath, {
+            pack: pushname,
+            author: 'ɴᴀᴅᴇᴇɴ ᴘᴏᴏʀɴᴀ•',
+            type: StickerTypes.FULL,
+            quality: 75,
+        });
+        
+        const buffer = await sticker.toBuffer();
+        await conn.sendMessage(from, { sticker: buffer }, { quoted: mek });
+        await conn.sendMessage(from, { react: { text: '✔', key: mek.key }});
+    } catch (e) {
+        reply('*ERROR BUILDING STICKER*');
+    }
 })
 
 cmd({
-  pattern: "rbgd",
-  dontAddCommandList: true,
-  filename: __filename
+    pattern: "rbgd",
+    dontAddCommandList: true,
+    filename: __filename
 },
-async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
-try{
-await conn.sendMessage(from, { react: { text: '📥', key: mek.key }})
-await conn.sendMessage(from, { document: fs.readFileSync(q), mimetype: 'image/x-png', fileName: 'Removebg' + '.png',caption: config.FOOTER  }, { quoted: mek })
-await conn.sendMessage(from, { react: { text: '✔', key: mek.key }})
-} catch (e) {
-  reply('*ERROR !!*')
-l(e)
-}
+async(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+    try {
+        // q contains the filename (e.g., '7682.png')
+        if (!q) return reply("File reference missing.");
+
+        // Join the directory path to locate the file correctly
+        const filePath = path.join(__dirname, q);
+
+        await conn.sendMessage(from, { react: { text: '📥', key: mek.key } });
+
+        // Send as a Document (PNG format to keep transparency)
+        await conn.sendMessage(from, { 
+            document: fs.readFileSync(filePath), 
+            mimetype: 'image/png', 
+            fileName: 'Visper-Rmbg.png',
+            caption: config.FOOTER 
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✔', key: mek.key } });
+
+        // Optional: Delete the file after sending to keep the server clean
+        // fs.unlinkSync(filePath);
+
+    } catch (e) {
+        l(e);
+        reply('*ERROR: File could not be found or processed.*');
+    }
 })
 
 //removebg
