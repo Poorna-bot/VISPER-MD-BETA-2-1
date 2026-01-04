@@ -90,13 +90,13 @@ const number = conn.user.id.split(':')[0].replace(/@s\.whatsapp\.net$/, '');
         caption: `*Hello ${pushname} 👋❕*  
 I am alive now 🎈\n✨ Thank you for choosing \`Visper-MD\` — your trusted WhatsApp Multi-Device Bot! ✨
 *┌────────────────────┐*
-*├ \`⏰ 𝐔𝐩𝐭𝐢𝐦𝐞\`* : ${rtime}
+*├ \`⏳ 𝐔𝐩𝐭𝐢𝐦𝐞\`* : ${rtime}
 *├ \`🚨 𝐇𝐨𝐬𝐭\`* : ${hostname}
-*├ \`🎡 𝐏𝐫𝐞𝐟𝐢𝐱\`* : ${config.PREFIX}
+*├ \`🍭 𝐏𝐫𝐞𝐟𝐢𝐱\`* : ${config.PREFIX}
 *├ \`👤 𝐔𝐬𝐞𝐫\`* : ${pushname}
-*├ \`⛵ 𝐑𝐚𝐦 𝐮𝐬𝐬𝐚𝐠𝐞\`* : ${ramUsage}
+*├ \`🗃️ 𝐑𝐚𝐦 𝐮𝐬𝐬𝐚𝐠𝐞\`* : ${ramUsage}
 *├ \`⚖ 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫𝐬\`* : *VISPER ᴵᴺᶜ*
-*├ \`🧬 𝐕𝐞𝐫𝐬𝐢𝐨𝐧\`* : 4.0.0
+*├ \`🧬 𝐕𝐞𝐫𝐬𝐢𝐨𝐧\`* : 6.0.0
 *└────────────────────┘*
 *┌────────────────────┐*
 *├ 👨‍💻ᴠɪꜱᴘᴇʀ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ* :
@@ -330,7 +330,7 @@ I am *VISPER-MD* Userbot🎈
 *├ \`⛵ 𝐑𝐚𝐦 𝐮𝐬𝐬𝐚𝐠𝐞\`* : ${ramUsage}
 *├ \`👨🏻‍💻 𝐎𝐰𝐧𝐞𝐫\`* : ${number}
 *├ \`⚖ 𝐃𝐞𝐯𝐞𝐥𝐨𝐩𝐞𝐫𝐬\`* : *VISPER ᴵᴺᶜ*
-*├ \`🧬 𝐕𝐞𝐫𝐬𝐢𝐨𝐧\`* : 4.0.0
+*├ \`🧬 𝐕𝐞𝐫𝐬𝐢𝐨𝐧\`* : 6.0.0
 *├ \`💼 𝐖𝐨𝐫𝐤 𝐓𝐲𝐩𝐞\`* : ${config.WORK_TYPE}
 *└────────────────────┘*
 
