@@ -432,12 +432,6 @@ cmd({ on: "body" },
         const isMsgImage = m.type === 'imageMessage' || m.imageMessage;
         const isQuotedImage = m.quoted && (m.quoted.type === 'imageMessage' || m.quoted.imageMessage);
 
-      let isTrue = (
-            m?.mentionUser?.includes(botNumber2) || 
-            (m.quoted && m.quoted.sender === botNumber2)
-        );
-
-        if (!isTrue) return;
 
         if (!isNaN(m.body) || isCmd) return;
 
