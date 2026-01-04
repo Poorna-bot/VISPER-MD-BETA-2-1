@@ -28,15 +28,24 @@ async (conn, mek, m, {
         const response = await axios.get("https://mv-visper-full-db.pages.dev/Main/main_var.json");
         const details = response.data;
 
-        const result = `*🧿VISPER-MD🧿*
+        const result = `*╭───────────────╮*
+*│    🧿  VISPER-MD  🧿*
+*╰───────────────╯*
 
-\`🔖 Github:\` ${details.reponame}
+*👋 Hello There! Welcome to Visper-MD.*
 
-\`🪀 Whatsapp Channel:\` ${details.chlink}
+*📁 Project Details:*
+*────────────────*
+*🔖 Github:* ${details.reponame}
 
-\`⚕️ Support Group:\` ${details.supglink}
+*🪀 Official Channel:* ${details.chlink}
 
-\`📡 Version:\` *4.0.0*`;
+*⚕️ Support Community:* ${details.supglink}
+
+*📡 Bot Version:* *6.0.0 (Latest)*
+
+*────────────────*
+*© 2026 VISPER-MD PROJECT*`;
 
         reply(result);
     } catch (e) {
