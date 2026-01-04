@@ -67,7 +67,7 @@ import {
 } from "./lib/database.js";
 
 // Events import (CommonJS file එකක් නම් require එක තියන්න පුළුවන්, නැත්නම් import කරන්න)
-import { events } from './command.js';
+import events from './command.js';
 
 const ownerNumber = [`${config.OWNER_NUMBER}`];
 //===================SESSION======.===========kj===h========
