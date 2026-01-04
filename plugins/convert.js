@@ -384,6 +384,12 @@ async(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, s
 })
 
 //removebg
+const ffmpegPath = require('ffmpeg-static');
+
+
+// ffmpeg පද්ධතියට හඳුන්වා දීම මෙතැනදී සිදු වේ
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 cmd({
     pattern: "attp",
     react: "✨",
@@ -394,13 +400,19 @@ cmd({
     filename: __filename
 },
 async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
-try{
-if(!q) return await reply(imgmsg)
-let bufff = await getBuffer("https://api-fix.onrender.com/api/maker/attp?text=" + q)
-await conn.sendMessage(from, {sticker: await videoToWebp(bufff)}, {quoted: mek })
-} catch (e) {
-console.log(e)
-}
+    try {
+        if(!q) return await reply("කරුණාකර වචනයක් ඇතුළත් කරන්න (Ex: .attp Hello)")
+        
+        let bufff = await getBuffer("https://api-fix.onrender.com/api/maker/attp?text=" + encodeURIComponent(q))
+        
+        // videoToWebp function එක ඇතුළත ffmpeg භාවිතා වන නිසා ඉහත setFfmpegPath එක අනිවාර්ය වේ.
+        let stickerBuff = await videoToWebp(bufff)
+        
+        await conn.sendMessage(from, { sticker: stickerBuff }, { quoted: mek })
+    } catch (e) {
+        console.log(e)
+        reply("Error occurred while creating sticker.")
+    }
 })
 //sticker2img
 cmd(
