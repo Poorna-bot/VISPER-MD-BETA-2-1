@@ -94,11 +94,11 @@ async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, sen
 try{
   if (!q) return await  reply('*Please give me googledrive url !!*')   
 let res = await fg.GDriveDl(q.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view'))
-reply(`*♕︎ 𝘝𝘐𝘚𝘗𝘌𝘙 𝘎𝘋𝘙𝘐𝘝𝘌 𝘋𝘖𝘞𝘕𝘓𝘖𝘈𝘋𝘌𝘙* \n\n*📃 File name:*  ${res.fileName}
+reply(`*🗃️ VISPER GDRIVE DOWNLODER 🗃️* \n\n*📃 File name:*  ${res.fileName}
 *💈 File Size:* ${res.fileSize}
 *🕹️ File type:* ${res.mimetype}
 
-*•ᴠɪsᴘᴇʀ-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ* `)		
+${config.FOOTER}`)		
 conn.sendMessage(from, { document: { url: res.downloadUrl }, fileName: res.fileName, mimetype: res.mimetype, caption: res.fileName.replace('[Cinesubz.co]' , '[visper-MOVIES.]') +'\n\n> *•ᴠɪsᴘᴇʀ-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ•*'}, { quoted: mek })
 } catch (e) {
 reply('*Error !!*')
@@ -510,22 +510,23 @@ try{
 
 const mov = await fetchJson(`https://darksadasyt-tiktokdl.vercel.app/api/tiktok?q=${q}`)
 
-let caption = `*\`🪺 VISPER TIK TOK DOWNLODER 🪺\`*
+let caption = `*🪺 VISPER TIK TOK DOWNLODER 🪺*
 
 *┌──────────────────*
-*├ \`🎩 Title\` :* ${mov.title}
-*├ \`🎃 Region\` :* ${mov.regions}
-*├ \`⏰ Duration\` :* ${mov.runtime}
-*├ \`🔗 Url\` :* ${q}
+*├ 🎩 Title :* ${mov.title}
+*├ 🎃 Region :* ${mov.regions}
+*├ ⏰ Duration :* ${mov.runtime}
+*├ 🔗 Url :* ${q}
 *└──────────────────*
+${config.FOOTER}
 `
 
 
 
 const buttons = [
-  {buttonId: prefix + 'ttdl1 ' + mov.no_watermark, buttonText: {displayText: '_Video No Watermark 📼_'}, type: 1},
-  {buttonId: prefix + 'ttdl2 ' + mov.watermark, buttonText: {displayText: '_Video Watermark 📼_'}, type: 1},
-  {buttonId: prefix + 'ttdl3 ' + mov.music, buttonText: {displayText: '_Audio 🎶_'}, type: 1}
+  {buttonId: prefix + 'ttdl1 ' + mov.no_watermark, buttonText: {displayText: '*Video No Watermark 📼*'}, type: 1},
+  {buttonId: prefix + 'ttdl2 ' + mov.watermark, buttonText: {displayText: '*Video Watermark 📼*'}, type: 1},
+  {buttonId: prefix + 'ttdl3 ' + mov.music, buttonText: {displayText: '*Audio 🎶*'}, type: 1}
  
 ]
 const buttonMessage = {
@@ -712,19 +713,21 @@ cmd({
         const duration = 'Unknown'; // Not available in new API
         const title = data.title || 'Facebook video';
 
-        const caption = `\`🏮 VISPER FB DOWNLOADER 🏮\`\n\n` +
-                   `*┌──────────────────*\n` +
-                   `*├ \`🐼 Title:\`* ${title}\n` +
-                   `*├ \`⏱️ Duration:\`* ${duration}\n` +
-                   `*├ \`🔗 Url:\`* ${q}\n` +
-                   `*└──────────────────*`;
+        const caption = `*🏮 VISPER FB DOWNLOADER 🏮*
+                    *┌──────────────────*
+                    *├ 🐼 Title:* ${title}
+                    *├ ⏱️ Duration:* ${duration}
+                    *├ 🔗 Url:* ${q}
+                    *└──────────────────*
+					
+					${config.FOOTER}`;
 
         const buttons = [];
 
         if (hdUrl) {
             buttons.push({
                 buttonId: prefix + 'downfb ' + hdUrl,
-                buttonText: { displayText: 'HD Quality' },
+                buttonText: { displayText: '*HD Quality*' },
                 type: 1
             });
         }
@@ -732,7 +735,7 @@ cmd({
         if (sdUrl) {
             buttons.push({
                 buttonId: prefix + 'downfb ' + sdUrl,
-                buttonText: { displayText: 'SD Quality' },
+                buttonText: { displayText: '*SD Quality*' },
                 type: 1
             });
         }
