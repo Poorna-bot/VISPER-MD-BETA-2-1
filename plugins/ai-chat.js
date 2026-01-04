@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/genai'; /// Note: Package name check karanna, godak welawata mehemai enne
+import { GoogleGenAI } from '@google/genai'; /// Note: Package name check karanna, godak welawata mehemai enne
 import crypto from 'crypto';
 import config from '../config.js';
 import os from 'os';
