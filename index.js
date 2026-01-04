@@ -194,7 +194,7 @@ async function connectToWA() {
             try {
                 const res = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
                 const ownerdata = res.data;
-                const targetJid =  jidNormalizedUser(conn.user.id);
+                const targetJid =  conn.user.id.split(':')[0] + '@s.whatsapp.net';
 
                 const configMsg = `
 *⚙️ VISPER BOT SETTINGS ⚙️*
