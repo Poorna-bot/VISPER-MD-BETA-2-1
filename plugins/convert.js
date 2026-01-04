@@ -101,6 +101,25 @@ function toVideo(buffer, ext) {
   ], ext, 'mp4')
 }
 
+// --- Catbox Uploader Function ---
+const catboxUploader = async (filePath) => {
+    try {
+        const url = 'https://catbox.moe/user/api.php';
+        const form = new FormData();
+        form.append('reqtype', 'fileupload');
+        form.append('fileToUpload', fs.createReadStream(filePath));
+
+        const response = await axios.post(url, form, {
+            headers: { ...form.getHeaders() },
+        });
+
+        return { status: true, result: { url: response.data } };
+    } catch (e) {
+        return { status: false, error: e.message };
+    }
+};
+
+// --- Command Implementation ---
 cmd({
     pattern: "img2url",
     react: "🔗",
@@ -116,24 +135,28 @@ cmd({
                (m.quoted.type === "viewOnceMessage" && m.quoted.msg.type === "imageMessage"))
             : false;
 
-        if ((m.type === "imageMessage") || isQuotedImage) {
+        const isImage = (m.type === "imageMessage") || isQuotedImage;
+
+        if (isImage) {
             // 📌 Download buffer
             const buff = isQuotedImage ? await m.quoted.download() : await m.download();
 
-            // 📌 Detect file type
-            const type = await fileType.fromBuffer(buff);
-            if (!type) return reply("Unsupported file type.");
-
-            const filePath = `./temp_${Date.now()}.${type.ext}`;
+            // 📌 Create Temp File Path
+            // file-type awula nisa api default .jpg kiyala gamu (Catbox auto detect karanawa)
+            const filePath = path.join(__dirname, `temp_${Date.now()}.jpg`);
+            
+            // Buffer eka save karaganna
             await fs.promises.writeFile(filePath, buff);
 
-            // 📌 Upload to imgbb
+            // 📌 Upload to Catbox
             const result = await catboxUploader(filePath);
 
             // 📌 Delete temp file
-            await fs.promises.unlink(filePath).catch(() => {});
+            if (fs.existsSync(filePath)) {
+                await fs.promises.unlink(filePath).catch(() => {});
+            }
 
-            if (result.error) {
+            if (!result.status) {
                 return reply("❌ Upload failed: " + result.error);
             }
 
