@@ -15,9 +15,25 @@ import {
     proto
 } from '@whiskeysockets/baileys';
 
+
 // Import the package object to extract internal utilities
 import pkg from '@whiskeysockets/baileys';
-const { makeInMemoryStore, jidNormalizedUser } = pkg;
+const { makeInMemoryStore } = pkg;
+const jidNormalizedUser = (jid) => {
+    if (typeof pkg.jidNormalizedUser === 'function') {
+        return pkg.jidNormalizedUser(jid);
+    }
+    if (!jid) return jid;
+    if (/:\d+@/gi.test(jid)) {
+        const decoded = jid.split(':');
+        return (decoded[0] + '@' + decoded[1].split('@')[1]).replace(' ', '');
+    }
+    return jid;
+};
+
+
+
+
 import fs from 'fs';
 import P from 'pino';
 import config from './config.js'; // ESM වලදී .js අනිවාර්යයි
