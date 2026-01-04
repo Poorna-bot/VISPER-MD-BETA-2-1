@@ -45,7 +45,7 @@ import { File } from 'megajs';
 import path from 'path';
 import { fileTypeFromFile } from 'file-type';
 import express from 'express';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createRequire } from 'module';
 
 // ESM වල __dirname සහ require නැවත සකස් කර ගැනීම
