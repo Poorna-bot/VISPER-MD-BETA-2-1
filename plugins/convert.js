@@ -225,56 +225,79 @@ cmd({
     pattern: "removebg",
     react: "🔮",
     alias: ["rmbg"],
-    desc: descg,
+    desc: "Removes background from images",
     category: "convert",
     use: '.removebg <Reply to image>',
     filename: __filename
 },
-async(conn, mek, m,{from, l, quoted, prefix, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
-try{
-    
-    const isQuotedViewOnce = m.quoted ? (m.quoted.type === 'viewOnceMessage') : false
-    const isQuotedImage = m.quoted ? ((m.quoted.type === 'imageMessage') || (isQuotedViewOnce ? (m.quoted.msg.type === 'imageMessage') : false)) : false
-    const isQuotedVideo = m.quoted ? ((m.quoted.type === 'videoMessage') || (isQuotedViewOnce ? (m.quoted.msg.type === 'videoMessage') : false)) : false
-    const isQuotedSticker = m.quoted ? (m.quoted.type === 'stickerMessage') : false
-  if ((m.type === 'imageMessage') || isQuotedImage) {
-    var nameJpg = getRandom('');
-    var namePng = getRandom('');
-    let buff = isQuotedImage ? await m.quoted.download(nameJpg) : await m.download(nameJpg)
-    let type = await fileType.fromBuffer(buff);
-    await fs.promises.writeFile("./" + type.ext, buff);
-    var form = new FormData();
-    form.append("image_file", fs.createReadStream("./" + type.ext));
-    form.append("size", "auto");
+async(conn, mek, m, { from, l, quoted, prefix, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+    try {
+        const isQuotedViewOnce = m.quoted ? (m.quoted.type === 'viewOnceMessage') : false;
+        const isQuotedImage = m.quoted ? ((m.quoted.type === 'imageMessage') || (isQuotedViewOnce ? (m.quoted.msg.type === 'imageMessage') : false)) : false;
 
-    var rbg = await got.stream.post("https://api.remove.bg/v1.0/removebg", {
-      body: form,
-      headers: {
-        "X-Api-Key": 'fLYByZwbPqdyqkdKK6zcBN9H',
-      },
-    });
-await pipeline(rbg, fs.createWriteStream(namePng + ".png"));
-let dat = `*🌆 VISPER-MD BACKGROUND REMOVER 🌆*
-`
-const buttons = [
-{buttonId: prefix + 'rbgi ' + namePng + ".png", buttonText: {displayText: 'IMAGE'}, type: 1},
-{buttonId: prefix + 'rebgs ' + namePng + ".png", buttonText: {displayText: 'STICKER'}, type: 1},
-{buttonId: prefix + 'rbgd ' + namePng + ".png", buttonText: {displayText: 'DOCUMENT'}, type: 1}
-]
-    const buttonMessage = {
-        caption: dat,
-        footer: config.FOOTER,
-        buttons: buttons,
-        headerType: 1
+        if ((m.type === 'imageMessage') || isQuotedImage) {
+            // 1. Download the buffer
+            let buff = isQuotedImage ? await m.quoted.download() : await m.download();
+            
+            // 2. Detect file type (Fix for the TypeError)
+            // If using file-type v16+, use await fileType.fromBuffer(buff) 
+            // If that fails, ensure your package.json has "file-type": "^16.5.3"
+            const type = await fileType.fromBuffer(buff);
+            if (!type) return reply("Could not detect file type.");
+
+            const tempFile = `./temp_${Date.now()}.${type.ext}`;
+            const namePng = `./temp_out_${Date.now()}.png`;
+
+            // 3. Write temp file
+            await fs.promises.writeFile(tempFile, buff);
+
+            // 4. Prepare Form Data
+            var form = new FormData();
+            form.append("image_file", fs.createReadStream(tempFile));
+            form.append("size", "auto");
+
+            // 5. API Request
+            const rbg = got.stream.post("https://api.remove.bg/v1.0/removebg", {
+                body: form,
+                headers: {
+                    "X-Api-Key": 'fLYByZwbPqdyqkdKK6zcBN9H', // Note: Keep your API keys private!
+                },
+            });
+
+            await pipeline(rbg, fs.createWriteStream(namePng));
+
+            // 6. Response
+            let dat = `*🌆 VISPER MD BACKGROUND REMOVER 🌆*`;
+            
+            // Note: Ensure your 'conn.buttonMessage' function is correctly defined in your framework
+            const buttons = [
+                { buttonId: prefix + 'rbgi ' + namePng, buttonText: { displayText: '*IMAGE*' }, type: 1 },
+                { buttonId: prefix + 'rebgs ' + namePng, buttonText: { displayText: '*STICKER*' }, type: 1 },
+                { buttonId: prefix + 'rbgd ' + namePng, buttonText: { displayText: '*DOCUMENT*' }, type: 1 }
+            ];
+
+            const buttonMessage = {
+                caption: dat,
+                footer: "Powered by Visper-MD",
+                buttons: buttons,
+                headerType: 1
+            };
+
+            await conn.buttonMessage(from, buttonMessage, mek);
+
+            // Cleanup temp files
+            setTimeout(() => {
+                if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+            }, 10000);
+
+        } else {
+            return await reply("Please reply to an image!");
+        }
+    } catch (e) {
+        l(e);
+        reply("Error occurred while removing background. Make sure your API key is valid.");
     }
-    return await conn.buttonMessage(from, buttonMessage, mek)
-
-}else return await  reply(imgmsg)
-} catch (e) {
-reply(cant)
-l(e)
-}
-})
+});
 
 cmd({
   pattern: "rbgi",
