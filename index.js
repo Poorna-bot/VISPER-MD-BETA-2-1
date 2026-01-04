@@ -5,10 +5,8 @@ import {
     DisconnectReason,
     getDevice,
     fetchLatestBaileysVersion,
-    //jidNormalizedUser,
     getContentType,
     Browsers,
-    // makeInMemoryStore, <--- Me peliya methanin ain karanna
     makeCacheableSignalKeyStore,
     downloadContentFromMessage,
     generateForwardMessageContent,
@@ -17,7 +15,7 @@ import {
     proto
 } from '@whiskeysockets/baileys';
 
-// Baileys wala store eka wenama import karanna
+// Import the package object to extract internal utilities
 import pkg from '@whiskeysockets/baileys';
 const { makeInMemoryStore, jidNormalizedUser } = pkg;
 import fs from 'fs';
@@ -196,7 +194,7 @@ async function connectToWA() {
             try {
                 const res = await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json');
                 const ownerdata = res.data;
-                const targetJid = jidNormalizedUser(conn.user.id);
+                const targetJid =  jidNormalizedUser(conn.user.id);
 
                 const configMsg = `
 *⚙️ VISPER BOT SETTINGS ⚙️*
