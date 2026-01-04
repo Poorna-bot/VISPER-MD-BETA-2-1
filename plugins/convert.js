@@ -9,6 +9,7 @@ const googleTTS = require("google-tts-api");
 const { tmpdir } = require("os")
 const translate = require('translate-google-api'); 
 let { unlink } = require("fs/promises")
+const { catboxUploader } = require('../lib/catbox');
 const Crypto = require("crypto")
 const { promisify } = require("util")
 const FormData = require("form-data")
@@ -127,7 +128,7 @@ cmd({
             await fs.promises.writeFile(filePath, buff);
 
             // 📌 Upload to imgbb
-            const result = await image2url(filePath);
+            const result = await catboxUploader(filePath);
 
             // 📌 Delete temp file
             await fs.promises.unlink(filePath).catch(() => {});
