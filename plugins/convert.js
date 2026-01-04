@@ -102,7 +102,7 @@ function toVideo(buffer, ext) {
 }
 
 // --- Catbox Uploader Function ---
-const catboxUploader = async (filePath) => {
+const catboxUploaderr = async (filePath) => {
     try {
         const url = 'https://catbox.moe/user/api.php';
         const form = new FormData();
@@ -149,7 +149,7 @@ cmd({
             await fs.promises.writeFile(filePath, buff);
 
             // 📌 Upload to Catbox
-            const result = await catboxUploader(filePath);
+            const result = await catboxUploaderr(filePath);
 
             // 📌 Delete temp file
             if (fs.existsSync(filePath)) {
