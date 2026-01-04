@@ -1,16 +1,38 @@
-const { GoogleGenAI } = require('@google/genai');
-const crypto = require('crypto');
-const config = require('../config')
-const os = require('os')
-const axios = require('axios');
-const mimeTypes = require("mime-types");
-const fs = require('fs');
-const path = require('path');
-const { generateForwardMessageContent, prepareWAMessageFromContent, generateWAMessageContent, generateWAMessageFromContent } = require('@whiskeysockets/baileys');
-const { cmd, commands } = require('../command')
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson} = require('../lib/functions')
-const { URL } = require('url');
+import { GoogleGenerativeAI } from '@google/generative-ai'; // Note: Package name check karanna, godak welawata mehemai enne
+import crypto from 'crypto';
+import config from '../config.js';
+import os from 'os';
+import axios from 'axios';
+import mimeTypes from 'mime-types';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath, URL } from 'url';
 
+// Baileys imports
+import pkg from '@whiskeysockets/baileys';
+const { 
+    generateForwardMessageContent, 
+    prepareWAMessageMedia, // generateWAMessageContent venuwata godak welawata use wenne meka
+    generateWAMessageFromContent 
+} = pkg;
+
+// Local lib imports
+import { cmd, commands } from '../command.js';
+import { 
+    getBuffer, 
+    getGroupAdmins, 
+    getRandom, 
+    h2k, 
+    isUrl, 
+    Json, 
+    runtime, 
+    sleep, 
+    fetchJson 
+} from '../lib/functions.js';
+
+// __dirname manually create karaganna (ona unoth use karanna)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 const DEFAULT_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCowQzN2EDdBqx4XtgXBATRAt6z3YTF1yY";
