@@ -218,8 +218,7 @@ async function connectToWA() {
         }
     });
 
-import fs from 'fs';
-import path from 'path';
+
 import { pathToFileURL } from 'url';
 
 // Menna fix karapu code eka
