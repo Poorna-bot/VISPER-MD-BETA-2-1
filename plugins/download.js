@@ -429,19 +429,12 @@ async (conn, mek, m, { from, q, reply }) => {
         const botimgResponse = await fetch(datas);
         const botimgBuffer = await botimgResponse.buffer();
 
+        
+        // Resize image to 200x200 before sending
+        const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
         // --- Get audio download link ---
         const prog = await fetchJson(`https://yt-five-tau.vercel.app/download?q=${datae}&format=mp3&apikey=sadas2007`);
        
-
-        // --- File size check with filesizeurl ---
-        const bytes = await file_size_url(prog.result.download);
-        const sizeInMB = (bytes / (1024 * 1024)).toFixed(2);
-
-        if (sizeInMB > config.MAX_SIZE) {
-            return await reply(
-                `*⚠️ File too large!*\n\n📂 Size: ${sizeInMB} MB\n📌 Maximum allowed: ${config.MAX_SIZE} MB`
-            );
-        }
 
         // --- Send audio file ---
         await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
@@ -450,9 +443,9 @@ async (conn, mek, m, { from, q, reply }) => {
             from,
             {
                 document: { url: prog.result.download },
-                jpegThumbnail: botimgBuffer,
+                jpegThumbnail: resizedBotImg,
                 mimetype: 'audio/mpeg',
-                caption: wm || config.FOOTER,
+                caption: `*${title}*\n\n${config.FOOTER}`,
                 fileName: `${title}.mp3`
             },
             { quoted: mek }
@@ -1775,7 +1768,7 @@ let sendapk = await conn.sendMessage(from, {
     },
     mimetype: `${data.type}`,
     fileName: `${data.fileName}`,
-    caption: `${data.fileName}\n ${config.FOOTER}`
+    caption: `*${data.fileName}*\n\n ${config.FOOTER}`
 }, { quoted: mek });
 
 await conn.sendMessage(from, { react: { text: '📁', key: sendapk.key }})
