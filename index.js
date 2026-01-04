@@ -36,7 +36,7 @@ import axios from 'axios';
 import { File } from 'megajs';
 import path from 'path';
 import * as FileType from 'file-type';
-
+import events from './command.js'
 // Database functions import
 import {
     updateCMDStore,
@@ -1533,7 +1533,7 @@ await conn.sendPresenceUpdate('recording', from);
 
 	    
 //==================================plugin map================================
-import events from './command.js'
+
 const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
 if (isCmd) {
   const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName))
