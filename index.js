@@ -56,36 +56,43 @@ const port = process.env.PORT || 8000;
 //====================================
 async function connectToWA() {
 
- console.log("🗄️ Connecting to Database...");
+// 1. මුලින්ම Database සම්බන්ද කිරීම
+    console.log("🗄️ Connecting to Database...");
     await connectdb();
     await updb();
 
-    // 1. SESSION_LIST එක කමාවෙන් වෙන් කර Array එකක් සාදා ගැනීම
-    const rawSessions = config.SESSION_LIST ? config.SESSION_LIST.split(',') : [];
-    
-    // ප්‍රධාන SESSION_ID එකත් තියෙනවා නම් ඒකත් මුලට එකතු කරනවා
-    if (config.SESSION_ID) rawSessions.unshift(config.SESSION_ID);
+   const sessions = [
+    { id: config.SESSION_ID, folder: 'auth_info_baileys', name: 'Session 01' },
+    { id: config.SESSION_ID2, folder: 'auth_info_session2', name: 'Session 02' },
+    { id: config.SESSION_ID3, folder: 'auth_info_session3', name: 'Session 03' },
+    { id: config.SESSION_ID4, folder: 'auth_info_session4', name: 'Session 04' },
+    { id: config.SESSION_ID5, folder: 'auth_info_session5', name: 'Session 05' },
+    { id: config.SESSION_ID6, folder: 'auth_info_session6', name: 'Session 06' },
+    { id: config.SESSION_ID7, folder: 'auth_info_session7', name: 'Session 07' },
+    { id: config.SESSION_ID8, folder: 'auth_info_session8', name: 'Session 08' },
+    { id: config.SESSION_ID9, folder: 'auth_info_session9', name: 'Session 09' },
+    { id: config.SESSION_ID10, folder: 'auth_info_session10', name: 'Session 10' }
+];
 
-    
+    for (const session of sessions) {
+        // Session ID එක නැතිනම් සහ එය Session 1 නොවේ නම් skip කරයි
+        if (!session.id || session.id === "") {
+            if (session.name === 'Session 01') {
+                console.log("⚠️ Primary SESSION_ID is missing! Waiting for QR scan...");
+            } else {
+                console.log(`⏩ ${session.name} skipped (No Session ID).`);
+                continue;
+            }
+        }
 
-    // 2. හැම Session එකක්ම Loop එකක් හරහා Connect කිරීම
-    for (let i = 0; i < rawSessions.length; i++) {
-        const sessionId = rawSessions[i].trim();
-        if (!sessionId) continue;
-
-        const sessionName = `Session ${i + 1}`;
-        const folderName = i === 0 ? 'auth_info_baileys' : `auth_info_session_${i + 1}`;
-        const folderPath = path.join(__dirname, folderName);
-
+        const folderPath = path.join(__dirname, session.folder);
         if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
 
-        // Session Download Logic
+        // Session Download logic
         const credsFile = path.join(folderPath, 'creds.json');
-        if (!fs.existsSync(credsFile)) {
+        if (!fs.existsSync(credsFile) && session.id) {
+            const sessdata = session.id.replace("VISPER-MD&", "");
             try {
-                const sessdata = sessionId.replace("VISPER-MD&", "");
-                console.log(`📥 Downloading ${sessionName}...`);
-
                 if (sessdata.includes("#")) {
                     const filer = File.fromURL(`https://mega.nz/file/${sessdata}`);
                     const data = await new Promise((resolve, reject) => {
@@ -96,50 +103,54 @@ async function connectToWA() {
                     const response = await axios.get(`https://visper-get-sessions.vercel.app/get-session?q=${sessdata}.json`);
                     if (response.data) fs.writeFileSync(credsFile, JSON.stringify(response.data, null, 2));
                 }
+                console.log(`✅ ${session.name} downloaded successfully.`);
             } catch (e) {
-                console.log(`❌ ${sessionName} download failed:`, e.message);
-                continue; 
+                console.log(`❌ ${session.name} download failed:`, e.message);
+                if (session.name !== 'Session 01') continue; 
             }
         }
 
-        // 3. Socket එක Start කරන Function එක
-        const startSocket = async () => {
-            const { version } = await fetchLatestBaileysVersion();
-            const { state, saveCreds } = await useMultiFileAuthState(folderPath);
+        // --- Baileys Socket ආරම්භය ---
+        const { version } = await fetchLatestBaileysVersion();
+        const { state, saveCreds } = await useMultiFileAuthState(folderPath);
 
-            const conn = makeWASocket({
-                logger: P({ level: "silent" }),
-                printQRInTerminal: (i === 0), // පළමු Session එකට පමණක් QR පෙන්වයි
-                browser: ["Visper-MD", "Safari", "3.0.0"],
-                auth: {
-                    creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, P({ level: "silent" })),
-                },
-                msgRetryCounterCache,
-                version
-            });
+        const conn = makeWASocket({
+            logger: P({ level: "silent" }),
+            printQRInTerminal: (session.name === 'Session 01'), // පලමු එකට විතරක් QR
+            browser: ["Visper-MD", "Safari", "3.0.0"],
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, P({ level: "silent" })),
+            },
+            msgRetryCounterCache,
+            version
+        });
 
-            conn.ev.on('creds.update', saveCreds);
+        conn.ev.on('creds.update', saveCreds);
 
-            conn.ev.on('connection.update', async (update) => {
-                const { connection, lastDisconnect } = update;
-                if (connection === 'close') {
-                    const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-                    console.log(`🔄 [${sessionName}] Reconnecting...`);
-                    if (shouldReconnect) startSocket();
-                } else if (connection === 'open') {
-                    console.log(`🚀 [${sessionName}] Connected! (User: ${conn.user.id.split(':')[0]})`);
-                    const targetJid = jidNormalizedUser(conn.user.id);
-                    await conn.sendMessage(targetJid, { text: `✅ *VISPER-MD [${sessionName}]* Connected!` });
-                }
-            });
+        conn.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect } = update;
+            if (connection === 'close') {
+                const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+                if (shouldReconnect) connectToWA(); // නැවත සම්බන්ධ වීම
+            } else if (connection === 'open') {
+                console.log(`🚀 [${session.name}] Connected Successfully!`);
+                const targetJid = jidNormalizedUser(conn.user.id);
+                await conn.sendMessage(targetJid, { text: `✅ *VISPER-MD [${session.name}]* is Online!` });
+            }
+        });
 
-// ප්ලගින්ස් එක පාරක් පමණක් Load කිරීම
-    fs.readdirSync("./plugins/").forEach((plugin) => {
-        if (path.extname(plugin).toLowerCase() == ".js") {
-            require("./plugins/" + plugin);
-        }
-    });
+
+
+fs.readdirSync("./plugins/").forEach((plugin) => {
+  if (path.extname(plugin).toLowerCase() == ".js") {
+      require("./plugins/" + plugin);
+  }
+});
+ console.log(`✅ VISPER-MD SUCCESSFULLY CONNECTED!`);
+
+
+
 
 async function autoJoinGroup(conn) {
     try {
@@ -1644,12 +1655,8 @@ console.log(isError)
   })
 
 
-    };
-
-       
-    }
+	}
 }
-	
 app.get("/", (req, res) => {
   res.send("📟 VISPER DL Working successfully!");
 });
