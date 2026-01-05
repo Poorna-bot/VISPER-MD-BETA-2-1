@@ -1,9 +1,9 @@
 {
-  "name": "MOVIE-VISPER-MD",
-  "version": "4.0.0",
+  "name": "VISPER-MD",
+  "version": "6.0.0",
   "scripts": {
-    "start": "pm2 start index.js --deep-monitoring --attach --name Movie-Visper",
-    "stop": "pm2 stop Movie-Visper",
+    "start": "pm2 start index.js --deep-monitoring --attach --name Visper-md",
+    "stop": "pm2 stop Visper-md",
     "restart": "git pull && npm stop && npm start",
     "stash": "git stash && git stash drop"
   },
