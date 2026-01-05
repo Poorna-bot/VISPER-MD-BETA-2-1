@@ -95,7 +95,7 @@ secure, modern, and user-friendly.
   </tr>
 
   <tr>
-    <td>🪀 <b>Utility Tools</b><br>
+    <td>🛠 <b>Convert Tools</b><br>
     Useful & extra helper commands</td>
     <td align="center">✅ Enabled</td>
   </tr>
@@ -113,8 +113,8 @@ secure, modern, and user-friendly.
   </tr>
 
   <tr>
-    <td>💫 <b>Anime Hub</b><br>
-    Anime search • info • media</td>
+    <td>💫 <b>Multiple Session</b><br>
+    Free deploy • connect • host</td>
     <td align="center">✅ Enabled</td>
   </tr>
 
