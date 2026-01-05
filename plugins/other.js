@@ -881,3 +881,184 @@ cmd({
 > ᴠɪꜱᴘᴇʀ ɪɴᴄ`
     );
 });
+
+
+// 1. Roast Me (මඩ ගැසීම)
+cmd({
+    pattern: "roast",
+    react: "🔥",
+    desc: "Roast someone with funny insults",
+    category: "fun",
+    use: ".roast <@user>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+
+    const insults = [
+        "ඔයාගේ මූණ දැක්කම මට හිතෙනවා Darwin ගේ පරිණාම වාදය බොරු කියලා. 🦍",
+        "ඔයා කතා නොකර ඉද්දි තමයි ගොඩක්ම ලස්සන. 🤫",
+        "ඔයාගේ මොළේ හරියට Google Chrome වගේ.. RAM එක කනවා විතරයි වැඩක් නෑ. 🖥️",
+        "කණ්ණාඩියක් ඉස්සරහට ගිහින් බලන්න.. එතකොට තේරෙයි ඇයි ඔයා Single කියලා. 🪞",
+        "ඔයා ඉපදුන දවසේ ඩොක්ටර් අඬලා තියෙන්නේ ඔයාගේ මූණ දැකලා. 😂",
+        "පොඩ්ඩක් නාගන්න බාබූ.. ෆෝන් එකත් ගඳ ගහනවා. ඩේටා නාස්ති කරන්න එපා. 🚿",
+        "ඔයාගේ IQ එකයි මගේ සපත්තු සයිස් එකයි සමානයි වගේ. 👟",
+        "මම දැකලා තියෙනවා ඔයාට වඩා ලස්සන වඳුරෝ දෙහිවල සූ එකේ. 🐒",
+        "ඔයාගේ හිනාව හරියට අකුණු ගැහුවා වගේ.. දැක්කම බය හිතෙනවා. ⚡"
+    ];
+
+    const randomInsult = insults[Math.floor(Math.random() * insults.length)];
+    const target = q ? q : "ඔයාට";
+
+    await reply(
+`🔥 *Roast Master*
+
+${target}, 
+${randomInsult}
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 2. Past Life (පෙර ආත්මය)
+cmd({
+    pattern: "pastlife",
+    react: "👻",
+    desc: "Check your past life",
+    category: "fun",
+    use: ".pastlife",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const animals = ["හිඟන බල්ලෙක් 🐕", "කම්මැලි පූසෙක් 🐈", "වංශවත් කැරපොත්තෙක් 🪳", "මදුරුවෙක් 🦟", "පිස්සු වැද්දෙක් 🏹", "රජ කෙනෙක් 👑", "කුකුළෙක් 🐓", "ඩයිනෝසිරස් කෙනෙක් 🦕"];
+    const deaths = ["ත්‍රීවිල් එකක හැප්පිලා 🛺", "බඩේ අමාරුවක් හැදිලා 🤢", "වහ බීලා ☠️", "ගඟේ ගිලිලා 🌊", "බිරිඳගෙන් ගුටි කාලා 👊", "කෙසෙල් ලෙල්ලක ලිස්සලා 🍌", "යුද්ධ කරලා ⚔️"];
+    const countries = ["ශ්‍රී ලංකාවේ 🇱🇰", "උගන්ඩාවේ 🇺🇬", "අඟහරු ලෝකේ 🪐", "ඇමසන් වනාන්තරේ 🌳", "සෝමාලියාවේ 🇸🇴", "ඊජිප්තුවේ 🇪🇬"];
+
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+    const death = deaths[Math.floor(Math.random() * deaths.length)];
+    const country = countries[Math.floor(Math.random() * countries.length)];
+
+    await reply(
+`👻 *Past Life Finder*
+
+ඔයා පෙර ආත්මයේ හිටියේ:
+📍 *${country}*
+👤 *${animal}* විදියට.
+
+මැරුණේ කොහොමද දන්නවද?
+💀 *${death}*
+
+> පුදුමයි තාම මනුස්ස ආත්මයක් ලැබුන එක ගැන 😂
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 3. Personality Scan (චරිත සහතිකය)
+cmd({
+    pattern: "scan",
+    react: "🧬",
+    desc: "Scan your personality",
+    category: "fun",
+    use: ".scan",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const handsome = Math.floor(Math.random() * 101);
+    const kindness = Math.floor(Math.random() * 101);
+    const pissu = Math.floor(Math.random() * 101); 
+    const mole = Math.floor(Math.random() * 101); 
+
+    await reply(
+`🧬 *Personality Scanner*
+
+👤 User: You
+
+😎 හැන්ඩියාව:
+[${"█".repeat(Math.floor(handsome / 10))}${"░".repeat(10 - Math.floor(handsome / 10))}] ${handsome}%
+
+😇 කරුණාවන්තකම:
+[${"█".repeat(Math.floor(kindness / 10))}${"░".repeat(10 - Math.floor(kindness / 10))}] ${kindness}%
+
+🤪 පිස්සු ලෙවල් එක:
+[${"█".repeat(Math.floor(pissu / 10))}${"░".repeat(10 - Math.floor(pissu / 10))}] ${pissu}%
+
+🧠 මොළේ තරම:
+[${"█".repeat(Math.floor(mole / 10))}${"░".repeat(10 - Math.floor(mole / 10))}] ${mole}%
+
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 4. Death Predictor (මරණ සහතිකය)
+cmd({
+    pattern: "death",
+    react: "⚰️",
+    desc: "Predict your death",
+    category: "fun",
+    use: ".death",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const years = Math.floor(Math.random() * 60) + 1; 
+    const cause = [
+        "කොත්තු කද්දි හිර වෙලා 🥘", 
+        "බොක දාන්න ගිහින් ලිස්සලා වැටිලා 🚽", 
+        "TikTok වීඩියෝවක් කරන්න ගිහින් 📱", 
+        "කෙල්ලෙක්ගෙන්/කොල්ලෙක්ගෙන් බූට් එකක් කාලා දුකට 💔", 
+        "බස් එකේ ෆුට්බෝඩ් එකෙන් වැටිලා 🚌",
+        "හිනාවෙලාම පණ ගිහින් 😂",
+        "අකුණක් ගහලා ⚡"
+    ];
+    const randomCause = cause[Math.floor(Math.random() * cause.length)];
+    
+    const deathDate = new Date();
+    deathDate.setFullYear(deathDate.getFullYear() + years);
+    const dateString = deathDate.toISOString().split('T')[0];
+
+    await reply(
+`⚰️ *Death Prediction*
+
+📅 දිනය: *${dateString}*
+(තව අවුරුදු ${years} කින්)
+
+💀 හේතුව:
+*${randomCause}*
+
+> පින් දහම් කරගන්න ඉක්මනට... 👻
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
+// 5. Truth or Dare (සත්‍ය හෝ අභියෝග)
+cmd({
+    pattern: "tord",
+    react: "🎲",
+    desc: "Get a Truth or Dare task",
+    category: "fun",
+    use: ".tord",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+
+    const tasks = [
+        "TRUTH: ඔයාගේ ලොකුම රහස මොකක්ද? 🤫",
+        "DARE: ඔයාගේ crush ට 'I love you' කියලා msg එකක් දාන්න. ❤️",
+        "TRUTH: අන්තිමට නෑවේ කවදාද? 🛁",
+        "DARE: Voice note එකකින් සින්දුවක් කියන්න. 🎤",
+        "TRUTH: මේ ගෲප් එකේ වැඩියෙන්ම අකමැති කාටද? 😡",
+        "DARE: ඔයාගේ අන්තිම photo එක ගෲප් එකට දාන්න. 🖼️",
+        "TRUTH: ජීවිතේ කරපු ලොකුම බොරුව මොකක්ද? 🤥",
+        "DARE: Status එකට ඔයාගේ කැතම ෆොටෝ එකක් දාන්න. 🤪",
+        "TRUTH: ඔයා ආදරේ කරපු මුල්ම කෙනා කවුද? 💏",
+        "DARE: විනාඩි 10ක් යනකම් emoji විතරක් පාවිච්චි කරන්න. 🤐"
+    ];
+
+    const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+
+    await reply(
+`🎲 *Truth or Dare*
+
+${randomTask}
+
+> බය නැත්නම් කරන්න! 😎
+> ᴠɪꜱᴘᴇʀ ɪɴᴄ`
+    );
+});
+
