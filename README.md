@@ -1,6 +1,6 @@
 ## VISPER-MD👩‍💻 - A Javascript WhatsApp User Bot
 Visper INC have been designed to make things easier and fun while using WhatsApp. 👨‍💻❤️
-### `4.0.0 Version`
+### `6.0.0 Version`
 😎 `The main goal of creating this bot is to fully leverage WhatsApp and simplify its functionality.`
 
 <br>
@@ -15,7 +15,12 @@ Visper INC have been designed to make things easier and fun while using WhatsApp
 <br>
 
 <p align="center">
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=33&pause=1000&color=7600bc&width=435&lines=VISPER+MD+WHATSAPP+BOT;VERSION+4.0.0;CREATED+BY+VISPER+INC;Dark+Cyber+Matrix" alt="Typing SVG" /></a>
+  <a href="https://git.io/typing-svg">
+    <img
+      src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=32&pause=900&color=00FF9C&center=true&vCenter=true&width=650&lines=VISPER+MD+WHATSAPP+USER+BOT;VERSION+6.0.0+%E2%80%A2+AI+EDITION;POWERED+BY+VISPER+INC;DARK+CYBER+AUTOMATION+SYSTEM"
+      alt="VISPER-MD Matrix Typing"
+    />
+  </a>
 </p>
 
 **Movie Visper** is a multi-device WhatsApp user bot that allows you to search, stream, and download movies seamlessly. This bot is designed to simplify entertainment for users, providing an easy and convenient way to access movies and more. The project is developed in **JavaScript** and containerized using **Docker**. The developers are not responsible for misuse or unauthorized modifications to this project. Enjoy responsibly! 🎗✨
