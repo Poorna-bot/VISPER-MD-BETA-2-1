@@ -50,13 +50,13 @@ and smart control, VISPER-MD goes far beyond a normal WhatsApp bot.
 </p>
 
 <br>
----
+
 <p align="center">
 🧠 <b>AI Tools</b> • 🎬 <b>Movie System</b> • 📥 <b>Downloader</b> • 🎨 <b>Logo Generator</b><br>
 🔍 <b>Smart Search</b> • 🔄 <b>Converter Tools</b> • 👥 <b>Group Management</b><br>
 ⚡ <b>Multi-Device Support</b>
 </p>
----
+
 <br>
 
 <p align="center">
