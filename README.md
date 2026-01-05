@@ -69,7 +69,36 @@ Developed and maintained by <b>VISPER INC</b>, VISPER-MD aims to push
 <b>WhatsApp automation to the next generation</b> while keeping everything
 secure, modern, and user-friendly.
 </p>
+---
+<!-- FEATURE TILES -->
+<h3 align="center">✨ VISPER-MD Feature Tiles</h3>
 
+<table align="center">
+  <tr>
+    <td align="center">🎬<br><b>Movie</b><br>✅</td>
+    <td align="center">❗<br><b>Info</b><br>✅</td>
+    <td align="center">🔞<br><b>NSFW</b><br>✅</td>
+    <td align="center">🪀<br><b>Tools</b><br>✅</td>
+  </tr>
+  <tr>
+    <td align="center">👥<br><b>Group</b><br>✅</td>
+    <td align="center">🔍<br><b>Search</b><br>✅</td>
+    <td align="center">💫<br><b>Anime</b><br>✅</td>
+    <td align="center">🔃<br><b>Converter</b><br>✅</td>
+  </tr>
+  <tr>
+    <td align="center">🌌<br><b>Wallpaper</b><br>✅</td>
+    <td align="center">📥<br><b>Downloader</b><br>✅</td>
+    <td align="center">🥳<br><b>Fun</b><br>✅</td>
+    <td align="center">📰<br><b>News</b><br>✅</td>
+  </tr>
+  <tr>
+    <td align="center">😻<br><b>Anti-Delete</b><br>✅</td>
+    <td align="center">🤖<br><b>AI</b><br>✅</td>
+    <td align="center">🎨<br><b>Logo</b><br>✅</td>
+    <td align="center">⚙️<br><b>Settings</b><br>✅</td>
+  </tr>
+</table>
 
 ---
 
