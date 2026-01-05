@@ -27,7 +27,14 @@
 ## GET YOUR SESSION
 
 <p align="center">
-<a href='https://nadeenmd.vercel.app/' target="_blank"><img alt='WEB PAGE' src='https://img.shields.io/badge/-Pair Code-darkgreen?style=for-the-badge&logo=Whatsapp&logoColor=white'/< width=115 height=28/p></a>
+  <a href="https://nadeenmd.vercel.app/" target="_blank">
+    <img
+      src="https://img.shields.io/badge/PAIR%20CODE-WEB%20PAGE-006400?style=for-the-badge&logo=whatsapp&logoColor=white"
+      alt="PAIR CODE WEB PAGE"
+      height="55"
+    />
+  </a>
+</p>
 
   
 **Movie Visper** is a multi-device WhatsApp user bot that allows you to search, stream, and download movies seamlessly. This bot is designed to simplify entertainment for users, providing an easy and convenient way to access movies and more. The project is developed in **JavaScript** and containerized using **Docker**. The developers are not responsible for misuse or unauthorized modifications to this project. Enjoy responsibly! 🎗✨
