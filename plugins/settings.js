@@ -417,9 +417,79 @@ reply('*Error !!*')
 l(e)
 }
 })
+// --- addbot4 ---
+cmd({
+    pattern: "addbot4",
+    category: "movie",
+    desc: "Active to jid",
+    filename: __filename
+},
+async(conn, mek, m,{from, q, reply, l}) => {
+    try {
+        let gett = await get("SESSION_ID4")
+        if(gett === q) return reply("*This settings all ready updated ☑️*")
+        await input("SESSION_ID4", q)
+        await reply("*waiting for deploying : " + q +" 🟢*")
+    } catch (e) {
+        reply('*Error !!*')
+        l(e)
+    }
+})
 
+// --- addbot5 ---
+cmd({
+    pattern: "addbot5",
+    category: "movie",
+    desc: "Active to jid",
+    filename: __filename
+},
+async(conn, mek, m,{from, q, reply, l}) => {
+    try {
+        let gett = await get("SESSION_ID5")
+        if(gett === q) return reply("*This settings all ready updated ☑️*")
+        await input("SESSION_ID5", q)
+        await reply("*waiting for deploying : " + q +" 🟢*")
+    } catch (e) {
+        reply('*Error !!*')
+        l(e)
+    }
+})
 
+cmd({
+    pattern: "addbot6",
+    category: "movie",
+    desc: "Active to jid",
+    filename: __filename
+},
+async(conn, mek, m,{from, q, reply, l}) => {
+    try {
+        let gett = await get("SESSION_ID6")
+        if(gett === q) return reply("*This settings all ready updated ☑️*")
+        await input("SESSION_ID6", q)
+        await reply("*waiting for deploying : " + q +" 🟢*")
+    } catch (e) {
+        reply('*Error !!*')
+        l(e)
+    }
+})
 
+cmd({
+    pattern: "addbot7",
+    category: "movie",
+    desc: "Active to jid",
+    filename: __filename
+},
+async(conn, mek, m,{from, q, reply, l}) => {
+    try {
+        let gett = await get("SESSION_ID7")
+        if(gett === q) return reply("*This settings all ready updated ☑️*")
+        await input("SESSION_ID7", q)
+        await reply("*waiting for deploying : " + q +" 🟢*")
+    } catch (e) {
+        reply('*Error !!*')
+        l(e)
+    }
+})
 
 cmd({
     pattern: "work_type",
