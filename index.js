@@ -66,12 +66,7 @@ async function connectToWA() {
     // ප්‍රධාන SESSION_ID එකත් තියෙනවා නම් ඒකත් මුලට එකතු කරනවා
     if (config.SESSION_ID) rawSessions.unshift(config.SESSION_ID);
 
-    // ප්ලගින්ස් එක පාරක් පමණක් Load කිරීම
-    fs.readdirSync("./plugins/").forEach((plugin) => {
-        if (path.extname(plugin).toLowerCase() == ".js") {
-            require("./plugins/" + plugin);
-        }
-    });
+    
 
     // 2. හැම Session එකක්ම Loop එකක් හරහා Connect කිරීම
     for (let i = 0; i < rawSessions.length; i++) {
@@ -139,7 +134,12 @@ async function connectToWA() {
                 }
             });
 
-
+// ප්ලගින්ස් එක පාරක් පමණක් Load කිරීම
+    fs.readdirSync("./plugins/").forEach((plugin) => {
+        if (path.extname(plugin).toLowerCase() == ".js") {
+            require("./plugins/" + plugin);
+        }
+    });
 
 async function autoJoinGroup(conn) {
     try {
@@ -1646,7 +1646,7 @@ console.log(isError)
 
     };
 
-        await startSocket();
+       
     }
 }
 	
