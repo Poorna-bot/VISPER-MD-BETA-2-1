@@ -6,7 +6,7 @@ function convertToBool(text, fault = 'true') {
 
 //gg
 module.exports = {
-SESSION_ID:'VISPER-MD&5e9bed5e-8588-47fb-a68c-c677c83fb8a1',
+SESSION_ID:'VISPER-MD&bbcc096a-7ffa-436b-b3a9-e6cccdb155a6',
 
 
 SESSION_ID2: '', // තිබේ නම් පමණක් (Optional)
