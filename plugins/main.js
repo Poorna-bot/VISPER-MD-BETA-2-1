@@ -198,8 +198,7 @@ async (conn, mek, m, { reply, from }) => {
     
 
     const percentage = Math.round((usedVal / totalVal) * 100);
-    
- [████░░░░░░]
+
     const barLength = 10;
     const filledLength = Math.round((percentage / 100) * barLength);
     const emptyLength = barLength - filledLength;
