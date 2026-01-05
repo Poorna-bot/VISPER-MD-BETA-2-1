@@ -39,8 +39,8 @@ await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
 return await conn.sendMessage(from, {
 text: "*`You are not a premium user⚠️`*\n\n" +
 "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
-"_Price : 200 LKR ✔️_\n\n" +
-"*👨‍💻Contact us : 0778500326 , 0722617699*"
+"_Price : 1000 LKR ✔️_\n\n" +
+"*👨‍💻Contact us : 0778500326 , 0716769285*"
 }, { quoted: mek });
 }
 
@@ -65,7 +65,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
 
     let imageBuffer;
     try {
-      const res = await axios.get('https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg', {
+      const res = await axios.get('https://nadeen-botzdatabse.vercel.app/VISPER%20HD.png', {
         responseType: 'arraybuffer'
       });
       imageBuffer = Buffer.from(res.data, 'binary');
@@ -91,7 +91,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       };
 
       return await conn.sendMessage(from, {
-        image: imageBuffer || { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+        image: imageBuffer || { url: 'https://nadeen-botzdatabse.vercel.app/VISPER%20HD.png' },
         caption,
         footer: config.FOOTER,
         buttons: [
@@ -118,7 +118,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       }));
 
       return await conn.buttonMessage2(from, {
-        image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+        image: { url: 'https://nadeen-botzdatabse.vercel.app/VISPER%20HD.png' },
         caption,
         footer: config.FOOTER,
         buttons,
