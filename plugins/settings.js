@@ -397,6 +397,31 @@ l(e)
 })
 
 cmd({
+    pattern: "addbot3",
+   category: "movie",
+    desc: "Active to jid",
+    
+    filename: __filename
+},
+async(conn, mek, m,{from, l, quoted, body, isCmd, command, args, q, isGroup, isSudo, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
+try{
+
+let gett = await get("SESSION_ID3")
+if(gett === q) return reply("*This settings all ready updated ☑️*")
+await input("SESSION_ID3", q)
+
+await reply("*waiting for deploying : " + q +" 🟢*")
+
+} catch (e) {
+reply('*Error !!*')
+l(e)
+}
+})
+
+
+
+
+cmd({
     pattern: "work_type",
     react: "🔁",
     dontAddCommandList: true,
