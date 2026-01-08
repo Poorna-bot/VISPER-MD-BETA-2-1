@@ -1192,51 +1192,64 @@ l(e)
 
 
 cmd({
-  pattern: "system",
-  alias: ["status"],
-  desc: "Check bot system status.",
-  category: "main",
-  use: '.system',
-  filename: __filename
+    pattern: "system",
+    alias: ["status"],
+    desc: "Check bot system status.",
+    category: "main",
+    use: '.system',
+    filename: __filename
 },
 async (conn, mek, m, { reply, from }) => {
-  try {
-    const os = require('os');
+    try {
+        const os = require('os');
 
-    // Detect hosting platform
-    let hostname;
-    const hnLength = os.hostname().length;
-    if (hnLength === 12) hostname = 'Replit';
-    else if (hnLength === 36) hostname = 'Heroku';
-    else if (hnLength === 8) hostname = 'Koyeb';
-    else hostname = os.hostname();
+        // Hosting platform detection
+        let hostname;
+        const hnLength = os.hostname().length;
+        if (hnLength === 12) hostname = 'Replit';
+        else if (hnLength === 36) hostname = 'Heroku';
+        else if (hnLength === 8) hostname = 'Koyeb';
+        else hostname = os.hostname();
 
-    // Memory usage info
-    const ramUsedMB = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
-    const ramTotalMB = Math.round(os.totalmem() / 1024 / 1024);
-    const ram = `${ramUsedMB} MB / ${ramTotalMB} MB`;
+        // Memory usage calculation
+        const ramUsedMB = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+        const ramTotalGB = (os.totalmem() / 1024 / 1024 / 1024).toFixed(1);
+        const ram = `${ramUsedMB} MB / ${ramTotalGB} GB`;
 
-    // Format uptime (runtime should be a helper function you have)
-    const rtime = await runtime(process.uptime());
+        // Runtime calculation (If you don't have a helper function)
+        function formatRuntime(seconds) {
+            seconds = Number(seconds);
+            var d = Math.floor(seconds / (3600 * 24));
+            var h = Math.floor(seconds % (3600 * 24) / 3600);
+            var m = Math.floor(seconds % 3600 / 60);
+            var s = Math.floor(seconds % 60);
+            return `${d > 0 ? d + " days, " : ""}${h} hours, ${m} minutes, ${s} seconds`;
+        }
 
-    // Stylish system info message
-    const sysInfo = `
-*📡 𝚅𝙸𝚂𝙿𝙴𝚁 𝚂𝚈𝚂𝚃𝙴𝙼 𝚂𝚃𝙰𝚃𝚄𝚂 📡*
+        const rtime = formatRuntime(process.uptime());
 
-\`⏰𝗨𝗽𝘁𝗶𝗺𝗲:\`       *${rtime}*\n
-\`🗃𝗥𝗔𝗠 𝗨𝘀𝗮𝗴𝗲:\`    *${ram}*\n
-\`⚙𝗣𝗹𝗮𝘁𝗳𝗼𝗿𝗺:\`     *${hostname}*\n
-\`🧬𝗩𝗲𝗿𝘀𝗶𝗼𝗻:\`      *6.0.0*\n
-\`👨‍💻𝗗𝗲𝘃𝗲𝗹𝗼𝗽𝗲𝗿𝘀:\`      *VISPER INC*\n
+        // The Stylish message you requested
+        const sysInfo = `*📡 VISPER SYSTEM STATUS 📡*
 
-`;
+⏰ *Uptime :* ${rtime}
+📊 *Ram usage :* ${ram}
+☁️ *Platform :* ${hostname}
+🧬 *Version :* v6.0.0 ( Beta )
+👨‍💻 *Developer :* VISPER INC
+🟢 *Status :* Active`;
 
-    await conn.sendMessage(m.chat, { text: sysInfo.trim() }, { quoted: fkontak });
-    m.react('🌙');
-  } catch (e) {
-    await reply('*❌ Error fetching system info!*');
-    console.error(e);
-  }
+        // React with Moon emoji
+        await m.react('🌙');
+
+        // Sending the message
+        await conn.sendMessage(from, { 
+            text: sysInfo 
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.error(e);
+        await reply('*❌ Error fetching system info!*');
+    }
 });
 
 
