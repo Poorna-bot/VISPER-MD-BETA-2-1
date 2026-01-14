@@ -374,13 +374,16 @@ return false
 
 	    
 const reply = async(teks) => {
+	await conn.sendPresenceUpdate('composing', from)
   return await conn.sendMessage(from, { text: teks }, { quoted: mek })
 }
 conn.replyad = async (teks) => {
+	await conn.sendPresenceUpdate('composing', from)
   await conn.sendMessage(from, { text: teks }, { quoted: mek })
 }
 const NON_BUTTON = true // Implement a switch to on/off this feature...
 conn.buttonMessage2 = async (jid, msgData,quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   if (!NON_BUTTON) {
     await conn.sendMessage(jid, msgData)
   } else if (NON_BUTTON) {
@@ -408,6 +411,7 @@ await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
 }
 
 conn.buttonMessage = async (jid, msgData, quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   if (!NON_BUTTON) {
     await conn.sendMessage(jid, msgData)
   } else if (NON_BUTTON) {
@@ -434,6 +438,7 @@ await updateCMDStore(imgmsg.key.id, CMD_ID_MAP);
 
    
 conn.listMessage2 = async (jid, msgData, quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   if (!NON_BUTTON) {
     await conn.sendMessage(jid, msgData)
   } else if (NON_BUTTON) {
@@ -463,6 +468,7 @@ section.rows.forEach((row, rowIndex) => {
 }
 
 conn.listMessage5 = async (jid, msgData, quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   try {
     // If it’s a real WhatsApp list message, send directly
     if (msgData.sections && msgData.buttonText && !NON_BUTTON) {
@@ -525,6 +531,7 @@ conn.listMessage5 = async (jid, msgData, quotemek) => {
 
 
 conn.listMessage4 = async (jid, msgData, quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   if (!NON_BUTTON) {
     await conn.sendMessage(jid, msgData);
   } else {
@@ -583,6 +590,7 @@ conn.listMessage4 = async (jid, msgData, quotemek) => {
 
 
 conn.listMessage = async (jid, msgData, quotemek) => {
+	await conn.sendPresenceUpdate('composing', from)
   if (!NON_BUTTON) {
     await conn.sendMessage(jid, msgData)
   } else if (NON_BUTTON) {
