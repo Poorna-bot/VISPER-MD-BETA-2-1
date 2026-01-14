@@ -285,37 +285,6 @@ mek.message = (getContentType(mek.message) === 'ephemeralMessage')
   : mek.message;
 
 //================================================================================================
-if (mek.key && mek.key.remoteJid === 'status@broadcast') {
-  if (config.AUTO_READ_STATUS === "true") {
-    await conn.readMessages([mek.key]);
-  }
-
-  if (config.AUTO_STATUS_REACT === "true") {
-    const emojis = ['🧩', '🍉', '💜', '🌸', '🪴', '💊', '💫', '🍂', '🌟', '🎋', '😶‍🌫️', '🫀', '🧿', '👀', '🤖', '🚩', '🥰', '🗿', '💜', '💙', '🌝', '🖤', '💚'];
-
-    let reactEmoji = (config.CUSTOM_REACT && config.CUSTOM_REACT.trim() !== "")
-      ? config.CUSTOM_REACT.trim()
-      : emojis[Math.floor(Math.random() * emojis.length)];
-
-    const mnyako = await jidNormalizedUser(conn.user.id);
-
-    await conn.sendMessage(
-      mek.key.remoteJid,
-      {
-        react: {
-          key: mek.key,
-          text: reactEmoji
-        }
-      },
-      {
-        statusJidList: mek.key.participant ? [mek.key.participant, mnyako] : [mnyako]
-      }
-    );
-  }
-
-  return; // meken status handle block ekata witharai exit wenne
-}
-
 
 
 
