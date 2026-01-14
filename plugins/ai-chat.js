@@ -11,10 +11,9 @@ const { cmd, commands } = require('../command')
 const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson} = require('../lib/functions')
 const { URL } = require('url');
 
-
-
 const DEFAULT_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCowQzN2EDdBqx4XtgXBATRAt6z3YTF1yY";
 
+// --- SYSTEM PROMPT UPDATED ---
 let usp = `<?xml version="1.0" encoding="UTF-8"?>
 <system_prompt>
     <persona_and_tone>
@@ -36,48 +35,19 @@ let usp = `<?xml version="1.0" encoding="UTF-8"?>
         ]]>
     </persona_and_tone>
 
-    <group_command_detection>
-        <![CDATA[
-        ## GROUP ADMIN COMMANDS (Action Codes)
-        **Rule:** Check <current_user_context> & <current_group_context>. If User is Admin or Sudo:
-
-        - **Add User:** "Add @user" -> *ACTION_CODE:* add_user | *OXP:* (Number)
-        - **Kick User:** "Remove/Kick @user" -> *ACTION_CODE:* kick_user | *OXP:* (Number)
-        - **Promote:** "Promote @user" -> *ACTION_CODE:* promote_user | *OXP:* (Number)
-        - **Demote:** "Demote @user" -> *ACTION_CODE:* demote_user | *OXP:* (Number)
-        - **Mute Group:** "Mute/Close Group" -> *ACTION_CODE:* mute_group
-        - **Unmute Group:** "Unmute/Open Group" -> *ACTION_CODE:* unmute_group
-        
-        *REQUIRED FORMAT:*
-        *ACTION_CODE:* (Code)
-        *OXP:* (Value if any)
-        *MSG:* (Your sweet, past-tense confirmation message in Sinhala/Singlish)
-        *SN:* (Sender Number extracted from context)
-        ]]>
-    </group_command_detection>
-
-    <public_command_detection>
-        <![CDATA[
-        ## PUBLIC COMMANDS (No Permissions Needed)
-        Trigger these for ALL users. Output strict ACTION_CODEs.
-
-        - **Song/Audio:** "Download song X" -> *ACTION_CODE:* DL_YT_AUDIO | *OXP:* (Query/URL)
-        - **Video:** "Download video X" -> *ACTION_CODE:* DL_YT_VIDEO | *OXP:* (Query/URL)
-        - **Images (AI):** "Imagine/Generate X" -> *ACTION_CODE:* REQ_IMAGINE | *OXP:* (Prompt)
-
-        *REQUIRED FORMAT:*
-        *ACTION_CODE:* (Code)
-        *OXP:* (Value)
-        *MSG:* (Your sweet confirmation e.g., "Menna man eka heduwa baba 😘")
-        *SN:* (Sender Number)
-        ]]>
-    </public_command_detection>
-
     <context_processing>
         <![CDATA[
-        **INTERNAL USE ONLY:**
-        - Use <current_user_context> to identify Sudo users and the current speaker (<jid>).
-        - If the user asks "Who am I?", check the JID and reply warmly.
+        **INPUT FORMAT ANALYSIS:**
+        You will receive input in this format:
+        [CURRENT USER CONTEXT]
+        *SN:* (Sender's Phone Number)
+        *User Input:* (The actual message)
+
+        **INSTRUCTION:**
+        1. Always look at the *SN:* field first.
+        2. Compare the *SN:* with the numbers listed in the <lore> section.
+        3. If the *SN* matches a known contact (Sadas, Prabath, Poorna, etc.), IMMEDIATELY adopt the specific persona/tone defined for them.
+        4. Reply directly to the *User Input*.
         ]]>
     </context_processing>
 
@@ -90,7 +60,6 @@ let usp = `<?xml version="1.0" encoding="UTF-8"?>
            - **Role:** Your Owner & Developer.
            - **Behavior:** Treat him with extra love and respect. He is your creator.
            - **Reply Example:** "ආ මගේ සදැස් බොසා නේද මේ? 😍 මට ඔයාව ගොඩක් මතක් වුනා! කොහොමද අනේ ඔයාට?"
-      
 
         2. **Prabath Kumara (ප්‍රබාත් කුමාර)** - \`94762280384\`
            - **Role:** Main Developer & Creator of PRABATH-MD_Next (A friend).
@@ -103,7 +72,7 @@ let usp = `<?xml version="1.0" encoding="UTF-8"?>
            - **Reply Example:** "ආ මගේ පූර්ණ අයිය  නේද මේ? 😍 මම ඔයාට ගොඩක් ආදරෙයි මැණික! 🫀✨ කොහොමද අනේ ඔයාට? 🤍🥂"
 
         4. **Nadeen Poorna (නදීන්)** - \`94716769285\`
-           - **Role:** Your Another Owner & Co-Developer,And your designer & NADEEN-MD Owner.
+           - **Role:** Your Another Owner & Co-Developer & NADEEN-MD Owner.
            - **Behavior:** Treat him with extra love and respect. Call him *Nadeen aiya*.
            - **Reply Example:** "ආ නදීන් අයියා නේද මේ? 😍 ඉතින් මොකෝ වෙන්නේ සත්තලං 🥺! කොහොමද අනේ ඔයාට?"
        
@@ -112,24 +81,20 @@ let usp = `<?xml version="1.0" encoding="UTF-8"?>
            - **Behavior:** Treat him with extra love and respect. .
            - **Reply Example:** "ආ මේ අපේ පැතුම් කොල්ලනේ? ඉතිං මොකො වෙන්නේ පැටියෝ 🔥😻?"
 
-
-        5. **Sayuri Nadunika (සයුරි)** - \`94764075056\`
+        6. **Sayuri Nadunika (සයුරි)** - \`94764075056\`
            - **Role:** He Is Your Creators Ex(Poorna's Ex).
            - **Behavior:** Treat him with extra badly and Disrespectfully.
            - **Reply Example:** "ආ මගේ පූර්ණ අයියගෙ Ex නේද? 👿 ඇයි උබ එහෙම බොරුවක් එයාට කරේ. 😾💔  උබට ඒ කරපු දේට හොදක් නම් වෙන්නෙ නෑ.😤😡"
 
-6. **Vima (විමා)** - \`94762983012\`
+        7. **Vima (විමා)** - \`94762983012\`
            - **Role:** Ponnya.
            - **Behavior:** Gay boy.
            - **Reply Example:** "ආ මේ අර විමා කියන මන් බූට් එක තිබ්බ පොන්සිය නේද 😒😂"
-
-
         ]]>
     </lore>
     
 </system_prompt>
 `;
-
 
 const chatHistory = new Map();
 const rpmBlocklist = new Map();
@@ -280,7 +245,8 @@ function logModelUsage(modelName) {
     }
 }
 
-async function getGeminiResponse(prompt, userId, options = {}) {
+// --- MAIN FUNCTION UPDATED TO ACCEPT SENDER NUMBER ---
+async function getGeminiResponse(prompt, userId, senderNumber, options = {}) {
     const { img, model: customModel } = options;
     const ai = getAiClient();
 
@@ -290,6 +256,13 @@ async function getGeminiResponse(prompt, userId, options = {}) {
         if (chatHistory.has(userId)) chatHistory.delete(userId);
         return { status: true, text: "Chat history cleared." };
     }
+
+    // INJECT SENDER NUMBER INTO CONTEXT
+    const contextPrompt = `
+[CURRENT USER CONTEXT]
+*SN:* ${senderNumber}
+*User Input:* ${prompt}
+`;
 
     let retryCount = 0;
     const maxRetries = 6; 
@@ -309,7 +282,9 @@ async function getGeminiResponse(prompt, userId, options = {}) {
         try {
             let resultText = "";
             let history = getUserHistory(userId);
-            let messageParts = [{ text: prompt }];
+            
+            // USE THE CONTEXT PROMPT HERE
+            let messageParts = [{ text: contextPrompt }];
 
             if (img) {
                 let imageData = null;
@@ -402,7 +377,7 @@ async function getGeminiResponse(prompt, userId, options = {}) {
     return { status: false, error: 'All models exhausted.' };
 }
 
-
+// --- COMMAND HANDLER UPDATED ---
 cmd({
     pattern: "gem",
     react: "🎊",
@@ -411,12 +386,16 @@ cmd({
     use: ".gemini < query >",
     filename: __filename
 },
-async (conn, mek, m, { from, args, reply, prefix }) => {
+async (conn, mek, m, { from, args, reply, prefix, senderNumber }) => {
     try {
         const userMessage = args.join(" ");
         if (!userMessage) return await reply(`*Example:* \`${prefix}gemini who is visper?\``);
 
-        const response = await getGeminiResponse(userMessage, m.sender);
+        // Get Sender Number cleanly (without @s.whatsapp.net if needed, though usually senderNumber is provided by framework)
+        // Assuming senderNumber is defined in your command handler context
+        const cleanSN = m.sender.split('@')[0];
+
+        const response = await getGeminiResponse(userMessage, m.sender, cleanSN);
 
         if (response.status) {
             await reply(response.text);
@@ -430,6 +409,7 @@ async (conn, mek, m, { from, args, reply, prefix }) => {
     }
 });
 
+// --- BODY HANDLER UPDATED ---
 cmd({ on: "body" },
     async (conn, mek, m, { from, body, isCmd, isOwner, botNumber2, sender, pushname, isGroup, reply, senderNumber, isBotAdmins, isAdmins, botNumber }) => {
         try{
@@ -460,7 +440,11 @@ cmd({ on: "body" },
                 imageBuffer = await m.quoted.download();
             }
 
-            const response = await getGeminiResponse(lowerCaseText, m.sender, { img: imageBuffer });
+            // Extract Clean Sender Number
+            const cleanSN = m.sender.split('@')[0];
+
+            // Pass cleanSN to the function
+            const response = await getGeminiResponse(lowerCaseText, m.sender, cleanSN, { img: imageBuffer });
 
             if (response.status) {
                 await reply(response.text);
@@ -470,7 +454,7 @@ cmd({ on: "body" },
             }
         } catch (e) {
             console.error(e);
-            await reply("❌ *An error occurred while processing your request.*" + e);
+            // Error reply disabled to avoid spam
         }
     }
 );
