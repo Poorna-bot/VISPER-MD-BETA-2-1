@@ -1,4 +1,4 @@
-Const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenAI } = require('@google/genai');
 const crypto = require('crypto');
 const config = require('../config')
 const os = require('os')
