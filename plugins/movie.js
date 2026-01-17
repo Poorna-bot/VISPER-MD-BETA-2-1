@@ -58,14 +58,15 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       { name: "BAISCOPES", cmd: "baiscopes" },
       { name: "PUPILVIDEO", cmd: "pupilvideo" },
       { name: "DINKA", cmd: "dinka" },
-	  { name: "SUBLK", cmd: "sublk" }
+	  { name: "SUBLK", cmd: "sublk" },
+		{ name: "SINHALALK", cmd: "ms" }
 	 
     ];
 
 
     let imageBuffer;
     try {
-      const res = await axios.get('https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg', {
+      const res = await axios.get('https://nadeen-botzdatabse.vercel.app/MovieZoneX.png', {
         responseType: 'arraybuffer'
       });
       imageBuffer = Buffer.from(res.data, 'binary');
@@ -73,7 +74,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       imageBuffer = null; 
     }
 
-    const caption = `_*VISPER SEARCH SYSTEM 🎬*_\n\n*\`🔰Input :\`* ${q}\n\n_*🌟 Select your preferred movie download site*_`;
+    const caption = `_*VISPER MOVIE SYSTEM 🎬*_\n\n*\`🔍Input :\`* ${q}\n\n_*🌟 Select your preferred movie download site*_`;
 
     if (config.BUTTON === "true") {
      
@@ -91,7 +92,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       };
 
       return await conn.sendMessage(from, {
-        image: imageBuffer || { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+        image: imageBuffer || { url: 'https://nadeen-botzdatabse.vercel.app/MovieZoneX.png' },
         caption,
         footer: config.FOOTER,
         buttons: [
@@ -118,7 +119,7 @@ text: "*`You are not a premium user⚠️`*\n\n" +
       }));
 
       return await conn.buttonMessage2(from, {
-        image: { url: 'https://mv-visper-full-db.pages.dev/Data/visper_main.jpeg' },
+        image: { url: 'https://nadeen-botzdatabse.vercel.app/MovieZoneX.png' },
         caption,
         footer: config.FOOTER,
         buttons,
@@ -1676,5 +1677,226 @@ console.log(`Input:`, q)
         console.error("sindl error:", e);
     } finally {
         isUploadinggggg = false; // reset lock always
+    }
+});
+let isUploadingw = false;
+
+// 1. MOVIESUB SEARCH COMMAND
+
+cmd({
+    pattern: "sinhalalk",
+    react: '🔎',
+    category: "movie",
+    alias: ["ms","moviessublk"],
+    desc: "movieslk search",
+    filename: __filename
+},
+async (conn, m, mek, { from, q, prefix, reply }) => {
+    try {
+        if (!q) return reply("*❗ Please give a movie name*");
+
+        const searchUrl = `https://moviessub-nadeen.vercel.app/api/search?q=${encodeURIComponent(q)}`;
+        const response = await axios.get(searchUrl);
+        const results = response.data.results;
+
+        if (!results || results.length === 0) return reply("*❌ No results found!*");
+
+        // බොට්ගේ config එක අනුව NON_BUTTON අගය සකස් කිරීම
+        const isButton = config.BUTTON === "true";
+
+        if (isButton) {
+            // Button Mode (Native Flow Single Select)
+            const rows = results.map(v => ({
+                title: v.title.replace(/Sinhala Subtitles|සිංහල උපසිරැසි සමඟ/gi, "").trim(),
+                id: `${prefix}msdl ${v.link}±${v.image.replace(/\/s\d+[^/]*\//, '/s1600/')}`
+            }));
+
+            const listButtons = {
+                title: "🎬 Select a Movie",
+                sections: [{ title: "[Movielk.com Results]", rows }]
+            };
+
+            await conn.sendMessage(from, {
+                image: { url: config.LOGO },
+                caption: `_*MOVIELK SEARCH RESULTS 🎬*_\n\n*Input:* ${q}`,
+                footer: config.FOOTER,
+                buttons: [{
+                    buttonId: "ms_list",
+                    buttonText: { displayText: "🎥 Select Result" },
+                    type: 4,
+                    nativeFlowInfo: {
+                        name: "single_select",
+                        paramsJson: JSON.stringify(listButtons)
+                    }
+                }],
+                headerType: 1
+            }, { quoted: mek });
+
+        } else {
+            // Non-Button Mode (අංකය reply කරන ක්‍රමය - listMessage භාවිතා කර)
+            const rows = results.map(v => ({
+                title: v.title.replace(/Sinhala Subtitles|සිංහල උපසිරැසි සමඟ/gi, "").trim(),
+                rowId: `${prefix}msdl ${v.link}±${v.image.replace(/\/s\d+[^/]*\//, '/s1600/')}`
+            }));
+
+            await conn.listMessage(from, {
+                text: `_*MOVIELK SEARCH RESULTS 🎬*_\n\n*Input:* ${q}`,
+                footer: config.FOOTER,
+                title: "[Movielk.com Results]",
+                buttonText: "Reply Below Number 🔢",
+                sections: [{ title: "[Movielk.com Results]", rows }]
+            }, mek);
+        }
+
+    } catch (e) {
+        console.log(e);
+        reply("*Error during search!*");
+    }
+});
+// 2. MOVIESUB INFO & QUALITY DOWNLOAD LINKS
+cmd({
+    pattern: "msdl",
+    react: "🎥",
+    filename: __filename
+},
+async (conn, m, mek, { from, q, prefix, reply }) => {
+    try {
+        if (!q) return reply("*❗ Invalid Link!*");
+ 
+
+    // q → img ± url ± title ± quality
+    const [url, img] = q.split("±");
+		console.log(`💃🏻Url:`, url);
+        const infoUrl = `https://moviessub-nadeen.vercel.app/api/info?url=${encodeURIComponent(url)}`;
+        const response = await axios.get(infoUrl);
+        const d = response.data;
+//let res = await fg.GDriveDl(d.downloads[0].link.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view'))
+		
+        let infoMsg = `*_🎬 𝗧ɪᴛʟᴇ: ${d.title}_*\n\n📅 *𝗬ᴇᴀʀ:* ${d.details.year || 'N/A'}\n⭐ *𝗜ᴍᴅʙ:* ${d.details.imdb || 'N/A'}\n🤡 *𝗚ᴇɴʀᴇ:* ${d.details.genre || 'N/A'}\n🕵️‍♂️ *𝗗ɪʀᴇᴄᴛᴏʀ:* ${d.details.director || 'N/A'}\n🌎 *𝗖ᴏᴜɴᴛʀʏ:* ${d.details.country || 'N/A'}\n\n`;
+
+        const isButton = config.BUTTON === "true";
+
+        if (isButton) {
+            // Button Mode
+            const rows = d.downloads.map(v => ({
+                title: `Download (${v.quality})`,
+                id: `${prefix}mvsub ${img}±${v.link}±${d.title}±${v.quality}`
+            }));
+
+            const listButtons = {
+                title: "📥 Download Options",
+                sections: [{ title: "Available Qualities", rows }]
+            };
+
+            await conn.sendMessage(from, {
+                image: { url: img },
+                caption: infoMsg + "*Select a quality:*",
+                footer: config.FOOTER,
+                buttons: [{
+                    buttonId: "dl_list",
+                    buttonText: { displayText: "📥 Download Now" },
+                    type: 4,
+                    nativeFlowInfo: {
+                        name: "single_select",
+                        paramsJson: JSON.stringify(listButtons)
+                    }
+                }],
+                headerType: 1
+            }, { quoted: mek });
+
+        } else {
+            // Non-Button Mode (අංකය reply කර ඩවුන්ලෝඩ් කිරීමට)
+            const buttons = d.downloads.map(v => ({
+                buttonText: { displayText: `Download (${v.quality})` },
+                buttonId: `${prefix}mvsub ${img}±${v.link}±${d.title}±${v.quality}`
+            }));
+
+            await conn.buttonMessage(from, {
+                image: { url: img },
+                caption: infoMsg,
+                footer: config.FOOTER,
+                buttons: buttons,
+                headerType: 4 // Image header
+            }, mek);
+        }
+
+    } catch (e) {
+        console.log(e);
+        reply("*Error fetching info!*");
+    }
+});
+// 3. FINAL FILE UPLOADER (paka command)
+
+cmd({
+    pattern: "mvsub",
+    react: "⬇️",
+    dontAddCommandList: true,
+    filename: __filename
+},
+async (conn, mek, m, { from, q, reply }) => {
+ console.log(`🤹🏼‍♂️ Final-dl:`, q);
+
+    // q → img ± url ± title ± quality
+    const [img, url, title, quality] = q.split("±");
+	const res = await fg.GDriveDl(url+ `/view`)
+	
+    if (!q) return reply("*❗ Please give Google Drive URL*");
+    if (isUploadingw) return reply("*⏳ Another upload is in progress…*");
+console.log(`🌬Gd-dl:`,res.downloadUrl);
+    try {
+        isUploadingw = true;
+
+        // API URL
+        const apiUrl = `https://sadaslk-apis.vercel.app/api/v1/download/gdrive?q=${encodeURIComponent(url)}/view?usp=sharing&apiKey=vispermdv4`;
+ const data = (await axios.get(apiUrl)).data;
+        // Fetch API
+        const json = data;
+    console.log(`🧨fetch:`, data);
+        if (!json || !json.data || !json.data.data.downloadUrl) {
+            return reply("*❌ Download link not found!*");
+        }
+console.log(`🍱fetch2:`, json.data.data.downloadUrl);
+       
+		const {
+            downloadUrl = json.data.data.downloadUrl,
+            quality = "HD",
+            thumbnail
+        } = json.data;
+console.log(`🏵Link-dl:`, downloadUrl);
+        const upmsg = await conn.sendMessage(
+            from,
+            { text: `*⬆️ Uploading...*` }
+        );
+
+        // Thumbnail handle (optional)
+        let jpegThumbnail;
+        if (img) {
+            const imgRes = await fetch(img);
+            const imgBuf = await imgRes.buffer();
+            jpegThumbnail = await sharp(imgBuf).resize(200, 200).toBuffer();
+        }
+
+        await conn.sendMessage(
+            config.JID || from,
+            {
+                document: { url: res.downloadUrl },
+                mimetype: "video/mp4",
+                fileName: `${title}.mp4`,
+                caption: `🎬 *${title}*\n\n\`[${quality}]\`\n\n★━━━━━━━━✩━━━━━━━━★`,
+                jpegThumbnail
+            },
+            { quoted: mek }
+        );
+
+        await conn.sendMessage(from, { delete: upmsg.key });
+        await conn.sendMessage(from, {
+            react: { text: "✔️", key: mek.key }
+        });
+
+    } catch (e) {
+        console.log("❌ Upload error:", e);
+        reply("*❗ Error while uploading the file.*");
+    } finally {
+        isUploadingw = false;
     }
 });
