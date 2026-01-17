@@ -2024,51 +2024,59 @@ cmd({
     filename: __filename
 },
 
-async (conn, mek, m, { from, q, prefix, isMe, isOwner, reply }) => {
+async (conn, mek, m, { from, q, reply }) => {
 try {
     if (!q) return reply('🚩 *Please give me a valid movie URL!*');
 
     if (!q.includes('https://sinhalasub.lk/movies/')) {
-        return await reply('*❗ This appears to be a TV series. Please use the .tv command instead.*');
+        return reply('*❗ This appears to be a TV series. Please use the .tv command instead.*');
     }
 
-    const { data: sadass } = await axios.get(
+    // 🔍 Fetch API
+    const { data } = await axios.get(
         `https://visper-md-ap-is.vercel.app/movie/sinhalasub/info?q=${encodeURIComponent(q)}`
     );
-    const sadas = sadass.result;
 
-    if (!sadas || Object.keys(sadas).length === 0)
-        return await conn.sendMessage(from, { text: "🚩 *I couldn't find any movie info 😔*" }, { quoted: mek });
+    const sadas = data.result;
+    if (!sadas) return reply("🚩 *Movie info not found!*");
 
-    // 🔢 Build number list
-    let dlText = '';
+    // 🔢 Extract pixeldrain download links
+    let listText = '';
+    let pixLinks = [];
     let i = 1;
 
     (sadas.downloadLinks || []).forEach(v => {
-        dlText += `*${i}️⃣ ${v.size || 'N/A'} - ${v.quality || 'Unknown Quality'}*\n`;
+        if (!v.link || !v.link.includes('pixeldrain.com')) return;
+
+        listText += `*${i}️⃣ ${v.size || 'Unknown Size'} - ${v.quality || 'Unknown Quality'}*\n`;
+        pixLinks.push(v.link);
         i++;
     });
 
-    // 🧠 Cache (NO pattern change)
+    if (!pixLinks.length) {
+        listText = '_No pixeldrain download links found 😔_';
+    }
+
+    // 🧠 Cache for number reply
     global.sininfo_cache = global.sininfo_cache || {};
     global.sininfo_cache[from] = {
-        links: sadas.downloadLinks,
+        links: pixLinks,
         title: sadas.title,
         image: sadas.images?.[1] || sadas.images?.[0] || ''
     };
 
-    // 🎬 Caption
-    const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${sadas.title || 'N/A'}_*
+    // 🧾 Message
+    const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${sadas.title}_*
 
-*📅 𝗥𝗲𝗹𝗲𝗮𝘀𝗲𝗱 𝗗𝗮𝘁𝗲 ➮* _${sadas.date || 'N/A'}_
-*🌎 𝗖𝗼𝘂𝗻𝘁𝗿𝘆 ➮* _${sadas.country || 'N/A'}_
-*💃 𝗥𝗮𝘁𝗶𝗻𝗴 ➮* _${sadas.rating || 'N/A'}_
-*⏰ 𝗥𝘂𝗻𝘁𝗶𝗺𝗲 ➮* _${sadas.duration || 'N/A'}_
-*🕵️ 𝗦𝘂𝗯𝘁𝗶𝗹𝗲 𝗕𝘆 ➮* _${sadas.author || 'N/A'}_
+*📅 Released ➮* _${sadas.date || 'N/A'}_
+*🌎 Country ➮* _${sadas.country || 'N/A'}_
+*⭐ Rating ➮* _${sadas.rating || 'N/A'}_
+*⏰ Runtime ➮* _${sadas.duration || 'N/A'}_
+*🕵️ Subtitle ➮* _${sadas.author || 'N/A'}_
 
-*⬇️ Reply with the number to download*
+*⬇️ Reply with download number*
 ────────────────
-${dlText}
+${listText}
 `;
 
     await conn.sendMessage(from, {
@@ -2079,7 +2087,7 @@ ${dlText}
 
 } catch (e) {
     console.log(e);
-    reply('🚫 *Error Occurred !!*\n\n' + e);
+    reply('🚫 *Error Occurred !!*\n\n' + e.message);
 }
 });
 
