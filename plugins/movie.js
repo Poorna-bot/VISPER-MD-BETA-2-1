@@ -2010,10 +2010,11 @@ async (conn, m, mek, { from, q, prefix, isPre, isMe, isSudo, isOwner, reply }) =
         }
 
     } catch (e) {
-        console.error("🔥 SinhalaSub Error:", e);
+        console.eror("🔥 SinhalaSub Error:", e);
         reply('🚫 *Error Occurred !!*\n\n' + e.message);
     }
 });
+
 cmd({
     pattern: "sininfo",
     alias: ["mdv"],
@@ -2027,100 +2028,60 @@ async (conn, mek, m, { from, q, prefix, isMe, isOwner, reply }) => {
 try {
     if (!q) return reply('🚩 *Please give me a valid movie URL!*');
 
-    // 🔍 Validate URL
     if (!q.includes('https://sinhalasub.lk/movies/')) {
         return await reply('*❗ This appears to be a TV series. Please use the .tv command instead.*');
     }
 
-    // 🧠 Fetch movie info from your API
-    const { data: sadass } = await axios.get(`https://visper-md-ap-is.vercel.app/movie/sinhalasub/info?q=${encodeURIComponent(q)}`);
+    const { data: sadass } = await axios.get(
+        `https://visper-md-ap-is.vercel.app/movie/sinhalasub/info?q=${encodeURIComponent(q)}`
+    );
     const sadas = sadass.result;
 
     if (!sadas || Object.keys(sadas).length === 0)
         return await conn.sendMessage(from, { text: "🚩 *I couldn't find any movie info 😔*" }, { quoted: mek });
 
-    // 🎬 Movie info caption
+    // 🔢 Build number list
+    let dlText = '';
+    let i = 1;
+
+    (sadas.downloadLinks || []).forEach(v => {
+        dlText += `*${i}️⃣ ${v.size || 'N/A'} - ${v.quality || 'Unknown Quality'}*\n`;
+        i++;
+    });
+
+    // 🧠 Cache (NO pattern change)
+    global.sininfo_cache = global.sininfo_cache || {};
+    global.sininfo_cache[from] = {
+        links: sadas.downloadLinks,
+        title: sadas.title,
+        image: sadas.images?.[1] || sadas.images?.[0] || ''
+    };
+
+    // 🎬 Caption
     const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${sadas.title || 'N/A'}_*
 
 *📅 𝗥𝗲𝗹𝗲𝗮𝘀𝗲𝗱 𝗗𝗮𝘁𝗲 ➮* _${sadas.date || 'N/A'}_
 *🌎 𝗖𝗼𝘂𝗻𝘁𝗿𝘆 ➮* _${sadas.country || 'N/A'}_
 *💃 𝗥𝗮𝘁𝗶𝗻𝗴 ➮* _${sadas.rating || 'N/A'}_
 *⏰ 𝗥𝘂𝗻𝘁𝗶𝗺𝗲 ➮* _${sadas.duration || 'N/A'}_
-*🕵️ 𝗦𝘂𝗯𝘁𝗶𝘁𝗹𝗲 𝗕𝘆 ➮* _${sadas.author || 'N/A'}_
+*🕵️ 𝗦𝘂𝗯𝘁𝗶𝗹𝗲 𝗕𝘆 ➮* _${sadas.author || 'N/A'}_
+
+*⬇️ Reply with the number to download*
+────────────────
+${dlText}
 `;
 
-    // 🧩 Create buttons
-    const rows = [
-        { buttonId: prefix + 'daqt ' + q, buttonText: { displayText: '💡 Send Details' }, type: 1 },
-        { buttonId: prefix + 'ch ' + q, buttonText: { displayText: '🖼️ Send Images' }, type: 1 }
-    ];
-
-    // Add download links
-    if (sadas.downloadLinks && sadas.downloadLinks.length > 0) {
-        sadas.downloadLinks.forEach(v => {
-            rows.push({
-                buttonId: prefix + `sindl ${v.link}±${sadas.images?.[1] || ''}±${sadas.title}`,
-                buttonText: { displayText: `${v.size || 'N/A'} - ${v.quality || 'Unknown Quality'}` },
-                type: 1
-            });
-        });
-    }
-
-    // 🧾 Prepare list menu
-    const listRows = (sadas.downloadLinks || []).map(v => ({
-        title: `${v.size} - ${v.quality}`,
-        id: prefix + `sindl ${v.link}±${sadas.images?.[1] || ''}±${sadas.title}`
-    }));
-
-    const listButtons = {
-        title: "🎬 Choose a download link :)",
-        sections: [{ title: "Available Download Links", rows: listRows }]
-    };
-
-    // 🖼️ Image + Caption
-    const movieImage = sadas.images?.[0] || config.LOGO;
-
-    // ✅ BUTTON MODE ENABLED
-    if (config.BUTTON === "true") {
-        await conn.sendMessage(from, {
-            image: { url: movieImage },
-            caption: msg,
-            footer: config.FOOTER,
-            buttons: [
-                { buttonId: prefix + 'daqt ' + q, buttonText: { displayText: "Details" }, type: 1 },
-                { buttonId: prefix + 'ch ' + q, buttonText: { displayText: "Images" }, type: 1 },
-                {
-                    buttonId: "download_list",
-                    buttonText: { displayText: "🎥 Select Option" },
-                    type: 4,
-                    nativeFlowInfo: {
-                        name: "single_select",
-                        paramsJson: JSON.stringify(listButtons)
-                    }
-                }
-            ],
-            headerType: 1,
-            viewOnce: true
-        }, { quoted: mek });
-    } else {
-        // ✅ NORMAL MODE
-        await conn.sendMessage(from, {
-            image: { url: movieImage },
-            caption: msg,
-            footer: config.FOOTER,
-            buttons: rows,
-            headerType: 4
-        }, { quoted: mek });
-    }
+    await conn.sendMessage(from, {
+        image: { url: sadas.images?.[0] || config.LOGO },
+        caption: msg,
+        footer: config.FOOTER
+    }, { quoted: mek });
 
 } catch (e) {
     console.log(e);
     reply('🚫 *Error Occurred !!*\n\n' + e);
 }
 });
-
-
-let isUploadinggg = false; // Track upload status
 
 cmd({
     pattern: "sindl",
