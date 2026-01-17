@@ -2134,41 +2134,65 @@ cmd({
             quoted: mek 
         });
     }
-console.log(`Input:`, q)
+
     try {
         //===================================================
         const [pix, imglink, title] = q.split("±");
         if (!pix || !imglink || !title) return await reply("⚠️ Invalid format. Use:\n`sindl link±img±title`");
+
+        // Extract original pixeldrain URL[](https://pixeldrain.com/u/ID)
+        const originalUrl = pix.trim();
+        if (!originalUrl.includes('pixeldrain.com/u/')) {
+            return await reply("⚠️ Invalid Pixeldrain URL.");
+        }
+
         //===================================================
-
-        const da = pix.split("https://pixeldrain.com/u/")[1];
-		console.log(da)
-        if (!da) return await reply("⚠️ Couldn’t extract Pixeldrain file ID.");
-
-        const fhd = `https://pixeldrain.com/api/file/${da}`;
         isUploadinggg = true; // lock start
 
-        //===================================================
-        const botimg = imglink.trim();
-    // Send "uploading..." msg without blocking
-        conn.sendMessage(from, { text: '*Uploading your movie.. ⬆️*', quoted: mek });
- await conn.sendMessage(config.JID || from, { 
-                document: { url: fhd },
-                caption: `🎬 ${title}\n\n${config.NAME}\n\n${config.FOOTER}`,
-                mimetype: "video/mp4",
-                //jpegThumbnail: await (await fetch(botimg)).buffer(),
-                fileName: `🎬VISPER-MD🎬${title}.mp4`
-            });
-		
-     
-            
-            conn.sendMessage(from, { react: { text: '✔️', key: mek.key } }),
-            conn.sendMessage(from, { text: `*Movie sent successfully  ✔*`, quoted: mek })
-       
+        // Send "uploading..." message
+        await conn.sendMessage(from, { text: '*Uploading your movie.. ⬆️*', quoted: mek });
+
+        // Call the new API to get premium/direct download link
+        const encodedUrl = encodeURIComponent(originalUrl);
+        const apiUrl = `https://api-dark-shan-yt.koyeb.app/download/pixeldrain?url=${encodedUrl}&apikey=475c2b78a1c24fd8`;
+        
+        const { data: apiRes } = await axios.get(apiUrl);
+
+        if (!apiRes.status || !apiRes.data || !apiRes.data.download) {
+            throw new Error("Failed to get download link from API.");
+        }
+
+        const downloadUrl = apiRes.data.download;
+        const apiFilename = apiRes.data.filename || `${title}.mp4`;
+        const apiSize = apiRes.data.size || "Unknown";
+
+        // Fetch thumbnail from movie image URL
+        let thumbnail = null;
+        if (imglink && imglink.trim()) {
+            try {
+                thumbnail = await (await fetch(imglink.trim())).buffer();
+            } catch (e) {
+                console.log("Thumbnail fetch failed:", e);
+                // If thumbnail fails, continue without it
+            }
+        }
+
+        // Send movie as document with thumbnail
+        await conn.sendMessage(config.JID || from, { 
+            document: { url: downloadUrl },
+            caption: `🎬 ${title}\n📏 Size: ${apiSize}\n\n${config.NAME}\n\n${config.FOOTER}`,
+            mimetype: "video/mp4",
+            fileName: `🎬VISPER-MD🎬 ${apiFilename}`,
+            jpegThumbnail: thumbnail  // Movie image as thumbnail (uda image eka)
+        });
+
+        // Success reactions and message
+        await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
+        await conn.sendMessage(from, { text: `*Movie sent successfully ✔*\n📏 Size: ${apiSize}`, quoted: mek });
 
     } catch (e) {
-        reply('🚫 *Error Occurred !!*\n\n' + e.message);
         console.error("sindl error:", e);
+        await reply(`🚫 *Error Occurred !!*\n\n${e.message || e}`);
     } finally {
         isUploadinggg = false; // reset lock always
     }
