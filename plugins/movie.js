@@ -2020,7 +2020,7 @@ cmd({
     alias: ["mdv"],
     use: '.moviedl <url>',
     react: "🎥",
-    desc: "Download movies from sinhalasub.lk",
+    desc: "Movie info & download",
     filename: __filename
 },
 
@@ -2028,66 +2028,67 @@ async (conn, mek, m, { from, q, reply }) => {
 try {
     if (!q) return reply('🚩 *Please give me a valid movie URL!*');
 
-    if (!q.includes('https://sinhalasub.lk/movies/')) {
-        return reply('*❗ This appears to be a TV series. Please use the .tv command instead.*');
+    if (!q.includes('sinhalasub.lk/movies/')) {
+        return reply('*❗ This appears to be a TV series.*');
     }
 
-    // 🔍 Fetch API
     const { data } = await axios.get(
         `https://visper-md-ap-is.vercel.app/movie/sinhalasub/info?q=${encodeURIComponent(q)}`
     );
 
-    const sadas = data.result;
-    if (!sadas) return reply("🚩 *Movie info not found!*");
+    const s = data.result;
+    if (!s) return reply('❌ Movie not found');
 
-    // 🔢 Extract pixeldrain download links
-    let listText = '';
-    let pixLinks = [];
+    // 🔢 Build numbered pixeldrain list
+    let dlText = '';
+    let links = [];
     let i = 1;
 
-    (sadas.downloadLinks || []).forEach(v => {
-        if (!v.link || !v.link.includes('pixeldrain.com')) return;
+    if (Array.isArray(s.downloadLinks)) {
+        for (const v of s.downloadLinks) {
+            if (!v.link) continue;
 
-        listText += `*${i}️⃣ ${v.size || 'Unknown Size'} - ${v.quality || 'Unknown Quality'}*\n`;
-        pixLinks.push(v.link);
-        i++;
-    });
+            dlText += `*${i}️⃣ ${v.size || 'Unknown'} - ${v.quality || 'Unknown'}*\n`;
+            links.push(v.link);
+            i++;
+        }
+    }
 
-    if (!pixLinks.length) {
-        listText = '_No pixeldrain download links found 😔_';
+    if (!links.length) {
+        dlText = '_No download links available_';
     }
 
     // 🧠 Cache for number reply
     global.sininfo_cache = global.sininfo_cache || {};
     global.sininfo_cache[from] = {
-        links: pixLinks,
-        title: sadas.title,
-        image: sadas.images?.[1] || sadas.images?.[0] || ''
+        links,
+        title: s.title,
+        image: s.images?.[1] || s.images?.[0] || ''
     };
 
-    // 🧾 Message
-    const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${sadas.title}_*
+    // 📄 Details card
+    const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${s.title}_*
 
-*📅 Released ➮* _${sadas.date || 'N/A'}_
-*🌎 Country ➮* _${sadas.country || 'N/A'}_
-*⭐ Rating ➮* _${sadas.rating || 'N/A'}_
-*⏰ Runtime ➮* _${sadas.duration || 'N/A'}_
-*🕵️ Subtitle ➮* _${sadas.author || 'N/A'}_
+*📅 Released ➮* _${s.date || 'N/A'}_
+*🌎 Country ➮* _${s.country || 'N/A'}_
+*⭐ Rating ➮* _${s.rating || 'N/A'}_
+*⏰ Runtime ➮* _${s.duration || 'N/A'}_
+*🕵️ Subtitle ➮* _${s.author || 'N/A'}_
 
 *⬇️ Reply with download number*
 ────────────────
-${listText}
+${dlText}
 `;
 
     await conn.sendMessage(from, {
-        image: { url: sadas.images?.[0] || config.LOGO },
+        image: { url: s.images?.[0] || config.LOGO },
         caption: msg,
         footer: config.FOOTER
     }, { quoted: mek });
 
 } catch (e) {
-    console.log(e);
-    reply('🚫 *Error Occurred !!*\n\n' + e.message);
+    console.error(e);
+    reply('🚫 Error\n' + e.message);
 }
 });
 
