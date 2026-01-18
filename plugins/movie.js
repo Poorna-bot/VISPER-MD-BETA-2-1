@@ -572,7 +572,7 @@ if (movie.downloads && movie.downloads.length > 0) {
     }
 });
 
-
+let isUploadingg = false;
 cmd({
     pattern: "nadeendl",
     react: "⬇️",
