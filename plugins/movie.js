@@ -2010,23 +2010,23 @@ cmd({
     pattern: "sininfo",
     alias: ["moviedetails"],
     react: "🎬",
-    desc: "Get SinhalaSub movie details & downloads",
+    desc: "SinhalaSub movie details & downloads",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return reply("❌ *Please provide a SinhalaSub movie URL!*");
 
-        // 🔗 NEW UNIVERSAL API
+        // 🔗 NEW API
         const { data } = await axios.get(
             `https://my-apis-site.vercel.app/movie/sinhalasub/movie?url=${encodeURIComponent(q)}&apikey=charuka-key-666`
         );
 
         if (!data || !data.result)
-            return reply("❌ *No movie data found from API!*");
+            return reply("❌ *No data received from API!*");
 
         const r = data.result;
 
-        // 🧠 SAFE FIELD MAP (works for all movies)
+        // 🧠 SAFE FIELD MAP (ALL MOVIES)
         const title    = r.title || r.name || "Unknown Title";
         const date     = r.date || r.release || "N/A";
         const country  = r.country || r.origin || "N/A";
@@ -2035,26 +2035,56 @@ cmd({
         const author   = r.author || r.subtitle || "N/A";
         const image    = r.images?.[0] || r.image || config.LOGO;
 
-        // 🔢 DOWNLOAD LIST (Pixeldrain)
+        // ==================================================
+        // 🔍 UNIVERSAL DOWNLOAD DETECTOR (PIXELDRAIN)
+        let downloadArray = [];
+
+        if (Array.isArray(r.downloads)) downloadArray = r.downloads;
+        else if (Array.isArray(r.download_links)) downloadArray = r.download_links;
+        else if (Array.isArray(r.links)) downloadArray = r.links;
+        else if (Array.isArray(r.pixeldrain)) downloadArray = r.pixeldrain;
+        else if (Array.isArray(r.dl_links)) downloadArray = r.dl_links;
+
+        // fallback scan
+        if (!downloadArray.length) {
+            for (const key in r) {
+                if (Array.isArray(r[key])) {
+                    const found = r[key].filter(v =>
+                        typeof v === "object" &&
+                        JSON.stringify(v).includes("pixeldrain")
+                    );
+                    if (found.length) {
+                        downloadArray = found;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ==================================================
+        // 🔢 BUILD NUMBERED LIST
         let dlText = "";
         let links = [];
         let i = 1;
 
-        if (Array.isArray(r.downloads)) {
-            for (const d of r.downloads) {
-                if (!d.link || !d.link.includes("pixeldrain")) continue;
+        for (const d of downloadArray) {
+            const link =
+                d.link ||
+                d.url ||
+                d.download ||
+                d.pixeldrain;
 
-                dlText += `*${i}️⃣ ${d.quality || "Unknown"} | ${d.size || "Unknown"}*\n`;
-                links.push(d.link);
-                i++;
-            }
+            if (!link || !link.includes("pixeldrain")) continue;
+
+            dlText += `*${i}️⃣ ${d.quality || d.resolution || "Unknown"} | ${d.size || "Unknown"}*\n`;
+            links.push(link);
+            i++;
         }
 
-        if (!links.length) {
+        if (!links.length)
             dlText = "_No pixeldrain download links found 😔_";
-        }
 
-        // 🧠 CACHE for number reply
+        // 🧠 CACHE FOR NUMBER REPLY
         global.sininfo_cache = global.sininfo_cache || {};
         global.sininfo_cache[from] = {
             links,
@@ -2062,6 +2092,7 @@ cmd({
             image
         };
 
+        // ==================================================
         // 📄 DETAILS CARD
         const msg = `*🌾 𝗧𝗜𝗧𝗟𝗘 ➮* *_${title}_*
 
