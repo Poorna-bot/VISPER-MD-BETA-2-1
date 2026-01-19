@@ -2009,71 +2009,84 @@ async (conn, m, mek, { from, q, prefix, isPre, isMe, isSudo, isOwner, reply }) =
 cmd({
     pattern: "sininfo",
     alias: ["moviedetails"],
-    use: ".moviedetails <url>",
-    react: "🎥",
-    desc: "Get movie details & download list",
+    react: "🎬",
+    desc: "Get SinhalaSub movie details & downloads",
     filename: __filename
-}, async (conn, mek, m, { from, q, reply, prefix }) => {
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply('🚩 *Please give me a valid movie URL!*');
+        if (!q) return reply("❌ *Please provide a SinhalaSub movie URL!*");
 
-        // 🔗 NEW API => DETAILS + DOWNLOAD LINKS
+        // 🔗 NEW UNIVERSAL API
         const { data } = await axios.get(
             `https://my-apis-site.vercel.app/movie/sinhalasub/movie?url=${encodeURIComponent(q)}&apikey=charuka-key-666`
         );
 
-        const s = data.result;
-        if (!s || Object.keys(s).length === 0)
-            return reply('❌ *Movie not found or API returned nothing!*');
+        if (!data || !data.result)
+            return reply("❌ *No movie data found from API!*");
 
-        // 📑 Build numbered pixeldrain list
-        let dlText = '';
+        const r = data.result;
+
+        // 🧠 SAFE FIELD MAP (works for all movies)
+        const title    = r.title || r.name || "Unknown Title";
+        const date     = r.date || r.release || "N/A";
+        const country  = r.country || r.origin || "N/A";
+        const rating   = r.rating || r.imdb || "N/A";
+        const duration = r.duration || r.runtime || "N/A";
+        const author   = r.author || r.subtitle || "N/A";
+        const image    = r.images?.[0] || r.image || config.LOGO;
+
+        // 🔢 DOWNLOAD LIST (Pixeldrain)
+        let dlText = "";
         let links = [];
         let i = 1;
-        if (Array.isArray(s.downloads)) {
-            for (const v of s.downloads) {
-                if (!v.link) continue;
-                dlText += `*${i}️⃣ ${v.size || 'Unknown'} - ${v.quality || 'Unknown'}*\n`;
-                links.push(v.link);
+
+        if (Array.isArray(r.downloads)) {
+            for (const d of r.downloads) {
+                if (!d.link || !d.link.includes("pixeldrain")) continue;
+
+                dlText += `*${i}️⃣ ${d.quality || "Unknown"} | ${d.size || "Unknown"}*\n`;
+                links.push(d.link);
                 i++;
             }
         }
-        if (!links.length) dlText = '_No Pixeldrain download links found_';
 
-        // 🧠 Cache for number replies
+        if (!links.length) {
+            dlText = "_No pixeldrain download links found 😔_";
+        }
+
+        // 🧠 CACHE for number reply
         global.sininfo_cache = global.sininfo_cache || {};
         global.sininfo_cache[from] = {
             links,
-            title: s.title,
-            image: s.images?.[0] || ''
+            title,
+            image
         };
 
-        // 📄 Output text with movie info
-        const msg = `*🎬 TITLE ➮* _${s.title || "N/A"}_
+        // 📄 DETAILS CARD
+        const msg = `*🌾 𝗧𝗜𝗧𝗟𝗘 ➮* *_${title}_*
 
-*📅 Released ➮* _${s.date || "N/A"}_
-*🌎 Country ➮* _${s.country || "N/A"}_
-*⭐ Rating ➮* _${s.rating || "N/A"}_
-*⏱ Duration ➮* _${s.duration || "N/A"}_
-*🕵️ Subtitle By ➮* _${s.author || "N/A"}_
+*📅 Released ➮* _${date}_
+*🌎 Country ➮* _${country}_
+*⭐ Rating ➮* _${rating}_
+*⏰ Runtime ➮* _${duration}_
+*🕵️ Subtitle ➮* _${author}_
 
-*⬇️ Reply with a number to download*
+*⬇️ Reply with download number*
 ────────────────
 ${dlText}
 `;
 
         await conn.sendMessage(from, {
-            image: { url: s.images?.[0] || config.LOGO },
+            image: { url: image },
             caption: msg,
-            footer: config.FOOTER
+            footer: config.FOOTER || "VISPER-MD 🎬"
         }, { quoted: mek });
 
     } catch (e) {
-        console.error("sininfo error:", e);
-        reply('🚫 *Error Occurred !!*\n' + (e.message || e));
+        console.error("SININFO ERROR:", e);
+        reply("🚫 *Error while fetching movie details!*");
     }
 });
-
 cmd({
     pattern: "sindl",
     react: "⬇️",
