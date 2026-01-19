@@ -2008,79 +2008,70 @@ async (conn, m, mek, { from, q, prefix, isPre, isMe, isSudo, isOwner, reply }) =
 
 cmd({
     pattern: "sininfo",
-    alias: ["mdv"],
-    use: '.moviedl <url>',
+    alias: ["moviedetails"],
+    use: ".moviedetails <url>",
     react: "🎥",
-    desc: "Movie info & download",
+    desc: "Get movie details & download list",
     filename: __filename
-},
+}, async (conn, mek, m, { from, q, reply, prefix }) => {
+    try {
+        if (!q) return reply('🚩 *Please give me a valid movie URL!*');
 
-async (conn, mek, m, { from, q, reply }) => {
-try {
-    if (!q) return reply('🚩 *Please give me a valid movie URL!*');
+        // 🔗 NEW API => DETAILS + DOWNLOAD LINKS
+        const { data } = await axios.get(
+            `https://my-apis-site.vercel.app/movie/sinhalasub/movie?url=${encodeURIComponent(q)}&apikey=charuka-key-666`
+        );
 
-    if (!q.includes('sinhalasub.lk/movies/')) {
-        return reply('*❗ This appears to be a TV series.*');
-    }
+        const s = data.result;
+        if (!s || Object.keys(s).length === 0)
+            return reply('❌ *Movie not found or API returned nothing!*');
 
-    const { data } = await axios.get(
-        `https://visper-md-ap-is.vercel.app/movie/sinhalasub/info?q=${encodeURIComponent(q)}`
-    );
-
-    const s = data.result;
-    if (!s) return reply('❌ Movie not found');
-
-    // 🔢 Build numbered pixeldrain list
-    let dlText = '';
-    let links = [];
-    let i = 1;
-
-    if (Array.isArray(s.downloadLinks)) {
-        for (const v of s.downloadLinks) {
-            if (!v.link) continue;
-
-            dlText += `*${i}️⃣ ${v.size || 'Unknown'} - ${v.quality || 'Unknown'}*\n`;
-            links.push(v.link);
-            i++;
+        // 📑 Build numbered pixeldrain list
+        let dlText = '';
+        let links = [];
+        let i = 1;
+        if (Array.isArray(s.downloads)) {
+            for (const v of s.downloads) {
+                if (!v.link) continue;
+                dlText += `*${i}️⃣ ${v.size || 'Unknown'} - ${v.quality || 'Unknown'}*\n`;
+                links.push(v.link);
+                i++;
+            }
         }
-    }
+        if (!links.length) dlText = '_No Pixeldrain download links found_';
 
-    if (!links.length) {
-        dlText = '_No download links available_';
-    }
+        // 🧠 Cache for number replies
+        global.sininfo_cache = global.sininfo_cache || {};
+        global.sininfo_cache[from] = {
+            links,
+            title: s.title,
+            image: s.images?.[0] || ''
+        };
 
-    // 🧠 Cache for number reply
-    global.sininfo_cache = global.sininfo_cache || {};
-    global.sininfo_cache[from] = {
-        links,
-        title: s.title,
-        image: s.images?.[1] || s.images?.[0] || ''
-    };
+        // 📄 Output text with movie info
+        const msg = `*🎬 TITLE ➮* _${s.title || "N/A"}_
 
-    // 📄 Details card
-    const msg = `*🌾 𝗧ɪᴛʟᴇ ➮* *_${s.title}_*
+*📅 Released ➮* _${s.date || "N/A"}_
+*🌎 Country ➮* _${s.country || "N/A"}_
+*⭐ Rating ➮* _${s.rating || "N/A"}_
+*⏱ Duration ➮* _${s.duration || "N/A"}_
+*🕵️ Subtitle By ➮* _${s.author || "N/A"}_
 
-*📅 Released ➮* _${s.date || 'N/A'}_
-*🌎 Country ➮* _${s.country || 'N/A'}_
-*⭐ Rating ➮* _${s.rating || 'N/A'}_
-*⏰ Runtime ➮* _${s.duration || 'N/A'}_
-*🕵️ Subtitle ➮* _${s.author || 'N/A'}_
-
-*⬇️ Reply with download number*
+*⬇️ Reply with a number to download*
 ────────────────
 ${dlText}
 `;
 
-    await conn.sendMessage(from, {
-        image: { url: s.images?.[0] || config.LOGO },
-        caption: msg,
-        footer: config.FOOTER
-    }, { quoted: mek });
+        await conn.sendMessage(from, {
+            image: { url: s.images?.[0] || config.LOGO },
+            caption: msg,
+            footer: config.FOOTER
+        }, { quoted: mek });
 
-} catch (e) {
-    console.error(e);
-    reply('🚫 Error\n' + e.message);
-}
+    } catch (e) {
+        console.error("sininfo error:", e);
+        reply('🚫 *Error Occurred !!*\n' + (e.message || e));
+    }
 });
 
 cmd({
