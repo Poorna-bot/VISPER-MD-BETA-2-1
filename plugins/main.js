@@ -1256,57 +1256,53 @@ async (conn, mek, m, { reply, from }) => {
 cmd({
     pattern: "forward",
     react: "⏩",
-    alias: ["f"],
-    desc: "forward film and msg without tag",
+alias: ["f"],
+     desc: "forwerd film and msg",
     use: ".f jid",
     category: "owner",
     filename: __filename
 },
-async (conn, mek, m, { from, l, prefix, quoted, body, isCmd, isSudo, isOwner, isMe, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isIsuru, isTharu, isSupporters, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+async(conn, mek, m,{from, l, prefix, quoted, body, isCmd, isSudo, isOwner, isMe, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isIsuru, isTharu,  isSupporters, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply}) => {
 
-    // Check permissions
-    if (!isMe && !isOwner && !isSudo) return await reply('*📛 OWNER COMMAND*');
+if ( !isMe && !isOwner && !isSudo ) return await reply('*📛OWNER COMMAND*')
+if (!q || !m.quoted) {
+return reply("*Please give me a Jid and Quote a Message to continue.*");
+}
+  // Split and trim JIDs
+  let jidList = q.split(',').map(jid => jid.trim());
+  if (jidList.length === 0) {
+    return reply("*Provide at least one Valid Jid. ⁉️*");
+  }
+  // Prepare the message to forward
+  let Opts = {
+    key: mek.quoted?.["fakeObj"]?.["key"]
+  };
+  // Handle document message
+  if (mek.quoted.documentWithCaptionMessage?.message?.documentMessage) {
+    let docMessage = mek.quoted.documentWithCaptionMessage.message.documentMessage;
+    const mimeTypes = require("mime-types");
+    let ext = mimeTypes.extension(docMessage.mimetype) || "file";
+    docMessage.fileName = docMessage.fileName || `file.${ext}`;
+  }
 
-    // Check if input or quoted message exists
-    if (!q || !m.quoted) {
-        return reply("*Please give me a JID and Quote a Message to continue.*");
-    }
-
-    // Split and trim JIDs
-    let jidList = q.split(',').map(jid => jid.trim());
-
-    // Forwarding Options to remove "Forwarded" tag
-    let forwardOpts = {
-        contextInfo: {
-            isForwarded: false,      // Tag eka ain karanna
-            forwardingScore: 0,      // Score eka reset karanna
-            externalAdReply: {      
-                showAdAttribution: false 
-            }
-        }
-    };
-
-    let successfulJIDs = [];
-
-    // Forward the message to each JID
-    for (let i of jidList) {
-        try {
-            // "false" as 3rd param stops automatic forwarding tag logic
-            await conn.forwardMessage(i, m.quoted, false, forwardOpts);
-            successfulJIDs.push(i);
-        } catch (error) {
-            console.error(`Error forwarding to ${i}:`, error);
-        }
-    }
-
-    // Response based on success
-    if (successfulJIDs.length > 0) {
-        return reply(`*✅ Message Forwarded without tag to:*\n\n${successfulJIDs.join("\n")}`);
-    } else {
-        return reply("*❌ Forwarding failed. Check the JID or the Logs.*");
-    }
+  Opts.message = mek.quoted;
+  let successfulJIDs = [];
+  // Forward the message to each JID
+  for (let i of jidList) {
+try {
+await conn.forwardMessage(i, Opts, false);
+successfulJIDs.push(i);
+} catch (error) {
+console.log(e);
+}
+}
+  // Response based on successful forwards
+if (successfulJIDs.length > 0) {
+return reply(`*Message Forwarded*\n\n` + successfulJIDs.join("\n"))
+} else {
+console.log(e)
+}
 });
-
 
 
 cmd({
