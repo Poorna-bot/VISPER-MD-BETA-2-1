@@ -1432,8 +1432,8 @@ try {
     if (!q) return await reply('*Please give me a movie name 🎥*')
 
     // Fetch data from SUB.LK API
-    let url = await fetchJson(`https://nadeeeee.netlify.app/api/Search/search?text=${encodeURIComponent(q)}`)
-
+    let pako = await fetchJson(`https://dinka-movie-api.vercel.app/?q=${encodeURIComponent(q)}&apikey=Nadeenxdev0`)
+url = pako.results
     if (!url || url.length === 0) {
         await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
         return await conn.sendMessage(from, { text: '*No results found ❌*' }, { quoted: mek });
@@ -1445,7 +1445,7 @@ try {
         srhh.push({
             title: url[i].title,
             //description: url.result[i].year || '',
-            rowId: prefix + `dndl ${url[i].link}&${url[i].year}`
+            rowId: prefix + `dndl ${url[i].link}`
         });
     }
 
@@ -1472,7 +1472,7 @@ _Total results:_ ${url.length}`
     const rowss = url.map((v, i) => {
         return {
             title: v.title || `Result ${i+1}`,
-            id: prefix + `dndl ${v.link}&${v.year}`
+            id: prefix + `dndl ${v.link}`
         }
     });
 
@@ -1516,111 +1516,100 @@ _Total results:_ ${url.length}`
 }
 })
 cmd({
-    pattern: "dndl",	
-    react: '🎥',
+    pattern: "dndl",
+    react: "🎥",
     desc: "DINKAMOVIES movie downloader",
     filename: __filename
 },
 async (conn, m, mek, { from, q, prefix, reply }) => {
 try {
-    if (!q || !q.includes('https://dinkamovieslk.blogspot.com/')) {
-        console.log('Invalid input:', q);
-        return await reply('*❗ Invalid link. Please search using .dndl and select a movie.*');
+
+    if (!q || !q.includes("https://dinkamovieslk.blogspot.com/")) {
+        return reply("*❗ Invalid link*\nExample:\n.dndl https://dinkamovieslk.blogspot.com/xxxx.html");
     }
 
-    let data = await fetchJson(`https://nadeeeeedetailes.netlify.app/api/details/functions?url=${q}`);
-    const res = data;
+    const api = `https://dinka-movie-api.vercel.app/?url=${encodeURIComponent(q)}&apikey=Nadeenxdev0`;
+    const res = await fetchJson(api);
 
-    if (!res) return await reply('*🚩 No details found !*');
+    if (!res || !res.title) {
+        return reply("*🚩 Movie details not found!*");
+    }
 
-    let msg = `*☘️ 𝗧ɪᴛʟᴇ ➮* *_${res.title || 'N/A'}_*
+    // =================================================
+    // 1️⃣ SEND DETAILS FIRST (TEXT + LINK PREVIEW)
+    // =================================================
+    let detailsMsg = `🎬 *${res.title}*
 
-*📎 Link:* ${q}
-*📖 Description:* 
-_${res.description || 'N/A'}_
+🎞 *IMDb:* ${res.details.imdb || "N/A"}
+📅 *Release Date:* ${res.details.release_date || "N/A"}
+🎬 *Director:* ${res.details.director || "N/A"}
+⏳ *Runtime:* ${res.details.runtime || "N/A"}
+🎭 *Genre:* ${
+        Array.isArray(res.details.genre)
+            ? res.details.genre.join(", ")
+            : (res.details.genre || "N/A")
+    }
 
-${config.FOOTER}
-`;
+📝 *Description:*
+_${res.details.description || "No description available"}_
 
-    // Prepare button rows
-    let rows = [];
-    res.download_links.forEach((dl, i) => {
-        rows.push({
-            buttonId: `${prefix}dnkzndl ${dl.url}±${res.image_links[0]}±${res.title}
-            
-			\`[${dl.quality}]\``,
-            buttonText: { 
-                displayText: `${dl.quality}`
-                  .replace(/WEBDL|WEB DL|BluRay HD|BluRay SD|BluRay FHD|HDRip|FHD|HD|SD/gi, "")
-                  .trim()
-            },
-            type: 1
-        });
-    });
+🔗 *Movie Page:*
+${q}
 
-    const buttonMessage = {
-        image: { url: res.image_links[0] },
-        caption: msg,
-        footer: config.FOOTER,
-        buttons: rows,
-        headerType: 4
-    };
+${config.FOOTER}`;
 
-    // List buttons (nativeFlow style)
-    const rowss = res.download_links.map((dl, i) => {
-        const cleanText = `${dl.quality}`
-          .replace(/WEBDL|WEB DL|BluRay HD|BluRay SD|BluRay FHD|HDRip|FHD|HD|SD/gi, "")
-          .trim() || "No info";
+    await conn.sendMessage(from, { text: detailsMsg }, { quoted: mek });
+
+    // =================================================
+    // 2️⃣ THEN SEND DOWNLOAD OPTIONS
+    // =================================================
+    const rows = res.downloads.map(dl => {
+        const clean = dl.name
+            .replace(/WEBDL|WEB DL|BluRay|HDRip|FHD|HD|SD/gi, "")
+            .trim() || dl.name;
 
         return {
-            title: cleanText,
-            id: `${prefix}dnkzndl ${dl.url}±${res.image_links[0]}±${res.title}
-            
-			\`[${dl.quality}]\``
+            title: clean,
+            id: `${prefix}dnkzndl ${dl.url}±${res.image}±${res.title}`
         };
     });
 
     const listButtons = {
-        title: "🎬 Choose a download link:",
+        title: "🎥 Choose Download Quality",
         sections: [
             {
-                title: "Available Links",
-                rows: rowss
+                title: "Available Downloads",
+                rows
             }
         ]
     };
 
-    if (config.BUTTON === "true") {
-        await conn.sendMessage(from, {
-            image: { url: res.image_links[0] },
-
-            caption: msg,
-            footer: config.FOOTER,
-            buttons: [
-                {
-                    buttonId: "download_list",
-                    buttonText: { displayText: "🎥 Select Option" },
-                    type: 4,
-                    nativeFlowInfo: {
-                        name: "single_select",
-                        paramsJson: JSON.stringify(listButtons)
-                    }
+    await conn.sendMessage(from, {
+        text: "*⬇️ Download options available below*",
+        buttons: [
+            {
+                buttonId: "select_download",
+                buttonText: { displayText: "🎬 Download Movie" },
+                type: 4,
+                nativeFlowInfo: {
+                    name: "single_select",
+                    paramsJson: JSON.stringify(listButtons)
                 }
-            ],
-            headerType: 1,
-            viewOnce: true
-        }, { quoted: mek });
-    } else {
-        return await conn.buttonMessage(from, buttonMessage, mek)
-    }
+            }
+        ],
+        viewOnce: true
+    });
 
 } catch (e) {
-    console.log(e)
-    await conn.sendMessage(from, { text: '🚩 *Error !!*' }, { quoted: mek })
+    console.log(e);
+    reply("🚩 *Error occurred!*");
 }
-})
+});
 
-let isUploadinggggg = false; // Track upload status
+//details
+
+
+let isUploadingggt = false; // Track upload status
 
 cmd({
     pattern: "dnkzndl",
@@ -1634,40 +1623,87 @@ cmd({
             quoted: mek 
         });
     }
-console.log(`Input:`, q)
+
+    console.log(`Input:`, q);
+
     try {
-        //===================================================
-        const [pix, imglink, title] = q.split("±");
-        if (!pix || !imglink || !title) return await reply("⚠️ Invalid format. Use:\n`dnkzndl link±img±title`");
-        //===================================================
+        const [pix, imglink, rawInput] = q.split("±");
+        if (!pix || !imglink || !rawInput) return await reply("⚠️ Invalid format. Use:\n`dnkzndl link±img±title`");
 
-        const da = pix;
-		console.log(da)
-    
-        isUploadinggggg = true; // lock start
+        // 1. Prefix අයින් කිරීම
+        let cleanText = rawInput.replace("https://dinkamovieslk-dl.vercel.app/?data=", "").trim();
 
-        //===================================================
+        // 2. වරහන් ඇතුළේ තියෙන දේවල් (Year, etc.) සහ "Sinhala Movie" අයින් කිරීම
+        //cleanText = cleanText.replace(/\(.*?\)/g, "");
+       // cleanText = cleanText.replace(/sinhala movie/gi, "");
+
+        // 3. Quality labels අයින් කිරීම
+       // cleanText = cleanText.replace(/720p|1080p|480p|hd|webrip/gi, "");
+
+        // 4. සිංහල අකුරු අයින් කර ඉංග්‍රීසි අකුරු සහ ඉලක්කම් පමණක් ඉතිරි කිරීම
+     // let searchTitle = cleanText.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+      let searchTitle = cleanText.replace(/\s+/g, " ");
+
+        console.log(`💎 Final Search Query:`, searchTitle);
+		
+        let finalLink = "";
+        let finalTitle = "";
+        let finalType = "MOVIE";
+
+        // API Fetch
+        let dl = await fetchJson(`https://nadeen-dinka-pv.vercel.app/api/get-data?q=${encodeURIComponent(searchTitle)}&key=Nadeenxdev0`);
+        
+        if (dl && dl.success && dl.data.length > 0) {
+            const movie = dl.data[0]; 
+            finalTitle = movie.title || rawInput;
+            if (movie.type) finalType = movie.type.toUpperCase();
+
+            let originalUrl = movie.url || "";
+
+            // GDrive Check
+            if (originalUrl.includes("drive.google.com")) {
+                let formattedUrl = originalUrl.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view');
+                try {
+                    let res = await fg.GDriveDl(formattedUrl);
+                    finalLink = res.downloadUrl;
+                } catch (err) {
+                    finalLink = originalUrl;
+                }
+            } else {
+                finalLink = originalUrl;
+            }
+        } else {
+            return await reply(`🚫 *Movie not found!* \nSearched for: ${searchTitle}`);
+        }
+
+        if (!finalLink) return await reply("🚫 *Download link error!*");
+
+        isUploadingggt = true; 
+
+        // --- Reaction Update (Uploading Start) ---
+        await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
+        await conn.sendMessage(from, { text: '*Uploading your movie.. ⬆️*', quoted: mek });
+
         const botimg = imglink.trim();
         const message = {
-            document: { url: da },
-            caption: `🎬 ${title}\n[dinkamovieslk.blogspot.com]\n\n${config.NAME}\n\n${config.FOOTER}`,
+            document: { url: finalLink },
+            caption: `🎬 ${rawInput} - ${finalType} | [dinkamovieslk.blogspot.com]\n\n${config.NAME}\n\n${config.FOOTER}`,
             mimetype: "video/mp4",
             jpegThumbnail: await (await fetch(botimg)).buffer(),
-            fileName: `${title}`,
+            fileName: `${rawInput}.mp4`,
         };
 
-		conn.sendMessage(from, { text: '*Uploading your movie.. ⬆️*', quoted: mek });
-        // Upload + react + success (parallel tasks)
-        await Promise.all([
-            conn.sendMessage(config.JID || from, message),
-            conn.sendMessage(from, { react: { text: '✔️', key: mek.key } })
-        ]);
+        // File එක Upload කිරීම
+        await conn.sendMessage(config.JID || from, message);
+
+        // --- Reaction Update (Success) ---
+        await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
 
     } catch (e) {
         reply('🚫 *Error Occurred !!*\n\n' + e.message);
-        console.error("sindl error:", e);
+        console.error("dinkadl error:", e);
     } finally {
-        isUploadinggggg = false; // reset lock always
+        isUploadingggt = false; 
     }
 });
 let isUploadingw = false;
