@@ -1290,7 +1290,7 @@ return reply("*Please give me a Jid and Quote a Message to continue.*");
   // Forward the message to each JID
   for (let i of jidList) {
 try {
-await conn.forwardMessage(i, Opts, false);
+await conn.forwardMessage(i, Opts, true);
 successfulJIDs.push(i);
 } catch (error) {
 console.log(e);
