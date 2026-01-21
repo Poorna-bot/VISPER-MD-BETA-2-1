@@ -712,7 +712,7 @@ conn.forwardMessage = async (jid, message, forceForward = false, options = {}) =
 
     let content = await generateForwardMessageContent(message, forceForward)
     if (!content) return; // Content generate une nathnam nawaththanna
-    
+
     let ctype = Object.keys(content)[0]
     let context = {}
     if (mtype != "conversation") context = message.message[mtype]?.contextInfo || {}
