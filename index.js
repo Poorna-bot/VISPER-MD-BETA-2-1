@@ -691,53 +691,42 @@ editedMessage: {
 }
 
 	    
+
 conn.forwardMessage = async (jid, message, forceForward = false, options = {}) => {
-    // Message eka nathnam error eka nawaththanna
-    if (!message || !message.message) return; 
-
-    let vtype
-    if (options.readViewOnce) {
-        // View once logic eka (meeka handle karaddi message.message thiyeda kiyala check karanawa)
-        let viewOnceMsg = message.message?.ephemeralMessage?.message || message.message
-        if (viewOnceMsg?.viewOnceMessage) {
-            vtype = Object.keys(viewOnceMsg.viewOnceMessage.message)[0]
-            delete viewOnceMsg.viewOnceMessage.message[vtype].viewOnce
-            message.message = { ...viewOnceMsg.viewOnceMessage.message }
-        }
-    }
-
-    // NULL check ekak ekka mtype ganna
-    let mtype = message.message ? Object.keys(message.message)[0] : null
-    if (!mtype) return; // Mtype nathnam forward karanna ba
-
-    let content = await generateForwardMessageContent(message, forceForward)
-    if (!content) return; // Content generate une nathnam nawaththanna
-
-    let ctype = Object.keys(content)[0]
-    let context = {}
-    if (mtype != "conversation") context = message.message[mtype]?.contextInfo || {}
-
-    content[ctype].contextInfo = {
-        ...context,
-        ...content[ctype].contextInfo,
-        forwardingScore: 0,
-        isForwarded: false
-    }
-
-    const waMessage = await generateWAMessageFromContent(jid, content, options ? {
-        ...content[ctype],
-        ...options,
-        ...(options.contextInfo ? {
-            contextInfo: {
-                ...content[ctype].contextInfo,
-                ...options.contextInfo
+            let vtype
+            if (options.readViewOnce) {
+                message.message = message.message && message.message.ephemeralMessage && message.message.ephemeralMessage.message ? message.message.ephemeralMessage.message : (message.message || undefined)
+                vtype = Object.keys(message.message.viewOnceMessage.message)[0]
+                delete (message.message && message.message.ignore ? message.message.ignore : (message.message || undefined))
+                delete message.message.viewOnceMessage.message[vtype].viewOnce
+                message.message = {
+                    ...message.message.viewOnceMessage.message
+                }
             }
-        } : {})
-    } : {})
 
-    await conn.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
-    return waMessage
+            let mtype = Object.keys(message.message)[0]
+            let content = await generateForwardMessageContent(message, forceForward)
+            let ctype = Object.keys(content)[0]
+            let context = {}
+            if (mtype != "conversation") context = message.message[mtype].contextInfo
+            content[ctype].contextInfo = {
+                ...context,
+                ...content[ctype].contextInfo
+            }
+            const waMessage = await generateWAMessageFromContent(jid, content, options ? {
+                ...content[ctype],
+                ...options,
+                ...(options.contextInfo ? {
+                    contextInfo: {
+                        ...content[ctype].contextInfo,
+                        ...options.contextInfo
+                    }
+                } : {})
+            } : {})
+            await conn.relayMessage(jid, waMessage.message, { messageId: waMessage.key.id })
+            return waMessage
 }
+
 
 
 
