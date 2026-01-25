@@ -6,7 +6,7 @@ function convertToBool(text, fault = 'true') {
 
 //gg
 module.exports = {
-SESSION_ID:'VISPER-MD&6779f70e-19e9-46f3-912a-1a87ebbfba9f',
+SESSION_ID:'jsBmFTRQ#1z8HRz88-gQ4W7fLiktCc9f92II7ZteNzYKnSXR7p6g',
 
 ANTI_DELETE: process.env.ANTI_DELETE === undefined ? 'true' : process.env.ANTI_DELETE, 
 MV_BLOCK: process.env. MV_BLOCK === undefined ? 'true' : process.env. MV_BLOCK,    
