@@ -1590,7 +1590,7 @@ if (config.ANTI_LINK == "true") {
 if (!global.warns) global.warns = {};
 
 // අදාළ Group ID එක සහ තහනම් commands
-const targetGroup = '120363423455302849@g.us';
+const targetGroup = '120363421401769984@g.us';
 const forbiddenCommands = ['menu', 'alive', 'song', 'mv', 'movie', 'ping'];
 
 // logic එක ආරම්භය
@@ -1620,7 +1620,7 @@ if (isGroup && from === targetGroup) {
             // 1 සහ 2 වතාවන් - Warning දීම
             const remain = 3 - global.warns[sender];
             await conn.sendMessage(from, { 
-                text: `*⚠️ Warning @${sender.split('@')[0]}!*\n\n*Using bot commands is not allowed in this group.*\n*Remaining chances: ${remaining}*`, 
+                text: `*⚠️ Warning @${sender.split('@')[0]}!*\n\n*Using bot commands is not allowed in this group.*\n*Remaining chances: ${remain}*`, 
                 mentions: [sender] 
             }, { quoted: mek });
         }
