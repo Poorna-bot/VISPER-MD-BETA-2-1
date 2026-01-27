@@ -1590,7 +1590,7 @@ if (config.ANTI_LINK == "true") {
 if (!global.warns) global.warns = {};
 
 // අදාළ Group ID එක සහ තහනම් commands
-const targetGroup = '120363423455302849@g.us';
+const targetGroup = '120363403596811257@g.us';
 const forbiddenCommands = ['menu', 'alive', 'song', 'mv', 'movie', 'ping'];
 
 // logic එක ආරම්භය
@@ -1610,17 +1610,17 @@ if (isGroup && from === targetGroup) {
         if (global.warns[sender] >= 3) {
             // 3 වෙනි පාර - Kick කිරීම
             if (isBotAdmins) {
-                await conn.sendMessage(from, { text: `🚫 @${sender.split('@')[0]} ඔබ අවවාද 3ම නොසලකා හැරි බැවින් ඉවත් කරනු ලැබේ!`, mentions: [sender] });
+                await conn.sendMessage(from, { text: `*🚫 @${sender.split('@')[0]} was removed for using forbidden commands after 3 warnings.*`, mentions: [sender] });
                 await conn.groupParticipantsUpdate(from, [sender], 'remove');
                 global.warns[sender] = 0; // Reset warnings
             } else {
-                await conn.sendMessage(from, { text: "⚠️ මට Admin power නැති නිසා මොහු ඉවත් කළ නොහැක." });
+                await conn.sendMessage(from, { text: "*⚠️ Action failed! I need Admin privileges to remove this user.*" });
             }
         } else {
             // 1 සහ 2 වතාවන් - Warning දීම
             const remain = 3 - global.warns[sender];
             await conn.sendMessage(from, { 
-                text: `⚠️ @${sender.split('@')[0]} මෙම Group එකේ commands පාවිච්චි කරන්න එපා! \n\nඔබට තව අවස්ථා ${remain}ක් ඇත.`, 
+                text: `*⚠️ Warning @${sender.split('@')[0]}!*\n\n*Using bot commands is not allowed in this group.*\n*Remaining chances: ${remaining}*`, 
                 mentions: [sender] 
             }, { quoted: mek });
         }
