@@ -1601,11 +1601,9 @@ if (from === targetGroup) {
 
     if (isForbidden) {
         
-       const groupMetadata = await conn.groupMetadata(from);
-        const botId = conn.user.id.split(':')[0] + '@s.whatsapp.net';
-        const isAdminnn = groupMetadata.participants.find(p => p.id === botId)?.admin;
+  
 
-        if (isAdminnn) {
+        if (isAdmins) {
             // Kick කිරීමට පෙර message එකක් යැවීම
             await conn.sendMessage(from, { text: '*You will be removed because using other bot commands within this group is prohibited ⚠️.*' }, { quoted: m });
             
