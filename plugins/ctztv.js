@@ -1,349 +1,238 @@
 const config = require('../config')
 const { cmd, commands } = require('../command')
-const axios = require('axios');
+const axios = require('axios'); 
+const sharp = require('sharp');
 const fg = require('api-dylux');
-
+const fetch = require('node-fetch');
 
 let isUploadingTv = false;
 
-// ==================== CINESUB SEARCH ====================
+
+const FOOTER_TEXT = '> 📽️*𝐕ɪꜱᴘᴇʀ 𝐌ᴏᴠɪᴇ 𝐙ᴏɴᴇ 𝐗 📽️*';
+
+
+async function getResizedThumb(url) {
+    try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        const buffer = Buffer.from(response.data, 'binary');
+        return await sharp(buffer)
+            .resize(200, 200, { fit: 'cover' }) 
+            .jpeg({ quality: 80 }) 
+            .toBuffer();
+    } catch (e) {
+        console.error("Sharp Error:", e.message);
+        return null;
+    }
+}
+
+// ==================== 1. TV SERIES SEARCH ====================
 cmd({
     pattern: "ctztv",
     react: '🔎',
     category: "tv",
-    alias: ["cinesubz", "tvsub"],
-    desc: "Search TV series on cinesubz.lk",
-    use: ".cinesub <tv series name>",
     filename: __filename
 },
-async (conn, m, mek, { from, q, prefix, isPre, isMe, isSudo, isOwner, reply }) => {
+async (conn, m, mek, { from, q, prefix, reply }) => {
     try {
-        // Premium & Block checks
-        const pr = (await axios.get('https://raw.githubusercontent.com/Nadeenpoorna-app/main-data/refs/heads/main/master.json')).data;
-        const isFree = pr.mvfree === "true";
-
-        if (!isFree && !isMe && !isPre) {
-            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-            return await conn.sendMessage(from, {
-                text: "*`You are not a premium user⚠️`*\n\n" +
-                      "*Send a message to one of the 2 numbers below and buy Lifetime premium 🎉.*\n\n" +
-                      "_Price : 200 LKR ✔️_\n\n" +
-                      "*👨‍💻Contact us : 0778500326 , 0722617699*"
-            }, { quoted: mek });
-        }
-
-        if (config.MV_BLOCK == "true" && !isMe && !isSudo && !isOwner) {
-            await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
-            return await conn.sendMessage(from, { text: "*This command currently only works for the Bot owner.*" }, { quoted: mek });
-        }
-
         if (!q) return await reply('*Please enter a TV series name! 📺*');
-
         const { data } = await axios.get(`https://tharuzz-movie-api.vercel.app/api/cinesub/search?query=${encodeURIComponent(q)}`);
-
+        
         if (!data.result || !Array.isArray(data.result)) return await reply('*No results found ❌*');
-
         const results = data.result.filter(item => item.type === "tvshows");
 
-        if (!results.length) return await reply('*No TV series found ❌*');
-
-        let srh = results.map((v, index) => ({
+        let srh = results.map(v => ({
             title: v.title.replace(/Sinhala Subtitles\s*\|?\s*සිංහල උපසිරසි.*/gi, "").trim(),
-            description: "",
             rowId: `${prefix}tvinfo ${v.link}`
         }));
 
-        const sections = [{ title: "cinesubz.lk TV Series Results 📺", rows: srh }];
+        await conn.listMessage(from, {
+            text: `_*CINESUBZ TV SERIES SEARCH RESULTS 📺*_\n\n*🔎 Input:* ${q}\n\n*Select a series from the list below to view episodes.*`,
+            footer: FOOTER_TEXT,
+            title: '', 
+            buttonText: 'Click to View Results 🎬',
+            sections: [{ title: "Available TV Series", rows: srh }]
+        }, mek);
 
-        const listMessage = {
-            text: `_*CINESUBZ TV SERIES SEARCH RESULTS 📺*_\n\n*🔎 Input:* ${q}`,
-            footer: config.FOOTER,
-            title: 'Select a TV Series',
-            buttonText: '*Reply a Number 🔢*',
-            sections
-        };
-
-        if (config.BUTTON === "true") {
-            const listButtons = {
-                title: "Choose a TV Series 📺",
-                sections: [{ title: "Available TV Series", rows: srh }]
-            };
-
-            await conn.sendMessage(from, {
-                image: { url: config.LOGO },
-                caption: `_*CINESUBZ TV SERIES SEARCH RESULTS 📺*_\n\n*🔎 Input:* ${q}`,
-                footer: config.FOOTER,
-                buttons: [{
-                    buttonId: "download_list",
-                    buttonText: { displayText: "📺 Select Series" },
-                    type: 4,
-                    nativeFlowInfo: {
-                        name: "single_select",
-                        paramsJson: JSON.stringify(listButtons)
-                    }
-                }],
-                headerType: 1
-            }, { quoted: mek });
-        } else {
-            await conn.sendMessage(from, listMessage, { quoted: mek });
-        }
-
-    } catch (e) {
-        console.error("CineSub Search Error:", e);
-        reply('🚫 *Error Occurred !!*\n\n' + e.message);
-    }
+    } catch (e) { reply('🚩 *Error during search!*'); }
 });
 
-// ==================== TV SERIES INFO & EPISODES (with thumbnail) ====================
+// ==================== 2. TV INFO & EPISODES ====================
 cmd({
     pattern: "tvinfo",
     react: "📺",
-    desc: "Get TV series details and episodes",
     filename: __filename
 },
-async (conn, mek, m, { from, q, prefix, reply }) => {
+async (conn, m, mek, { from, q, prefix, reply }) => {
     try {
-        if (!q) return await reply('🚩 *Please provide a valid TV series URL!*');
-
         const { data } = await axios.get(`https://episodes-cine.vercel.app/api/details?url=${encodeURIComponent(q)}`);
         const series = data.result;
+        if (!series) return await reply("*Couldn't find TV series info!*");
 
-        if (!series) return await reply("*Couldn't find TV series info 😔*");
+        let msg = `*🍿 𝗧ɪᴛʟᴇ ➮* *_${series.title || 'N/A'}_*\n*📅 𝗬ᴇᴀʀ ➮* _${series.year || 'N/A'}_`;
 
-        // Cast
-        let castStr = "N/A";
-        if (series.cast && Array.isArray(series.cast)) {
-            castStr = series.cast.map(c => `• ${c.name} ${c.role ? 'as ' + c.role : ''}`).join('\n');
-        }
+        let rows = [];
+        rows.push({
+            buttonId: `${prefix}ctvdetails ${q}`,
+            buttonText: { displayText: 'View Details Card 📋' },
+            type: 1
+        });
 
-        const infoMsg = `*📺 Title ➮* _${series.title || series.serie || 'N/A'}_\n\n` +
-                        `*📅 Year ➮* _${series.year || 'N/A'}_\n\n` +
-                        `*🎭 Cast ➮*\n${castStr}\n\n` +
-                        `*📖 Description ➮*\n_${series.description || 'N/A'}_`;
-
-        // Build episode list
-        let episodeRows = [];
-        let episodeListRows = [];
-
-        if (series.seasons && Array.isArray(series.seasons)) {
-            series.seasons.forEach(season => {
-                if (season.episodes && Array.isArray(season.episodes)) {
-                    season.episodes.forEach(ep => {
-                        const sNum = season.season ? `S${String(season.season).padStart(2, '0')}` : '';
-                        const eNum = ep.episode ? `E${String(ep.episode).padStart(2, '0')}` : '';
-                        const epTitle = `${sNum}${eNum} - ${ep.title || 'Episode'}`;
-                        const fullTitle = `${series.title || series.serie} ${epTitle}`;
-
-                        const row = {
-                            title: epTitle,
-                            rowId: `${prefix}tvquality ${ep.url}±${series.poster || config.LOGO}±${fullTitle}`
-                        };
-
-                        episodeRows.push({
-                            buttonId: row.rowId,
-                            buttonText: { displayText: epTitle },
-                            type: 1
-                        });
-                        episodeListRows.push(row);
-                    });
-                }
+        series.seasons.forEach(season => {
+            season.episodes.forEach(ep => {
+                const epTitle = `S${String(season.season).padStart(2, '0')} E${String(ep.episode).padStart(2, '0')}`;
+                rows.push({
+                    buttonId: `${prefix}tvquality ${ep.url}±${series.poster}±${series.title} ${epTitle}±${q}`,
+                    buttonText: { displayText: epTitle },
+                    type: 1
+                });
             });
-        }
+        });
 
-        if (episodeListRows.length === 0) return await reply("*No episodes found for this series.*");
+        return await conn.buttonMessage(from, {
+            image: { url: series.poster || config.LOGO },
+            caption: msg,
+            footer: FOOTER_TEXT,
+            buttons: rows.slice(0, 10),
+            headerType: 4
+        }, mek);
 
-        const listButtons = {
-            title: "Select Episode 📺",
-            sections: [{ title: "All Episodes", rows: episodeListRows }]
-        };
-
-        const poster = series.poster || config.LOGO;
-
-        // Always send with thumbnail (details card)
-        if (config.BUTTON === "true") {
-            await conn.sendMessage(from, {
-                image: { url: poster },
-                caption: infoMsg,
-                footer: config.FOOTER,
-                buttons: [{
-                    buttonId: "download_list",
-                    buttonText: { displayText: "📺 Select Episode" },
-                    type: 4,
-                    nativeFlowInfo: {
-                        name: "single_select",
-                        paramsJson: JSON.stringify(listButtons)
-                    }
-                }],
-                headerType: 1
-            }, { quoted: mek });
-        } else {
-            // Normal mode: send image + caption first, then list (no image in list)
-            await conn.sendMessage(from, { image: { url: poster }, caption: infoMsg, footer: config.FOOTER }, { quoted: mek });
-            const listMsg = {
-                text: "*📺 Select an Episode Below*",
-                footer: config.FOOTER,
-                title: "Episodes",
-                buttonText: "Reply Number 🔢",
-                sections: [{ title: "All Episodes", rows: episodeListRows }]
-            };
-            await conn.sendMessage(from, listMsg, { quoted: mek });
-        }
-
-    } catch (e) {
-        console.error("TV Info Error:", e);
-        reply('🚫 *Error Occurred !!*\n\n' + e.message);
-    }
+    } catch (e) { reply('🚩 *Error fetching episodes!*'); }
 });
 
-// ==================== QUALITY SELECTION (no thumbnail in menu) ====================
+// ==================== 3. DETAILS CARD ====================
+cmd({
+    pattern: "ctvdetails",
+    react: '📋',
+    desc: "Rich TV info card",
+    filename: __filename
+},
+async (conn, m, mek, { from, q, reply }) => {
+    try {
+        const { data } = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-info?url=${encodeURIComponent(q)}&apikey=82406ca340409d44`);
+        const movie = data.data;
+
+        let msg = `*✨ 𝗧𝗩 𝗦𝗘𝗥𝗜𝗘𝗦 𝗗𝗘𝗧𝗔𝗜𝗟𝗦 ✨*\n\n` +
+                  `*🍿 𝗧ɪᴛʟᴇ ➮* *_${movie.title || 'N/A'}_*\n` +
+                  `*📅 𝗥ᴇʟᴇᴀsᴇᴅ ➮* _${movie.year || 'N/A'}_\n` +
+                  `*💃 𝗥ᴀᴛɪɴɢ ➮* _⭐ ${movie.rating || 'N/A'}/10_\n` +
+                  `*⏰ 𝗗ᴜʀᴀᴛɪᴏන ➮* _${movie.duration || 'N/A'}_\n` +
+                  `*🌎 𝗖ᴏᴜɴᴛρυ ➮* _${movie.country || 'N/A'}_\n` +
+                  `*🎭 𝗚ᴇɴʀᴇs ➮* _${movie.genres || 'TV Series'}_\n` +
+                  `*🎞️ 𝗤𝘂𝗮ලිටි ➮* _${movie.quality || 'N/A'}_\n` +
+                  `*🎬 𝗗𝗶රᴇ𝗰𝘁𝗼ﺮ ➮* _${movie.directors || 'N/A'}_\n\n` +
+                  `*💁 𝗦ᴜʙᴛɪᴛʟᴇ ʙʏ ➮* _CineSubz.co_\n\n` +
+                  `${FOOTER_TEXT}`;
+
+        await conn.sendMessage(from, { 
+            image: { url: movie.image }, 
+            caption: msg 
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
+
+    } catch (e) { reply('🚩 *Error fetching details card!*'); }
+});
+
+// ==================== 4. QUALITY SELECTION (UPDATED) ====================
 cmd({
     pattern: "tvquality",
     react: "🎥",
     dontAddCommandList: true,
     filename: __filename
 },
-async (conn, mek, m, { from, q, prefix, reply }) => {
+async (conn, m, mek, { from, q, prefix, reply }) => {
     try {
-        const [epUrl, imgLink, title] = q.split("±");
-        if (!epUrl || !title) return await reply("⚠️ Invalid episode data.");
-
+        const [epUrl, imgLink, title, mainUrl] = q.split("±");
         const { data: convData } = await axios.get(`https://down-seven-bice.vercel.app/api/download?url=${encodeURIComponent(epUrl)}`);
 
-        if (!convData.downloads || convData.downloads.length === 0) {
-            return await reply("⚠️ No download qualities found.");
-        }
+        let rows = convData.downloads.map(dl => ({
+            buttonId: `${prefix}tvdl ${dl.url}±${imgLink}±${title}±${mainUrl}±${dl.quality}`,
+            buttonText: { displayText: dl.quality },
+            type: 1
+        }));
 
-        let qualityRows = [];
-        let qualityListRows = [];
+        await conn.buttonMessage(from, {
+            image: { url: imgLink },
+            caption: `*🎥 Select Quality for:* \n_${title}_`,
+            footer: FOOTER_TEXT,
+            buttons: rows,
+            headerType: 4
+        }, mek);
 
-        convData.downloads.forEach((dl, i) => {
-            const qual = dl.quality || `Quality ${i + 1}`;
-            const rowId = `${prefix}tvdl ${dl.url}±${imgLink}±${title} [${qual}]`;
-
-            qualityRows.push({
-                buttonId: rowId,
-                buttonText: { displayText: qual },
-                type: 1
-            });
-            qualityListRows.push({
-                title: qual,
-                rowId: rowId
-            });
-        });
-
-        const qualMsg = `*📺 Select Quality for:*\n_${title}_`;
-
-        const listButtons = {
-            title: "Select Quality",
-            sections: [{ title: "Available Qualities", rows: qualityListRows }]
-        };
-
-        // Only text + list for quality menu (no thumbnail here as requested)
-        if (config.BUTTON === "true") {
-            await conn.sendMessage(from, {
-                text: qualMsg,
-                footer: config.FOOTER,
-                buttons: [{
-                    buttonId: "download_list",
-                    buttonText: { displayText: "🎥 Choose Quality" },
-                    type: 4,
-                    nativeFlowInfo: {
-                        name: "single_select",
-                        paramsJson: JSON.stringify(listButtons)
-                    }
-                }]
-            }, { quoted: mek });
-        } else {
-            const listMsg = {
-                text: qualMsg,
-                footer: config.FOOTER,
-                title: "Select Quality 🎥",
-                buttonText: "Reply Number 🔢",
-                sections: [{ title: "Qualities", rows: qualityListRows }]
-            };
-            await conn.sendMessage(from, listMsg, { quoted: mek });
-        }
-
-    } catch (e) {
-        console.error("Quality Error:", e);
-        reply('🚫 *Error fetching qualities!!*\n\n' + e.message);
-    }
+    } catch (e) { reply('🚩 *Error fetching qualities!*'); }
 });
 
-// ==================== FINAL DOWNLOAD (tvdl - automatic using API + api-dylux) ====================
- cmd({
+// ==================== 5. FINAL DOWNLOAD ====================
+cmd({
     pattern: "tvdl",
     react: "⬇️",
     dontAddCommandList: true,
     filename: __filename
 },
-async (conn, mek, m, { from, q, reply }) => {
+async (conn, m, mek, { from, q, reply }) => {
     if (isUploadingTv) return await reply('*Another episode is uploading. Please wait ⏳*');
 
     try {
-        const parts = q.split("±");
-        const processedUrl = parts[0]; // https://cinesubz.lk/api-.../fblovaxw0v
-        let title = parts.slice(2).join("±");
-
-        if (!processedUrl || !title) return await reply("⚠️ Invalid data.");
-
-        // Call the API to get the download links
-        const apiUrl = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${encodeURIComponent(processedUrl)}&apikey=82406ca340409d44`;
-        const { data: apiRes } = await axios.get(apiUrl);
-
-        if (!apiRes.status || !apiRes.data?.download?.length) {
-            return await reply("⚠️ API error or no download links (apikey may be invalid).");
-        }
-
+        const [processedUrl, imgLink, title, mainUrl, quality] = q.split("±");
+        
+        const { data: apiRes } = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${encodeURIComponent(processedUrl)}&apikey=82406ca340409d44`);
+        const downloadLinks = apiRes.data.download;
         let downloadUrl = null;
-        let fileName = title || "TV_Episode";
-        let mimetype = "video/mp4";
+        let fileName = title;
 
-        // First priority: Look for "Cloud" direct link
-        const cloudEntry = apiRes.data.download.find(dl => dl.name.toLowerCase() === "cloud");
-        if (cloudEntry && cloudEntry.url) {
-            downloadUrl = cloudEntry.url.trim();
-            await reply('*Direct Cloud link found! Uploading your episode.. ⬆️*\n\n_Please wait, large files may take time._');
-        } else {
-            // Fallback: Google Drive
-            const gdriveEntry = apiRes.data.download.find(dl => dl.name.toLowerCase() === "gdrive");
-            if (!gdriveEntry || !gdriveEntry.url) {
-                return await reply("⚠️ No Cloud or Google Drive link found in API response.");
-            }
-
-            const gdriveLink = gdriveEntry.url.trim();
-
-            await reply('*GDrive link found (fallback). Processing.. ⬆️*\n\n_Please wait, large files may take time._');
-
-            let res = await fg.GDriveDl(gdriveLink.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download', '/view'));
-
-            if (!res || !res.downloadUrl) {
-                return await reply("*Failed to process Google Drive link.*");
-            }
-
-            downloadUrl = res.downloadUrl;
-            fileName = res.fileName || fileName;
-            mimetype = res.mimetype || mimetype;
-
-            // GDrive style message
-            await reply(` *↗️ᴜᴘʟᴏᴀᴅɪɴɢ ʏᴏᴜʀ ᴛᴠ sʜᴏᴡ ᴡᴀɪᴛ 3 sᴇᴄᴄᴏɴᴅs* \n\n*↗️ғɪʟᴇ ɴᴀᴍᴇ:*  ${res.fileName}\n*↗️ғɪʟᴇ sɪᴢᴇ:* ${res.fileSize}\n*↗️ғɪʟᴇ ᴛʏᴘᴇ:* ${res.mimetype}\n\n•シ︎ᴅᴀʀᴋʟᴇx-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ•`);
+        // --- GDrive to Mega Logic ---
+        const gdriveEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "gdrive");
+        if (gdriveEntry) {
+            try {
+                const res = await fg.GDriveDl(gdriveEntry.url.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download', '/view'));
+                if (res && res.downloadUrl) {
+                    downloadUrl = res.downloadUrl;
+                    fileName = res.fileName;
+                }
+            } catch (e) { console.log("GDrive Fail, checking Mega..."); }
         }
+
+        if (!downloadUrl) {
+            const megaEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "mega");
+            if (megaEntry) {
+                const megaRes = await axios.get(`https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(megaEntry.url)}`);
+                if (megaRes.data && megaRes.data.url) downloadUrl = megaRes.data.url;
+            }
+        }
+
+        if (!downloadUrl) return await reply("⚠️ No working link found.");
 
         isUploadingTv = true;
+        await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
 
-        // Upload as document (direct URL use කරලා)
-        await conn.sendMessage(config.JID || from, { 
+        
+        const resizedThumb = await getResizedThumb(imgLink);
+
+        
+        const qText = quality ? quality.trim() : 'Unknown Quality';
+
+        const caption = `🎬 𝗡𝗮𝗺𝗲 : *${title}*\n` +
+                        `Sinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n` +
+                        ` \`${qText}\` \n\n` +
+                        `${FOOTER_TEXT}`; 
+
+        
+        // මෙතන config.JID තිබේ නම් එතනට යවයි, නැත්නම් command එක ආපු තැනට (from) යවයි.
+        const targetJid = config.JID || from;
+
+        await conn.sendMessage(targetJid, { 
             document: { url: downloadUrl }, 
-            fileName: "🎥ᴅᴀʀᴋʟᴇx🎥️" + fileName, 
-            mimetype: mimetype,
-            caption: fileName.replace('[Cinesubz.co]', '') + '\n\n> *•シ︎ᴅᴀʀᴋʟᴇx-ᴍᴅ ᴡʜᴀᴛsᴀᴘᴘ ʙᴏᴛ•*'
-        }, { quoted: mek });
+            fileName: "🎥🎬 " + fileName.trim() + ".mp4", 
+            mimetype: "video/mp4",
+            jpegThumbnail: resizedThumb,
+            caption: caption
+        });
 
         await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
 
     } catch (e) {
-        console.error("TV Download Error:", e);
-        reply('*Error !!*\n\n' + e.message);
+        console.error(e);
+        reply('*Download Error !!*');
     } finally {
         isUploadingTv = false;
     }
