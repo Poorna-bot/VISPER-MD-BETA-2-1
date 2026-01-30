@@ -246,7 +246,10 @@ async (conn, m, mek, { from, q, reply }) => {
 
                     if (downloadUrl) {
                         const resizedThumb = await getResizedThumb(imgLink);
-                        const caption = `🎬 𝗡𝗮𝗺𝗲 : \*${epTitle}\*\nSinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n \` ${selectedQuality} \` \n\n${FOOTER_TEXT}`;
+                        const caption = `🎬 *𝗡𝗮𝗺𝗲 :* ${epTitle}\n` +
+                                        `Sinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n` +
+                                        ` \` ${selectedQuality.trim()} \` \n\n` + 
+                                        `${FOOTER_TEXT}`;
                         
                         const targetJid = config.JID || from;
                         await conn.sendMessage(targetJid, { 
@@ -256,7 +259,7 @@ async (conn, m, mek, { from, q, reply }) => {
                             jpegThumbnail: resizedThumb,
                             caption: caption
                         });
-                        // Small delay to prevent spam/ban
+                        // පොඩි delay එකක් දන්න spam/ban වලින් බේරෙන්න
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }
                 } catch (err) {
