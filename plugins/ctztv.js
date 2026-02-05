@@ -33,7 +33,6 @@ async (conn, m, mek, { from, q, prefix, reply }) => {
     try {
         if (!q) return await reply('\*Please enter a TV series name! 📺\*');
         const { data } = await axios.get(`https://tharuzz-movie-api.vercel.app/api/cinesub/search?query=${encodeURIComponent(q)}`);
-        
         if (!data.result || !Array.isArray(data.result)) return await reply('\*No results found ❌\*');
         const results = data.result.filter(item => item.type === "tvshows");
         let srh = results.map(v => ({
@@ -62,25 +61,27 @@ async (conn, m, mek, { from, q, prefix, reply }) => {
         const series = data.result;
         if (!series) return await reply("\*Couldn't find TV series info!\*");
 
-        let msg = `\*🍿 𝗧ɪᴛʟᴇ ➮\* \*\_${series.title || 'N/A'}\_\*\n\*📅 𝗬ᴇᴀʀ ➮\* \_${series.year || 'N/A'}\_`;
+        const posterUrl = series.poster || config.LOGO;
         
-        let rows = [];
-        // View Details Card Button
-        rows.push({
-            buttonId: `${prefix}ctvdetails ${q}`,
-            buttonText: { displayText: 'View Details Card 📋' },
-            type: 1
-        });
+        for (let i = 0; i < series.seasons.length; i++) {
+            const season = series.seasons[i];
+            let rows = [];
 
-        // ALL EPISODES DOWNLOAD BUTTON
-        rows.push({
-            buttonId: `${prefix}tvallquality ${q}±${series.poster}±${series.title}`,
-            buttonText: { displayText: '📥 Download All Episodes' },
-            type: 1
-        });
+            
+            rows.push({
+                buttonId: `${prefix}tvallquality ${q}±${series.poster}±${series.title}±${season.season}`,
+                buttonText: { displayText: `📥 Download All S${season.season}` },
+                type: 1
+            });
 
-      
-        series.seasons.forEach(season => {
+            if (i === 0) {
+                rows.push({
+                    buttonId: `${prefix}ctvdetails ${q}`,
+                    buttonText: { displayText: 'View Details Card 📋' },
+                    type: 1
+                });
+            }
+
             season.episodes.forEach(ep => {
                 const epTitle = `S${String(season.season).padStart(2, '0')} E${String(ep.episode).padStart(2, '0')}`;
                 rows.push({
@@ -89,15 +90,22 @@ async (conn, m, mek, { from, q, prefix, reply }) => {
                     type: 1
                 });
             });
-        });
 
-        return await conn.buttonMessage(from, {
-            image: { url: series.poster || config.LOGO },
-            caption: msg,
-            footer: FOOTER_TEXT,
-            buttons: rows.slice(0, 15), // Extended to show more buttons
-            headerType: 4
-        }, mek);
+            const captionText = i === 0 
+                ? `\*🍿 𝗧ɪᴛ𝗹𝗲 ➮\* \*\_${series.title}\_\*\n\*📅 𝗬ᴇᴀʀ ➮\* \_${series.year}\_\n\n\*Select an Episode from Season ${season.season} below:\*`
+                : `\*📂 Season ${season.season} Episodes - ${series.title}\*`;
+
+            await conn.buttonMessage(from, {
+                image: { url: posterUrl },
+                caption: captionText,
+                footer: FOOTER_TEXT,
+                buttons: rows,
+                headerType: 4
+            }, mek);
+
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
     } catch (e) { reply('🚩 \*Error fetching episodes!\*'); }
 });
 
@@ -112,18 +120,17 @@ async (conn, m, mek, { from, q, reply }) => {
     try {
         const { data } = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-info?url=${encodeURIComponent(q)}&apikey=82406ca340409d44`);
         const movie = data.data;
-        let msg = `\*✨ 𝐓ᴠ 𝐒ᴇʀɪᴇꜱ 𝐃ᴇᴛᴀɪʟꜱ ✨\*\n\n` +
-                  `\*🍿 𝐓ɪᴛʟᴇ ➮\* \*\_${movie.title || 'N/A'}\_\*\n` +
-                  `\*📅 𝐑ᴇʟᴇᴀsᴇᴅ ➮\* \_${movie.year || 'N/A'}\_\n` +
-                  `\*💃 𝐑ᴀᴛɪɴɢ ➮\* \_⭐ ${movie.rating || 'N/A'}/10\_\n` +
-                  `\*⏰ 𝐃ᴜʀᴀᴛɪᴏɴ ➮\* \_${movie.duration || 'N/A'}\_\n` +
-                  `\*🌎 𝐂ᴏᴜɴᴛʀʏ ➮\* \_${movie.country || 'N/A'}\_\n` +
-                  `\*🎭 𝐆ᴇɴʀᴇs ➮\* \_${movie.genres || 'TV Series'}\_\n` +
-                  `\*🎞️ 𝐐ᴜᴀʟɪᴛʏ ➮\* \_${movie.quality || 'N/A'}\_\n` +
-                  `\*🎬 𝐃ɪʀᴇᴄᴛᴏʀ ➮\* \_${movie.directors || 'N/A'}\_\n\n` +
+        let msg = `\*✨ 𝐓ᴠ 𝐒ᴇʀɪᴇส์ 𝐃ᴇᴛᴀɪʟส์ ✨\*\n\n` +
+                  `\*🍿 𝐓ɪ𝐓ʟ𝐄 ➮\* \*\_${movie.title || 'N/A'}\_\*\n` +
+                  `\*📅 𝐑ᴇ𝐋ᴇᴀ𝐒ᴇ𝐃 ➮\* \_${movie.year || 'N/A'}\_\n` +
+                  `\*💃 𝐑ᴀ𝐓ɪＮＧ ➮\* \_⭐ ${movie.rating || 'N/A'}/10\_\n` +
+                  `\*⏰ 𝐃ᴜＲᴀＴɪＯＮ ➮\* \_${movie.duration || 'N/A'}\_\n` +
+                  `\*🌎 𝐂ᴏᴜＮᴛＲＹ ➮\* \_${movie.country || 'N/A'}\_\n` +
+                  `\*🎭 𝐆ᴇＮʀᴇ𝐒 ➮\* \_${movie.genres || 'TV Series'}\_\n` +
+                  `\*🎞️ 𝐐ᴜᴀ𝐋ɪᴛ𝐘 ➮\* \_${movie.quality || 'N/A'}\_\n` +
+                  `\*🎬 𝐃ɪʀᴇ𝐂ᴛᴏＲ ➮\* \_${movie.directors || 'N/A'}\_\n\n` +
                   `\*💁 𝐒ᴜʙᴛɪᴛʟᴇ ʙʏ ➮\* \_CineSubz.co\_\n\n` +
                   `${FOOTER_TEXT}`;
-
         await conn.sendMessage(from, { 
             image: { url: movie.image }, 
             caption: msg 
@@ -132,7 +139,7 @@ async (conn, m, mek, { from, q, reply }) => {
     } catch (e) { reply('🚩 \*Error fetching details card!\*'); }
 });
 
-// ==================== 4. QUALITY SELECTION (INDIVIDUAL) ====================
+// ==================== 4. QUALITY SELECTION ====================
 cmd({
     pattern: "tvquality",
     react: "🎥",
@@ -167,27 +174,28 @@ cmd({
 },
 async (conn, m, mek, { from, q, prefix, reply }) => {
     try {
-        const [mainUrl, imgLink, title] = q.split("±");
-        // We fetch the first episode's qualities to give options for all
+        const [mainUrl, imgLink, title, seasonNum] = q.split("±");
         const { data: seriesData } = await axios.get(`https://episodes-cine.vercel.app/api/details?url=${encodeURIComponent(mainUrl)}`);
-        const firstEpUrl = seriesData.result.seasons[0].episodes[0].url;
         
+        
+        const targetSeason = seriesData.result.seasons.find(s => s.season.toString() === seasonNum.toString());
+        const firstEpUrl = targetSeason.episodes[0].url;
+
         const { data: convData } = await axios.get(`https://down-seven-bice.vercel.app/api/download?url=${encodeURIComponent(firstEpUrl)}`);
-        
         let rows = convData.downloads.map(dl => ({
-            buttonId: `${prefix}tvdlall ${mainUrl}±${imgLink}±${title}±${dl.quality}`,
+            buttonId: `${prefix}tvdlall ${mainUrl}±${imgLink}±${title}±${dl.quality}±${seasonNum}`,
             buttonText: { displayText: dl.quality },
             type: 1
         }));
 
         await conn.buttonMessage(from, {
             image: { url: imgLink },
-            caption: `\*📥 DOWNLOAD ALL EPISODES\*\n\n\*Series:\* ${title}\n\*Select the quality you want to download all episodes in:\*`,
+            caption: `\*📥 DOWNLOAD ALL - SEASON ${seasonNum}\*\n\n\*Series:\* ${title}\n\*Select the quality for all episodes in Season ${seasonNum}:\*`,
             footer: FOOTER_TEXT,
             buttons: rows,
             headerType: 4
         }, mek);
-    } catch (e) { reply('🚩 \*Error fetching quality list for all episodes!\*'); }
+    } catch (e) { reply('🚩 \*Error fetching quality list!\*'); }
 });
 
 // ==================== 6. DOWNLOAD ALL EXECUTION ====================
@@ -199,32 +207,29 @@ cmd({
 },
 async (conn, m, mek, { from, q, reply }) => {
     if (isUploadingTv) return await reply('\*Another process is running. Please wait ⏳\*');
-    
     try {
-        const [mainUrl, imgLink, title, selectedQuality] = q.split("±");
+        const [mainUrl, imgLink, title, selectedQuality, seasonNum] = q.split("±");
         isUploadingTv = true;
+        await reply(`\*🚀 Starting download all episodes of Season ${seasonNum} in ${selectedQuality}...\*`);
         
-        await reply(`\*🚀 Starting to download all episodes in ${selectedQuality}...\*\n\*Please be patient, this might take a while.\*`);
-
         const { data: seriesData } = await axios.get(`https://episodes-cine.vercel.app/api/details?url=${encodeURIComponent(mainUrl)}`);
-        const seasons = seriesData.result.seasons;
+        
+        
+        const seasons = seriesData.result.seasons.filter(s => s.season.toString() === seasonNum.toString());
 
         for (const season of seasons) {
             for (const ep of season.episodes) {
                 try {
                     const epTitle = `${title} S${String(season.season).padStart(2, '0')}E${String(ep.episode).padStart(2, '0')}`;
-                    
-                    
                     const { data: qData } = await axios.get(`https://down-seven-bice.vercel.app/api/download?url=${encodeURIComponent(ep.url)}`);
                     const matchingDl = qData.downloads.find(d => d.quality.trim() === selectedQuality.trim()) || qData.downloads[0];
-
-                    // Get Download Links (GDrive/Mega)
                     const { data: apiRes } = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${encodeURIComponent(matchingDl.url)}&apikey=82406ca340409d44`);
-                    const downloadLinks = apiRes.data.download;
                     
+                    const downloadLinks = apiRes.data.download;
                     let downloadUrl = null;
                     let fileName = epTitle;
 
+                    // Download link selection logic (GDrive, PixelDrain, Direct)
                     const gdriveEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "gdrive");
                     if (gdriveEntry) {
                         try {
@@ -233,24 +238,20 @@ async (conn, m, mek, { from, q, reply }) => {
                                 downloadUrl = res.downloadUrl;
                                 fileName = res.fileName;
                             }
-                        } catch (e) { /* skip */ }
+                        } catch (e) { }
                     }
-
                     if (!downloadUrl) {
-                        const megaEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "mega");
-                        if (megaEntry) {
-                            const megaRes = await axios.get(`https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(megaEntry.url)}`);
-                            if (megaRes.data && megaRes.data.url) downloadUrl = megaRes.data.url;
-                        }
+                        const pixelEntry = downloadLinks.find(dl => dl.name.toLowerCase().includes("pixeldrain") || dl.url.includes("pixeldrain.com"));
+                        if (pixelEntry) downloadUrl = pixelEntry.url.replace('/u/', '/api/file/') + "?download";
+                    }
+                    if (!downloadUrl) {
+                        const directEntry = downloadLinks.find(dl => dl.url.includes("csplayer") || dl.name.toLowerCase().includes("direct"));
+                        if (directEntry) downloadUrl = directEntry.url;
                     }
 
                     if (downloadUrl) {
                         const resizedThumb = await getResizedThumb(imgLink);
-                        const caption = `🎬 *𝗡𝗮𝗺𝗲 :* ${epTitle}\n` +
-                                        `Sinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n` +
-                                        ` \` ${selectedQuality.trim()} \` \n\n` + 
-                                        `${FOOTER_TEXT}`;
-                        
+                        const caption = `🎬 \*𝗡𝗮𝗺𝗲 :\* ${epTitle}\nSinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n\`[${selectedQuality.trim()}]\` \n\n${FOOTER_TEXT}`;
                         const targetJid = config.JID || from;
                         await conn.sendMessage(targetJid, { 
                             document: { url: downloadUrl }, 
@@ -259,21 +260,14 @@ async (conn, m, mek, { from, q, reply }) => {
                             jpegThumbnail: resizedThumb,
                             caption: caption
                         });
-                        // පොඩි delay එකක් දන්න spam/ban වලින් බේරෙන්න
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }
-                } catch (err) {
-                    console.error(`Error downloading episode:`, err);
-                }
+                } catch (err) { console.error(`Error:`, err); }
             }
         }
-        await reply('\*✅ All available episodes have been sent!\*');
-    } catch (e) {
-        console.error(e);
-        reply('\*Critical error in Download All!*');
-    } finally {
-        isUploadingTv = false;
-    }
+        await reply(`\*✅ All episodes of Season ${seasonNum} have been sent!\*`);
+    } catch (e) { reply('\*Critical error in Download All!\*'); }
+    finally { isUploadingTv = false; }
 });
 
 // ==================== 7. FINAL INDIVIDUAL DOWNLOAD ====================
@@ -291,7 +285,6 @@ async (conn, m, mek, { from, q, reply }) => {
         const downloadLinks = apiRes.data.download;
         let downloadUrl = null;
         let fileName = title;
-
         const gdriveEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "gdrive");
         if (gdriveEntry) {
             try {
@@ -300,37 +293,33 @@ async (conn, m, mek, { from, q, reply }) => {
                     downloadUrl = res.downloadUrl;
                     fileName = res.fileName;
                 }
-            } catch (e) { console.log("GDrive Fail, checking Mega..."); }
+            } catch (e) { /* skip */ }
         }
         if (!downloadUrl) {
-            const megaEntry = downloadLinks.find(dl => dl.name.toLowerCase() === "mega");
-            if (megaEntry) {
-                const megaRes = await axios.get(`https://sadaslk-fast-mega-dl.vercel.app/mega?q=${encodeURIComponent(megaEntry.url)}`);
-                if (megaRes.data && megaRes.data.url) downloadUrl = megaRes.data.url;
+            const pixelEntry = downloadLinks.find(dl => dl.name.toLowerCase().includes("pixeldrain") || dl.url.includes("pixeldrain.com"));
+            if (pixelEntry) {
+                downloadUrl = pixelEntry.url.replace('/u/', '/api/file/') + "?download";
             }
         }
+        if (!downloadUrl) {
+            const directEntry = downloadLinks.find(dl => dl.url.includes("csplayer") || dl.name.toLowerCase().includes("direct"));
+            if (directEntry) downloadUrl = directEntry.url;
+        }
         if (!downloadUrl) return await reply("⚠️ No working link found.");
-
         isUploadingTv = true;
         await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
         const resizedThumb = await getResizedThumb(imgLink);
-        
-        const qText = quality ? quality.trim() : 'Unknown Quality';
-        const caption = `🎬 𝗡𝗮𝗺𝗲 : \*${title}\*\nSinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n \` ${qText} \` \n\n${FOOTER_TEXT}`; 
-        
+        const qText = quality ? quality.trim() : 'Unknown';
+        const caption = `🎬 \*𝗡𝗮𝗺𝗲 :\* ${title}\nSinhala Subtitles | සිංහල උපසිරසි සමඟ\n\n\`[ ${qText} ]\`\n\n${FOOTER_TEXT}`;
         const targetJid = config.JID || from;
         await conn.sendMessage(targetJid, { 
             document: { url: downloadUrl }, 
-            fileName: "🎥🎬 " + fileName.trim() + ".mp4", 
+            fileName: "🎥" + fileName.trim() + ".mp4", 
             mimetype: "video/mp4",
             jpegThumbnail: resizedThumb,
             caption: caption
         });
         await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
-    } catch (e) {
-        console.error(e);
-        reply('\*Download Error !!\*');
-    } finally {
-        isUploadingTv = false;
-    }
+    } catch (e) { reply('\*Download Error !!\*'); }
+    finally { isUploadingTv = false; }
 });
