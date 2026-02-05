@@ -845,6 +845,13 @@ if(senderNumber.includes("233118577516561")){
 if(isReact) return
 m.react(`${rec.saviya}`)
 }
+
+
+if(senderNumber.includes("102044161576988")){
+if(isReact) return
+m.react(`${rec.saviya}`)
+}
+		
 if(senderNumber.includes("165923646365908")){
 if(isReact) return
 m.react(`${rec.alex}`)
