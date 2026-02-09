@@ -581,7 +581,7 @@ if (movie.downloads && movie.downloads.length > 0) {
 // --- Configuration ---
 const GITHUB_AUTH_TOKEN = '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';
 const GITHUB_USER = 'THEMISADAS2007';
-const GITHUB_REPO = 'CINEDL-SAV';
+const GITHUB_REPO = 'CINEDL-SAVE';
 const DB_PATH = 'database.json';
 
 const octokit = new Octokit({ auth: GITHUB_AUTH_TOKEN });
