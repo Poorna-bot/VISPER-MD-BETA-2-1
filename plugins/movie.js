@@ -625,27 +625,28 @@ cmd({
         const [movieUrl, movieName, thumbUrl, quality] = q.split("±");
         if (!movieUrl || !movieName) return await reply('*Invalid Format!*');
 
-        // 1. Check Database
+        // 1. Database එක පරීක්ෂා කිරීම
         const { db } = await getStoredData();
         if (db[movieUrl]) {
             await conn.sendMessage(from, { react: { text: '⚡', key: mek.key } });
+            await reply(`*♻️ File found in Database! Sending now...*`);
             
-            // Pixeldrain URL එක API link එකකට convert කිරීම
             let rawPdLink = db[movieUrl];
             let directPdLink = rawPdLink.replace('/u/', '/api/file/') + "?download";
 
             return await conn.sendMessage(from, { 
                 document: { url: directPdLink }, 
+                mimetype: 'video/mp4',
                 caption: `*🎬 Name :* ${movieName}\n\n*Status:* Cached via DB ✅`,
                 fileName: `🎬 ${movieName}.mp4`
             });
         }
 
-        if (isUploadingg) return await reply('*Process already running...*');
+        if (isUploadingg) return await reply('*⚠️ Process already running. Please wait...*');
         isUploadingg = true;
-        await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
 
-        // 2. Fetch API for GDrive/Mega links
+        // 2. Direct Link එක සොයා ගැනීම
+        await reply(`*🔍 Searching for Direct Links (GDrive/Mega)...*`);
         const apiRes = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${movieUrl}&apikey=82406ca340409d44`);
         const downloadData = apiRes.data.data.download;
         
@@ -667,7 +668,8 @@ cmd({
             return await reply("❌ No Mega or GDrive link found.");
         }
 
-        // 3. Upload to PixelDrain
+        // 3. Pixeldrain වෙත Upload කිරීම ආරම්භ කිරීම
+        await reply(`*⬆️ Uploading to Pixeldrain... Please wait!*`);
         const uploadRes = await axios.post('https://mega-uploder-sadaslk-393123781d0e.herokuapp.com/upload', {
             fileName: `${movieName}.mp4`,
             fileUrl: finalDirectLink
@@ -682,36 +684,51 @@ cmd({
                 const statusRes = await axios.get(`https://mega-uploder-sadaslk-393123781d0e.herokuapp.com/status/${jobId}`);
                 const data = statusRes.data;
 
+                // Upload එක වෙමින් පවතින බව පෙන්වීමට (සෑම attempts 5 කට වරක් update එකක් දිය හැක)
+                if (attempts % 5 === 0 && data.status !== "completed") {
+                    await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
+                }
+
                 if (data.status === "completed") {
                     clearInterval(checkStatus);
                     
-                    // ලැබෙන Link එක Pixeldrain API link එකකට convert කිරීම
-                    let pdLink = data.link; // මෙය බොහෝ විට https://pixeldrain.com/u/xxxx ලෙස ලැබේ
+                    await reply(`*✅ Upload Completed! Generating Download Link...*`);
+
+                    let pdLink = data.link;
                     let directPdLink = pdLink.replace('/u/', '/api/file/') + "?download";
 
-                    // 4. Save to DB
+                    // 4. Database එකට Save කිරීම
                     await saveToDb(movieUrl, directPdLink);
 
-                    // 5. Send File
+                    // 5. අවසාන පියවර - File එක යැවීම
+                    await reply(`*📦 Sending file to WhatsApp...*`);
                     await conn.sendMessage(from, { 
                         document: { url: directPdLink }, 
-                        caption: `*✅ Uploaded & Saved!*\n\n*🎬 Movie:* ${movieName}\n\n${config.NAME}`,
+                        mimetype: 'video/mp4',
+                        caption: `*✅ Successfully Uploaded!*\n\n*🎬 Movie:* ${movieName}\n\n${config.NAME}`,
                         fileName: `🎬 ${movieName}.mp4`
                     });
 
                     isUploadingg = false;
                     await conn.sendMessage(from, { react: { text: '☑️', key: mek.key } });
                 }
-                if (attempts > 100) { clearInterval(checkStatus); isUploadingg = false; }
-            } catch (err) { console.log(err); }
+
+                if (attempts > 100) { 
+                    clearInterval(checkStatus); 
+                    isUploadingg = false;
+                    await reply("*❌ Request Timed Out!*");
+                }
+            } catch (err) { 
+                console.log(err);
+            }
         }, 10000);
 
     } catch (e) {
         console.log(e);
         isUploadingg = false;
+        await reply(`*❌ Error:* ${e.message}`);
     }
 });
-
 
 
 
