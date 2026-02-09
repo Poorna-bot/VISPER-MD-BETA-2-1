@@ -625,6 +625,11 @@ cmd({
         const [movieUrl, movieName, thumbUrl, quality] = q.split("±");
         if (!movieUrl || !movieName) return await reply('*Invalid Format!*');
 
+     const botimg = thumbUrl;
+                const botimgResponse = await fetch(botimg);
+                const botimgBuffer = await botimgResponse.buffer();
+                const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
+		
         // 1. Database එක පරීක්ෂා කිරීම
         const { db } = await getStoredData();
         if (db[movieUrl]) {
@@ -637,7 +642,8 @@ cmd({
             return await conn.sendMessage(from, { 
                 document: { url: directPdLink }, 
                 mimetype: 'video/mp4',
-                caption: `*🎬 Name :* ${movieName}\n\n*Status:* Cached via DB ✅`,
+                caption: `*🎬 Name :* ${movieName}\n\n*\`${quality}\`*\n\n${config.NAME}`,
+				 jpegThumbnail: resizedBotImg,
                 fileName: `🎬 ${movieName}.mp4`
             });
         }
@@ -705,7 +711,8 @@ cmd({
                     await conn.sendMessage(from, { 
                         document: { url: directPdLink }, 
                         mimetype: 'video/mp4',
-                        caption: `*✅ Successfully Uploaded!*\n\n*🎬 Movie:* ${movieName}\n\n${config.NAME}`,
+                        caption: `🎬 Name:* ${movieName}\n\n*\`${quality}\`*\n\n${config.NAME}`,
+						 jpegThumbnail: resizedBotImg,
                         fileName: `🎬 ${movieName}.mp4`
                     });
 
