@@ -1599,38 +1599,68 @@ async (conn, mek, m, { reply, isGroup, q, from }) => {
     }
 });
 
+const axios = require('axios');
+const fg = require('api-dulux'); 
+
 cmd({
     pattern: "uploadfile",
     alias: ["up"],
-    desc: "Upload files to Pixeldrain with retry logic",
+    desc: "Direct or GDrive link to Pixeldrain",
     category: "main",
-    use: '.upload <filename> , <direct_link>',
+    use: '.upload filename , link',
     filename: __filename
 },
 async (conn, mek, m, { reply, q, from }) => {
     try {
-        if (!q || !q.includes(',')) return await reply("Usage: .upload filename , link");
+        if (!q || !q.includes(',')) return await reply("⚠️ Usage: .upload filename , link");
 
-        const parts = q.split(',');
-        const fileName = parts[0].trim();
-        const fileUrl = parts[1].trim();
+        let parts = q.split(',');
+        let userFileName = parts[0].trim(); // User dena name eka
+        let inputUrl = parts[1].trim();
+        let finalDirectLink = inputUrl;
+        let finalFileName = userFileName; // Default name eka widiyata user deepu eka gannawa
 
-        await reply(`*📤 Uploading:* ${fileName}\n*Please wait, checking status...*`);
+        // 1. Google Drive Check
+        const isGDrive = inputUrl.includes('drive.google.com') || inputUrl.includes('drive.usercontent.google.com');
 
-        // 1. Initial POST request
+        if (isGDrive) {
+            await reply("*🔍 GDrive detected. Extracting details...*");
+            try {
+                let driveUrl = inputUrl
+                    .replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/')
+                    .replace('&export=download', '/view');
+
+                let res = await fg.GDriveDl(driveUrl);
+                
+                if (res && res.downloadUrl) {
+                    finalDirectLink = res.downloadUrl;
+                    // API eken real fileName ekak awilla thiyeda balala eka gannawa
+                    if (res.fileName) {
+                        finalFileName = res.fileName;
+                    }
+                } else {
+                    return await reply("❌ Could not extract Direct Link from Google Drive.");
+                }
+            } catch (driveErr) {
+                return await reply("❌ GDrive Error: " + driveErr.message);
+            }
+        }
+
+        // 2. Upload Process
+        await reply(`*📤 Uploading:* ${finalFileName}\n*Status:* Processing...`);
+
         const uploadRes = await axios.post('https://mega-uploder-sadaslk-393123781d0e.herokuapp.com/upload', {
-            fileName: fileName,
-            fileUrl: fileUrl
+            fileName: finalFileName,
+            fileUrl: finalDirectLink
         });
 
-        // Use the ID from the response (adjust key name if needed, e.g., uploadRes.data.id)
-        const jobId = uploadRes.data.jobId || uploadRes.data.id; 
-        if (!jobId) return await reply("❌ Failed to start upload. No Job ID received.");
+        const jobId = uploadRes.data.jobId || uploadRes.data.id;
+        if (!jobId) return await reply("❌ Failed to start upload.");
 
         let attempts = 0;
         const maxAttempts = 10;
 
-        // 2. Polling Logic with Retry Limit
+        // 3. Status Polling
         const checkStatus = setInterval(async () => {
             try {
                 attempts++;
@@ -1639,32 +1669,29 @@ async (conn, mek, m, { reply, q, from }) => {
 
                 if (data.status === "completed") {
                     clearInterval(checkStatus);
-                    return await reply(`*✅ Upload Successful!*\n\n*File:* ${fileName}\n*Link:* ${data.link}`);
+                    return await reply(`*✅ Upload Successful!*\n\n*File:* ${finalFileName}\n*Link:* ${data.link}`);
                 } 
                 
                 if (data.status === "failed") {
                     clearInterval(checkStatus);
-                    return await reply("❌ Server reported a failure during processing.");
+                    return await reply("❌ Server reported a failure.");
                 }
 
-                // If max attempts reached
                 if (attempts >= maxAttempts) {
                     clearInterval(checkStatus);
-                    return await reply(`*⚠️ Timeout:* Upload is taking too long. Please check the link manually later or retry.\nJob ID: ${jobId}`);
+                    return await reply(`*⚠️ Timeout:* Tried 10 times. Job ID: ${jobId}`);
                 }
 
             } catch (err) {
-                console.log("Polling error:", err);
-                // We don't stop the interval here, just wait for the next attempt
+                console.log("Polling error:", err.message);
             }
-        }, 5000); // Check every 5 seconds
+        }, 5000);
 
     } catch (e) {
         console.log("Final error:", e);
-        await reply('*❌ Error occurred while processing your request!*');
+        await reply('*❌ Error occurred!*');
     }
 });
-
 cmd({
     pattern: "channelreact",
     alias: ["chr"],
