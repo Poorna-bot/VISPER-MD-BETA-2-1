@@ -626,6 +626,8 @@ async function fetchNewLink(movieUrl) {
     return null;
 }
 
+
+
 // --- Main Command ---
 cmd({
     pattern: "nadeendl",
@@ -643,10 +645,9 @@ cmd({
         const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
 
         const { db } = await getStoredData();
-        let cached = db[movieUrl];
-        let linkData = cached || null;
+        let linkData = db[movieUrl] || null;
 
-        // 1. DB එකේ නැත්නම් මුලින්ම Fetch කරනවා
+        // 1. Fetch from source if not in DB
         if (!linkData) {
             await reply(`*🔍 Fetching links from Source...*`);
             linkData = await fetchNewLink(movieUrl);
@@ -655,7 +656,7 @@ cmd({
 
         if (!linkData) return await reply("❌ No GDrive or Mega links found.");
 
-        // 2. ලින්ක් එකෙන් Direct Download URL එක සාදා යැවීමට උත්සාහ කිරීම
+        // Define the send function
         const attemptSend = async (data) => {
             let downloadUrl = "";
             if (data.type === 'mega') {
@@ -672,18 +673,20 @@ cmd({
                 caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
                 jpegThumbnail: resizedBotImg,
                 fileName: `🎬 ${movieName}.mp4` 
-                });
+            });
+        }; // <--- This was missing/incorrectly closed
 
+        // 2. Execution logic
         try {
             await attemptSend(linkData);
             await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
         } catch (err) {
-            // 3. ලින්ක් එක Expire වී ඇත්නම් හෝ Error එකක් ආවොත් Refresh කිරීම
+            // 3. Refresh if expired
             await reply(`*⚠️ Cached link failed/expired. Refreshing...*`);
             const freshData = await fetchNewLink(movieUrl);
             
             if (freshData) {
-                await saveToDb(movieUrl, freshData); // පරණ එක උඩ අලුත් එක overwrite වෙනවා
+                await saveToDb(movieUrl, freshData); 
                 await attemptSend(freshData);
                 await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
             } else {
@@ -696,8 +699,6 @@ cmd({
         await reply(`*❌ Error:* ${e.message}`);
     }
 });
-
-
 
 
 
