@@ -696,6 +696,120 @@ cmd({
         await reply(`*❌ Error:* ${e.message}`);
     }
 });
+
+
+
+
+
+
+
+// --- Main Automation Command ---
+cmd({
+    pattern: "cineauto",
+    react: '🔄',
+    category: "movie",
+    desc: "A-Z Movie Automation with DB Save & File Sender",
+    filename: __filename
+},
+async (conn, m, mek, { from, reply }) => {
+    try {
+        if (autoStatus) return await reply("*⚠️ Automation is already running!*");
+        autoStatus = true;
+        
+        const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+        await reply("*🚀 Starting A-Z Automation & DB Syncing...*");
+
+        for (let char of alphabet) {
+            if (!autoStatus) break;
+
+            const searchUrl = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-search?q=${char}&apikey=82406ca340409d44`;
+            const searchRes = await axios.get(searchUrl);
+            if (!searchRes.data.status || !searchRes.data.data) continue;
+
+            for (let movie of searchRes.data.data) {
+                if (!autoStatus) break;
+
+                try {
+                    // 1. චිත්‍රපට විස්තර ලබා ගැනීම
+                    const infoUrl = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-info?url=${encodeURIComponent(movie.link)}&apikey=82406ca340409d44`;
+                    const infoRes = await axios.get(infoUrl);
+                    const movieData = infoRes.data.data;
+                    if (!movieData) continue;
+
+                    // 2. DB එක පරීක්ෂා කිරීම සහ ලින්ක් ලබා ගැනීම
+                    const { db } = await getStoredData();
+                    let linkData = db[movie.link] || null;
+
+                    if (!linkData) {
+                        const dlApi = `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${encodeURIComponent(movie.link)}&apikey=82406ca340409d44`;
+                        const dlRes = await axios.get(dlApi);
+                        const dlLinks = dlRes.data.data.download;
+                        const target = dlLinks.find(l => l && (l.name === "mega" || l.name === "gdrive"));
+
+                        if (target) {
+                            linkData = { type: target.name, url: target.url };
+                            await saveToDb(movie.link, linkData); // DB එකට Save කිරීම
+                        }
+                    }
+
+                    if (linkData) {
+                        // 3. Card එක යැවීම
+                        let msg = `*🍿 𝗧ɪᴛʟᴇ ➮* *_${movieData.title}_*\n*📅 𝗬ᴇᴀʀ ➮* _${movieData.year || 'N/A'}_\n*⚖️ 𝗦ɪᴢᴇ ➮* _${movieData.size || 'N/A'}_`;
+                        await conn.sendMessage(from, { image: { url: movieData.image }, caption: msg });
+
+                        // 4. File එක Direct කර යැවීම
+                        let finalDownloadUrl = "";
+                        if (linkData.type === 'mega') {
+                            const megaRes = await axios.get(`https://apis.sadas.dev/api/v1/download/mega?q=${encodeURIComponent(linkData.url)}&apiKey=${MEGA_API_KEY}`);
+                            finalDownloadUrl = megaRes.data.data.result.download;
+                        } else {
+                            const gdRes = await fg.GDriveDl(linkData.url.replace('download?id=', 'file/d/').split('&')[0]);
+                            finalDownloadUrl = gdRes.downloadUrl;
+                        }
+
+                        await conn.sendMessage(from, { 
+                            document: { url: finalDownloadUrl }, 
+                            mimetype: 'video/mp4',
+                            fileName: `🎬 ${movieData.title}.mp4`,
+                            caption: `*✅ Done:* ${movieData.title}`
+                        });
+                    }
+
+                    // විරාමයක් ලබා දීම
+                    await new Promise(resolve => setTimeout(resolve, 15000));
+
+                } catch (err) {
+                    console.log("Error in Loop:", err);
+                    continue;
+                }
+            }
+        }
+        autoStatus = false;
+        await reply("*✅ A-Z Automation Completed!*");
+    } catch (e) {
+        autoStatus = false;
+        console.log(e);
+    }
+});
+
+// Stop Command
+cmd({ pattern: "stopauto", filename: __filename }, async (conn, m, mek, { reply }) => {
+    autoStatus = false;
+    await reply("*🛑 Automation Stopped!*");
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 cmd({
     pattern: "cdetails",
     react: '🎬',
