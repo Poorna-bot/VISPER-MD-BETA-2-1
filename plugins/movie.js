@@ -577,7 +577,6 @@ if (movie.downloads && movie.downloads.length > 0) {
 
 
 
-
 // --- Configuration ---
 const GITHUB_AUTH_TOKEN = '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';
 const GITHUB_USER = 'THEMISADAS2007';
@@ -606,9 +605,25 @@ async function saveToDb(movieKey, linkData) {
     const updatedContent = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
     await octokit.repos.createOrUpdateFileContents({
         owner: GITHUB_USER, repo: GITHUB_REPO, path: DB_PATH,
-        message: `DB Update: ${movieKey}`,
+        message: `DB Update: Link Refresh for ${movieKey}`,
         content: updatedContent, sha: sha
     });
+}
+
+// --- Fetch Function (API එකෙන් ලින්ක් ගන්නා වෙනම function එකක්) ---
+async function fetchNewLink(movieUrl) {
+    const apiRes = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${movieUrl}&apikey=82406ca340409d44`);
+    const dlData = apiRes.data.data.download;
+    const mega = dlData.find(l => l && l.name === "mega")?.url;
+    const gdrive = dlData.find(l => l && l.name === "gdrive")?.url;
+
+    if (mega) {
+        return { type: 'mega', link: mega };
+    } else if (gdrive) {
+        const formattedGdrive = gdrive.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view');
+        return { type: 'gdrive', link: formattedGdrive };
+    }
+    return null;
 }
 
 // --- Main Command ---
@@ -627,90 +642,55 @@ cmd({
         const botimgBuffer = await botimgResponse.buffer();
         const resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
 
-        // 1. Database එක පරීක්ෂා කිරීම
         const { db } = await getStoredData();
-        const cached = db[movieUrl];
-        
-        let finalLink = "";
-        let linkType = ""; 
-        let needsFetch = true;
+        let cached = db[movieUrl];
+        let linkData = cached || null;
 
-        if (cached) {
-            if (cached.type === 'mega') {
-                // Mega නම් කොහොමත් expire වෙන්නේ නෑ
-                finalLink = cached.link;
-                linkType = 'mega';
-                needsFetch = false;
-                await conn.sendMessage(from, { react: { text: '⚡', key: mek.key } });
-                await reply(`*♻️ Using permanent Mega Link from DB...*`);
-            } else if (cached.type === 'gdrive') {
-                // GDrive නම් පැය 2 පරීක්ෂා කිරීම
-                const diff = Date.now() - cached.time;
-                if (diff < 2 * 60 * 60 * 1000) {
-                    finalLink = cached.link;
-                    linkType = 'gdrive';
-                    needsFetch = false;
-                    const mins = Math.floor(diff / 60000);
-                    await conn.sendMessage(from, { react: { text: '⚡', key: mek.key } });
-                    await reply(`*♻️ Using GDrive Link from DB... (Added ${mins} mins ago)*`);
-                }
-            }
+        // 1. DB එකේ නැත්නම් මුලින්ම Fetch කරනවා
+        if (!linkData) {
+            await reply(`*🔍 Fetching links from Source...*`);
+            linkData = await fetchNewLink(movieUrl);
+            if (linkData) await saveToDb(movieUrl, linkData);
         }
 
-        // 2. අලුතින් Link ලබා ගැනීම (DB එකේ නැත්නම් හෝ GDrive එක expire වෙලා නම්)
-        if (needsFetch) {
-            await reply(`*🔍 Fetching links from API...*`);
-            const apiRes = await axios.get(`https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${movieUrl}&apikey=82406ca340409d44`);
-            const dlData = apiRes.data.data.download;
-            
-            const mega = dlData.find(l => l && l.name === "mega")?.url;
-            const gdrive = dlData.find(l => l && l.name === "gdrive")?.url;
+        if (!linkData) return await reply("❌ No GDrive or Mega links found.");
 
-            // මුලින්ම Mega තිබේදැයි බලනවා (Mega is Priority)
-            if (mega) {
-                finalLink = mega;
-                linkType = 'mega';
-                await saveToDb(movieUrl, { type: 'mega', link: mega });
-            } else if (gdrive) {
-                // Mega නැත්නම් විතරක් GDrive එකට යනවා
-                finalLink = gdrive.replace('https://drive.usercontent.google.com/download?id=', 'https://drive.google.com/file/d/').replace('&export=download' , '/view');
-                linkType = 'gdrive';
-                await saveToDb(movieUrl, { type: 'gdrive', link: finalLink, time: Date.now() });
-            } else {
-                return await reply("❌ No GDrive or Mega links found in source.");
-            }
-        }
-
-        // 3. Direct Download Link එක සැකසීම
-        await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
-        
-        let downloadUrl = "";
-        if (linkType === 'mega') {
-            // Mega API එක භාවිතා කිරීම
-            const megaApiUrl = `https://apis.sadas.dev/api/v1/download/mega?q=${encodeURIComponent(finalLink)}&apiKey=${MEGA_API_KEY}`;
-            const megaRes = await axios.get(megaApiUrl);
-            if (megaRes.data.status && megaRes.data.data.result.download) {
+        // 2. ලින්ක් එකෙන් Direct Download URL එක සාදා යැවීමට උත්සාහ කිරීම
+        const attemptSend = async (data) => {
+            let downloadUrl = "";
+            if (data.type === 'mega') {
+                const megaRes = await axios.get(`https://apis.sadas.dev/api/v1/download/mega?q=${encodeURIComponent(data.link)}&apiKey=${MEGA_API_KEY}`);
                 downloadUrl = megaRes.data.data.result.download;
             } else {
-                // Backup: API එක වැඩ නැත්නම් DB එකේ තියෙන ලින්ක් එක GDrive එකක්ද බලන්න හෝ error දෙන්න
-                return await reply("❌ Mega Download API Error!");
+                const res = await fg.GDriveDl(data.link);
+                downloadUrl = res.downloadUrl;
             }
-        } else {
-            // GDrive Download Link එක සැකසීම
-            const res = await fg.GDriveDl(finalLink);
-            downloadUrl = res.downloadUrl;
+
+            return await conn.sendMessage(from, { 
+                document: { url: downloadUrl }, 
+                mimetype: 'video/mp4',
+                caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
+                jpegThumbnail: resizedBotImg,
+                fileName: `🎬 ${movieName}.mp4`
+            }, { quoted: mek });
+        };
+
+        try {
+            await attemptSend(linkData);
+            await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
+        } catch (err) {
+            // 3. ලින්ක් එක Expire වී ඇත්නම් හෝ Error එකක් ආවොත් Refresh කිරීම
+            await reply(`*⚠️ Cached link failed/expired. Refreshing...*`);
+            const freshData = await fetchNewLink(movieUrl);
+            
+            if (freshData) {
+                await saveToDb(movieUrl, freshData); // පරණ එක උඩ අලුත් එක overwrite වෙනවා
+                await attemptSend(freshData);
+                await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
+            } else {
+                await reply("❌ Failed to refresh link from source.");
+            }
         }
-
-        // 4. File එක යැවීම
-        await conn.sendMessage(from, { 
-            document: { url: downloadUrl }, 
-            mimetype: 'video/mp4',
-            caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
-            jpegThumbnail: resizedBotImg,
-            fileName: `🎬 ${movieName}.mp4`
-        }, { quoted: mek });
-
-        await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
 
     } catch (e) {
         console.log(e);
