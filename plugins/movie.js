@@ -730,7 +730,7 @@ async (conn, m, mek, { from, q, isMe, reply }) => {
 *🎭 𝗤𝘂𝗮𝗹𝗶𝘁𝘆 ➮* _${movie.quality || 'N/A'}_
 *🎬 𝗗𝗶𝗿𝗲𝗰𝘁𝗼𝗿 ➮* _${movie.directors || 'N/A'}_
 
-✨ *Follow us:* ${details.chlink}`;
+✨ *Follow us:* ${details.mvchlink}`;
 
         // පණිවිඩය යැවීම (API එකෙන් එන image එක භාවිතා කරයි)
         await conn.sendMessage(config.JID || from, {
