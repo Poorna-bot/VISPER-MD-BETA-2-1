@@ -671,7 +671,7 @@ cmd({
                 mimetype: 'video/mp4',
                 caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
                 jpegThumbnail: resizedBotImg,
-                fileName: `🎬 ${datas}.mp4` 
+                fileName: `🎬 ${movieName}.mp4` 
                 });
 
         try {
