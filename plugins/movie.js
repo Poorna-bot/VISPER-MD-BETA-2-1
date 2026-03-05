@@ -15,7 +15,6 @@ const https = require("https")
 const { URL } = require('url');
 const { sizeFormatter} = require('human-readable');
 const fg = require('api-dylux');
-
 const { Octokit } = require("@octokit/rest");
 
 
@@ -578,7 +577,7 @@ if (movie.downloads && movie.downloads.length > 0) {
 
 
 // --- Configuration ---
-const GITHUB_AUTH_TOKEN = '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';
+const GITHUB_AUTH_TOKEN = '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';
 const GITHUB_USER = 'THEMISADAS2007';
 const GITHUB_REPO = 'CINEDL-SAVE';
 const DB_PATH = 'database.json';
