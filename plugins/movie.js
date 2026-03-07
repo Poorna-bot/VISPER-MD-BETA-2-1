@@ -1,3 +1,4 @@
+
 const config = require('../config')
 const { cmd, commands } = require('../command')
 const axios = require('axios');
@@ -688,14 +689,13 @@ cmd({
         }
 
         // --- STEP 4: Sending File ---
-                const targetJid = config.JID || from;
-            await conn.sendMessage(targetJid, { 
+        await conn.sendMessage(from, { 
             document: { url: downloadUrl }, 
             mimetype: 'video/mp4',
             fileName: `🎬 ${movieName}.mp4`,
             caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
             jpegThumbnail: resizedBotImg
-        });
+        }, { quoted: mek });
 
         await conn.sendMessage(from, { delete: loadingMsg.key });
         await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
@@ -843,7 +843,7 @@ if (sadas.data.downloadLinks && sadas.data.downloadLinks.length > 0) {
             rows.push({
                 buttonId: `${prefix}sinhalasubdl ${dl.link}±${sadas.data.title}±${sadas.data.images[0]}±${dl.quality}`, 
                 buttonText: { 
-                    displayText: `Pixeldrain - ${dl.quality}` 
+                    displayText: `${dl.size} - ${dl.quality}` 
                 },
                 type: 1
             });
@@ -1105,7 +1105,54 @@ async (conn, m, mek, { from, q, isMe, reply }) => {
     }
 });
 
+cmd({
+    pattern: "sinhalasubdetails",
+    react: '🎬',
+    desc: "Movie details sender from SinhalaSub",
+    filename: __filename
+},
+async (conn, m, mek, { from, q, isMe, reply }) => {
+    try {
+        if (!q) 
+            return await reply('⚠️ *Please provide the movie search query!*');
 
+        // ඔබ දුන් API URL එක (q යනු සෙවිය යුතු නමයි)
+        let apiUrl = `https://apis.sadas.dev/api/v1/movie/sinhalasub/infodl?q=${movieUrl}&apiKey=sadasggggg`;
+        let sadas = await fetchJson(apiUrl);
+
+        if (!sadas || !sadas.status || !sadas.data) {
+            return await conn.sendMessage(from, { text: '🚩 *Error: Could not find movie details!*' }, { quoted: mek });
+        }
+
+        const movie = sadas.data;
+         let details = (await axios.get('https://mv-visper-full-db.pages.dev/Main/main_var.json')).data;
+        // විස්තර පෙළ සැකසීම
+        let msg = `*🎬 𝗧ɪᴛʟᴇ ➮* *_${movie.title || 'N/A'}_*
+
+*📅 𝗬ᴇᴀʀ ➮* _${movie.date || 'N/A'}_
+*🌟 𝗥ᴀᴛɪɴɢ ➮* _${movie.rating || 'N/A'}_
+*⏰ 𝗗ᴜʀᴀᴛɪᴏɴ ➮* _${movie.duration || 'N/A'}_
+*🌍 𝗖ᴏᴜɴᴛʀʏ ➮* _${movie.country || 'N/A'}_
+*✍️ 𝗔ᴜᴛʜᴏʀ ➮* _${movie.author || 'N/A'}_
+*📂 𝗦ᴜʙᴛɪᴛʟᴇꜱ ➮* _${movie.subtitles || 'N/A'}_
+*📝 𝗗ᴇsᴄʀɪᴘᴛɪᴏɴ ➮*
+_${movie.description || 'N/A'}_
+
+✨ *Follow us:* ${details.mvchlink}`;
+
+        // පණිවිඩය යැවීම
+        await conn.sendMessage(from, {
+            image: { url: movie.images[0] }, // API එකේ images array එකේ පළමු එක
+            caption: msg
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✔️', key: mek.key } });
+
+    } catch (error) {
+        console.error('Error:', error);
+        await conn.sendMessage(from, { text: '⚠️ *An error occurred while fetching details.*' }, { quoted: mek });
+    }
+});
 
 
 
@@ -2384,4 +2431,3 @@ try {
     await conn.sendMessage(from, { text: `🚫 *Error Occurred While Fetching Movie Data!* \n\n${error.message}` }, { quoted: mek });
 }
 });
-
