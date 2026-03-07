@@ -459,7 +459,9 @@ I am *VISPER-MD* Userbot🎈
 		{ buttonId: prefix + 'searchmenu', buttonText: { displayText: 'SEARCH COMMANDS' }, type: 1 },
 		{ buttonId: prefix + 'logomenu', buttonText: { displayText: 'LOGO COMMANDS' }, type: 1 },
       { buttonId: prefix + 'aicommands', buttonText: { displayText: 'AI COMMANDS' }, type: 1 },
-		{ buttonId: prefix + 'othermenu', buttonText: { displayText: 'OTHER COMMANDS' }, type: 1 }
+		{ buttonId: prefix + 'othermenu', buttonText: { displayText: 'OTHER COMMANDS' }, type: 1 },
+
+{ buttonId: prefix + 'stickermenu', buttonText: { displayText: 'STICKER COMMANDS' }, type: 1 }
     ];
 
     const buttonMessage = {
