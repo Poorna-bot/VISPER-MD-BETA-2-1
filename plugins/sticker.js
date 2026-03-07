@@ -7,9 +7,9 @@ const axios = require('axios');
 
 async function makeSticker(url, packName, conn, mek, m) {
     try {
-        // 1. TextPro Block මගහැරීමට Headers
+
         let response = await axios.get(url, {
-            responseType: 'arraybuffer', // වැදගත්: දත්ත අමු ලෙස ලබා ගැනීම
+            responseType: 'arraybuffer', 
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
                 "Referer": "https://textpro.me/",
@@ -17,27 +17,27 @@ async function makeSticker(url, packName, conn, mek, m) {
             }
         });
 
-        // 🛑 FIX: ArrayBuffer එක Node Buffer එකක් බවට පත් කිරීම (මෙය නැතිවිට Waiting message එයි)
+
         let buffer = Buffer.from(response.data);
 
-        // Buffer එක හිස්දැයි පරීක්ෂා කිරීම
+
         if (!buffer || buffer.length === 0) {
             return await conn.sendMessage(m.chat, { text: "❌ Image download failed (Empty buffer)." }, { quoted: mek });
         }
 
-        // 2. Sticker එක නිර්මාණය කිරීම
+
         let sticker = new Sticker(buffer, {
             pack: packName,
             author: "VISPER_MD",
             type: StickerTypes.FULL,
             categories: ['🤩', '🎉'],
-            quality: 60, // Quality එක තරමක් අඩු කලා ඉක්මනින් යැවීමට
+            quality: 80, 
             background: 'transparent'
         });
 
         const stickerBuffer = await sticker.build();
 
-        // 3. Sticker එක යැවීම
+
         await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
 
     } catch (e) {
@@ -46,7 +46,7 @@ async function makeSticker(url, packName, conn, mek, m) {
     }
 }
 
-/* ---------------------- STYLES CONFIGURATION ----------------------- */
+/* ---------------------- STYLE ටික තමයි පකෝ---------------------- */
 const styles = [
     // --- 🔥 HOT & FIRE ---
     { pattern: "stfire", url: "https://textpro.me/firework-sparkle-text-effect-930.html", react: "🔥", name: "Fire" },
@@ -74,7 +74,7 @@ const styles = [
     { pattern: "stblood", url: "https://textpro.me/blood-text-on-the-frosted-glass-941.html", react: "🩸", name: "Blood" },
     { pattern: "stzombie", url: "https://textpro.me/zombie-3d-text-effect-876.html", react: "🧟‍♂️", name: "Zombie" },
 
-    // --- 🆕 ඔබ ඉල්ලූ අලුත් STYLES ---
+    // --- 🆕 හෙනගහන STYLES ---
     { pattern: "stthunder", url: "https://textpro.me/online-thunder-text-effect-generator-1031.html", react: "⚡", name: "Thunder" },
     { pattern: "stcloud", url: "https://textpro.me/create-a-cloud-text-effect-on-the-sky-online-916.html", react: "☁️", name: "Cloud" },
     { pattern: "stblackpink", url: "https://textpro.me/create-blackpink-logo-style-online-1001.html", react: "💖", name: "BlackPink" },
@@ -92,7 +92,7 @@ const styles = [
     { pattern: "stmetalfire", url: "https://textpro.me/create-hot-metal-text-effect-online-1066.html", react: "🔥", name: "MetalFire" }
 ];
 
-/* ---------------------- DYNAMIC COMMAND GENERATOR ------------------- */
+/* ----------------------COMMAND GENERATOR ------------------- */
 
 styles.forEach((item) => {
     cmd({
@@ -109,10 +109,10 @@ styles.forEach((item) => {
         try {
             reply(`🔄 Generating ${item.name} sticker...`);
 
-            // Mumaker මගින් URL එක ලබා ගැනීම
+
             let imageUrl = await mumaker.textpro(item.url, q);
 
-            // Error Handling
+
             if (typeof imageUrl === 'object' && imageUrl.image) {
                 imageUrl = imageUrl.image;
             }
@@ -128,6 +128,83 @@ styles.forEach((item) => {
         } catch (e) {
             console.error(e);
             reply("❌ Error occurred. Try again later.");
+        }
+    });
+});
+
+/* ========================================================
+   ------- OMINISAVE API LOGO STICKER GENERATOR --------
+   ======================================================== */
+
+const oministyles = [
+    { pattern: "stomneon", type: "neon", react: "✨", name: "Neon" },
+    { pattern: "stomneon2", type: "neon2", react: "🌟", name: "Neon 2" },
+    { pattern: "stomfire", type: "fire", react: "🔥", name: "Fire" },
+    { pattern: "stomfire2", type: "fire2", react: "💥", name: "Fire 2" },
+    { pattern: "stomglitch", type: "glitch", react: "👾", name: "Glitch" },
+    { pattern: "stomhacker", type: "hacker", react: "👨‍💻", name: "Hacker" },
+    { pattern: "stomfuturistic", type: "futuristic", react: "🚀", name: "Futuristic" },
+    { pattern: "stomthunder", type: "thunder", react: "⚡", name: "Thunder" },
+    { pattern: "stomdevil", type: "devil", react: "😈", name: "Devil" },
+    { pattern: "stomice", type: "ice", react: "🧊", name: "Ice" },
+    { pattern: "stomsnow", type: "snow", react: "❄️", name: "Snow" },
+    { pattern: "stomlava", type: "lava", react: "🌋", name: "Lava" },
+    { pattern: "stommetal", type: "metal", react: "⚙️", name: "Metal" },
+    { pattern: "stomgold", type: "gold", react: "🪙", name: "Gold" },
+    { pattern: "stomsilver", type: "silver", react: "🥄", name: "Silver" },
+    { pattern: "stomglossy", type: "glossy", react: "🪞", name: "Glossy" },
+    { pattern: "stomblackpink", type: "blackpink", react: "💖", name: "BlackPink" },
+    { pattern: "stomtransformer", type: "transformer", react: "🤖", name: "Transformer" },
+    { pattern: "stomhorror", type: "horror", react: "🧟", name: "Horror" },
+    { pattern: "stomblood", type: "blood", react: "🩸", name: "Blood" },
+    { pattern: "stomjoker", type: "joker", react: "🤡", name: "Joker" },
+    { pattern: "stomgalaxy", type: "galaxy", react: "🌌", name: "Galaxy" },
+    { pattern: "stomspace", type: "space", react: "🪐", name: "Space" },
+    { pattern: "stomcloud", type: "cloud", react: "☁️", name: "Cloud" },
+    { pattern: "stomsand", type: "sand", react: "🏖️", name: "Sand" },
+    { pattern: "stomstone", type: "stone", react: "🪨", name: "Stone" },
+    { pattern: "stommagma", type: "magma", react: "🌡️", name: "Magma" },
+    { pattern: "stomgradient", type: "gradient", react: "🌈", name: "Gradient" },
+    { pattern: "stomlight", type: "light", react: "💡", name: "Light" },
+    { pattern: "stompaper", type: "paper", react: "📄", name: "Paper" },
+    { pattern: "stomwatercolor", type: "watercolor", react: "🖌️", name: "Watercolor" },
+    { pattern: "stomcandy", type: "candy", react: "🍬", name: "Candy" },
+    { pattern: "stomxmas", type: "christmas", react: "🎄", name: "Christmas" },
+    { pattern: "stomluxury", type: "luxury", react: "💎", name: "Luxury" },
+    { pattern: "stomleaf", type: "leaf", react: "🍃", name: "Leaf" },
+    { pattern: "stomsummer", type: "summer", react: "☀️", name: "Summer" },
+    { pattern: "stomcircuit", type: "circuit", react: "🔌", name: "Circuit" },
+    { pattern: "stomblock3d", type: "block3d", react: "🧱", name: "Block 3D" },
+    { pattern: "stomcartoon", type: "cartoon", react: "🎨", name: "Cartoon" },
+    { pattern: "stomchrome", type: "chrome", react: "💿", name: "Chrome" },
+    { pattern: "stomfrozen", type: "frozen", react: "🥶", name: "Frozen" }
+];
+
+
+oministyles.forEach((item) => {
+    cmd({
+        pattern: item.pattern,
+        react: item.react,
+        desc: `Generates ${item.name} sticker`,
+        category: "sticker",
+        filename: __filename
+    }, async (conn, mek, m, { q, reply }) => {
+
+        if (!q) return reply(`📝 *Use:* .${item.pattern} Name\n*Example:* .${item.pattern} Visper-Md`);
+        if (q.length > 30) return reply("❌ *Text is too long. Max 30 chars.*");
+
+        try {
+            reply(`🔄 *Generating ${item.name} sticker...*`);
+
+
+            const imageUrl = `https://ominisave.zone.id/api/logo?name=${encodeURIComponent(q)}&type=${item.type}`;
+
+
+            await makeSticker(imageUrl, `Logo-${item.type.toUpperCase()}`, conn, mek, m);
+
+        } catch (e) {
+            console.error(e);
+            reply("❌ *Error occurred while generating logo sticker.*");
         }
     });
 });
