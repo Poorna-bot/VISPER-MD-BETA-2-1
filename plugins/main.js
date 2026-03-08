@@ -71,11 +71,13 @@ async (conn, mek, m, { from, reply }) => {
             text: pkgMessage,
             contextInfo: {
                 externalAdReply: {
-                    title: "Sadaslk PrimeLine VPN Services",
-                    body: "Unlimited Internet Solutions",
-                    sourceUrl: "https://t.me/sadaslk",
+                    title: "Sadaslk PrimeLine Official Ad",
+                    body: "Get Unlimited Data for Cheap Price! 🚀",
+                    showAdAttribution: true, // "Ad" tag එක පෙන්වීමට
                     mediaType: 1,
-                    renderLargerThumbnail: true
+                    thumbnailUrl: `https://github.com/visperoffical/Sadaslk-PrimeLINE-BOT-Database/blob/main/WhatsApp%20Image%202026-03-08%20at%208.56.09%20PM.jpeg?raw=true`, // බොට් එකේ ලෝගෝ එක මෙතනට එනවා
+                    sourceUrl: "https://t.me/sadaslk", // ක්ලික් කළාම යන තැන
+                    renderLargerThumbnail: true // Image එක ලොකුවට පෙන්වීමට
                 }
             }
         }, { quoted: m });
