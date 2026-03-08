@@ -680,15 +680,29 @@ cmd({
 
 		 await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
 
-        // Thumbnail Processing
-        let resizedBotImg = null;
-        if (thumbUrl) {
-            try {
-                const botimgResponse = await fetch(thumbUrl);
-                const botimgBuffer = await botimgResponse.buffer();
-                resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
-            } catch (e) { console.log("Thumb error skipped"); }
+       let resizedBotImg = null;
+
+if (thumbUrl) {
+    try {
+        const botimgResponse = await fetch(thumbUrl);
+        
+        // Check if the HTTP request actually succeeded (e.g., 200 OK)
+        if (!botimgResponse.ok) {
+            throw new Error(`HTTP error! status: ${botimgResponse.status}`);
         }
+
+        const botimgBuffer = await botimgResponse.buffer();
+        
+        // Ensure the buffer isn't empty before resizing
+        if (botimgBuffer && botimgBuffer.length > 0) {
+            resizedBotImg = await resizeImage(botimgBuffer, 200, 200);
+        }
+    } catch (e) {
+        // Logging the actual error 'e' helps you debug why it failed
+        console.error("Image processing failed:", e.message);
+        resizedBotImg = null; // Ensure it stays null on failure
+    }
+}
  await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
 
     
@@ -698,7 +712,7 @@ cmd({
             mimetype: 'video/mp4',
             fileName: `🎬 ${movieName}.mp4`,
             caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
-            jpegThumbnail: await (await fetch(thumbUrl.trim())).buffer(),
+            jpegThumbnail: await (await fetch(resizedBotImg.trim())).buffer(),
         }, { quoted: mek });
 
         await conn.sendMessage(from, { delete: loadingMsg.key });
