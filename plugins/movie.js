@@ -641,95 +641,163 @@ cmd({
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return await reply('*📍 Please provide the movie link!*');
-        
+
         const [movieUrl, movieName, thumbUrl, quality] = q.split("±");
         if (!movieUrl || !movieName) return await reply('*⚠️ Invalid Format!*');
-		
-console.log(thumbUrl)
-		
-        // --- STEP 1: Bypass the Redirect Link ---
-        const bypassResponse = await fetchJson(`https://cine-redirect.vercel.app/bypass?url=${movieUrl}`);
+
+        console.log("🎬 Movie URL:", movieUrl);
+        console.log("🖼️ Thumb URL:", thumbUrl);
+
         
-        // අලුත් JSON structure එකට අනුව check කිරීම
-        if (!bypassResponse || !bypassResponse.success || !bypassResponse.final_link) {
-            return await reply('*❌ Error: Failed to get final link from redirect API!*');
-        }
+        const getBypassedUrl = async (url) => {
+            try {
+                const bypassResponse = await fetchJson(`https://cine-redirect.vercel.app/bypass?url=${encodeURIComponent(url)}`);
+                if (bypassResponse?.success && bypassResponse?.final_link) {
+                    console.log("✅ Bypass success:", bypassResponse.final_link);
+                    return bypassResponse.final_link;
+                } else {
+                    console.log("⚠️ Bypass failed or no final_link");
+                }
+            } catch (e) {
+                console.log("Bypass API Error:", e.message);
+            }
+            return null;
+        };
+
+        const tryApi1 = async (url) => {
+            try {
+                console.log("🔎 Trying API 1 with URL:", url);
+                const response1 = await fetchJson(
+                    `https://cine-download-api.vercel.app/api/download?url=${encodeURIComponent(url)}`
+                );
+                if (response1?.data?.downloadUrls) {
+                    const pahanLink = response1.data.downloadUrls.find(item =>
+                        item.url && !item.url.includes("pixeldrain") && !item.url.includes("t.me")
+                    );
+                    if (pahanLink) {
+                        console.log("✅ API 1 success:", pahanLink.url);
+                        return {
+                            downloadUrl: pahanLink.url,
+                            fileSize: response1.data.size || "Unknown Size"
+                        };
+                    }
+                }
+            } catch (e) {
+                console.log("API 1 Error:", e.message);
+            }
+            return null;
+        };
+
+        const tryApi2 = async (url) => {
+            try {
+                console.log("🔎 Trying API 2 (Dark-Shan) with URL:", url);
+                const response2 = await fetchJson(
+                    `https://api-dark-shan-yt.koyeb.app/movie/cinesubz-download?url=${encodeURIComponent(url)}&apikey=82406ca340409d44`
+                );
+                if (response2?.status && response2.data?.download) {
+                    const directLink = response2.data.download.find(item => !item.url.includes("t.me"));
+                    if (directLink) {
+                        console.log("✅ API 2 success:", directLink.url);
+                        return {
+                            downloadUrl: directLink.url,
+                            fileSize: response2.data.size || "Unknown Size"
+                        };
+                    }
+                }
+            } catch (e) {
+                console.log("API 2 Error:", e.message);
+            }
+            return null;
+        };
+
+        const getDownloadFromApis = async (originalUrl) => {
+            
+            const bypassedUrl = await getBypassedUrl(originalUrl);
+
+            
+            const candidates = [];
+            if (bypassedUrl) candidates.push(bypassedUrl);
+            candidates.push(originalUrl);
+
+            for (const url of candidates) {
+               
+                let data = await tryApi1(url);
+                if (data) return data;
+
+                
+                data = await tryApi2(url);
+                if (data) return data;
+            }
+
+            return null;
+        };
+
         
-        const finalMovieUrl = bypassResponse.final_link; // අලුත් key එක (final_link)
+        const downloadData = await getDownloadFromApis(movieUrl);
 
-        // --- STEP 2: Fetch Download Links ---
-        const response = await fetchJson(`https://cine-download-api.vercel.app/api/download?url=${finalMovieUrl}`);
-
-        if (!response || !response.data || !response.data.downloadUrls) {
-            return await reply('*❌ Error: Could not fetch download links from API!*');
+        if (!downloadData || !downloadData.downloadUrl) {
+            return await reply('*❌ Error: සියලුම API උත්සාහයන් අසාර්ථකයි! ලින්ක් එක වැඩ කරන්නේ නැති වෙන්න පුළුවන්.*');
         }
 
-        // Pahan Server ලින්ක් එක පෙරීම
-        const pahanLink = response.data.downloadUrls.find(item => 
-            item.url && !item.url.includes("pixeldrain") && !item.url.includes("t.me")
+        const { downloadUrl, fileSize } = downloadData;
+        console.log("📥 Final Download URL:", downloadUrl);
+        console.log("📦 File Size:", fileSize);
+
+        
+        const loadingMsg = await conn.sendMessage(
+            from,
+            { text: `*Uploading your movie..⬆️*` },
+            { quoted: mek }
         );
+        await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
 
-        if (!pahanLink) return await reply('*❌ Direct download link not found!*');
+       
+        const sharp = require('sharp');
+        let resizedBotImg = null;
+
+        if (thumbUrl) {
+            try {
+                const botimgResponse = await fetch(thumbUrl);
+                if (botimgResponse.ok) {
+                    const botimgBuffer = await botimgResponse.buffer();
+                    resizedBotImg = await sharp(botimgBuffer)
+                        .resize(200, 200, { fit: 'cover', position: 'center' })
+                        .toBuffer();
+                } else {
+                    console.log("Thumb fetch failed, status:", botimgResponse.status);
+                }
+            } catch (e) {
+                console.error("Image processing failed:", e.message);
+            }
+        }
+
+        await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
+
         
-        const downloadUrl = pahanLink.url;
-        const fileSize = response.data.size || "Unknown Size";
-
-        // --- STEP 3: Status Message ---
-        const loadingMsg = await conn.sendMessage(from, { 
-            text: `*Uploading your movie..⬆️*` 
-			
-        }, { quoted: mek });
-
-		 await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
-
-       const sharp = require('sharp'); // Add this at the top of your file
-
-
-let resizedBotImg = null;
-
-if (thumbUrl) {
-    try {
-        const botimgResponse = await fetch(thumbUrl);
-        
-        if (!botimgResponse.ok) throw new Error(`Fetch failed: ${botimgResponse.status}`);
-
-        const botimgBuffer = await botimgResponse.buffer();
-
-        // Use Sharp directly instead of a missing 'resizeImage' function
-        resizedBotImg = await sharp(botimgBuffer)
-            .resize(200, 200, {
-                fit: 'cover', // Ensures it fills 200x200 without stretching
-                position: 'center'
-            })
-            .toBuffer();
-
-        console.log("Success: Image resized to 200x200");
-    } catch (e) {
-        console.error("Image processing failed:", e.message);
-        resizedBotImg = null; 
-    }
-}
- await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
-
-    
-        // --- STEP 4: Sending File ---
-        await conn.sendMessage(from, { 
-            document: { url: downloadUrl }, 
+        const targetJid = config.JID || from;
+        await conn.sendMessage(targetJid, {
+            document: { url: downloadUrl },
             mimetype: 'video/mp4',
             fileName: `🎬 ${movieName}.mp4`,
-            caption: `*🎬 Name :* *${movieName}*\n\n*\`${quality}\`*\n\n${config.NAME}`,
-            jpegThumbnail: resizedBotImg
-        }, { quoted: mek });
+            caption: `*🎬 Name :* *${movieName}*
 
+ *\`${quality}\`*
+
+ ${config.NAME}`,
+            jpegThumbnail: resizedBotImg
+        });
+
+        
         await conn.sendMessage(from, { delete: loadingMsg.key });
         await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
     } catch (e) {
-        console.log("Error Log:", e);
+        console.log("Critical Error Log:", e);
         await reply(`*❌ Error:* ${e.message}`);
         await conn.sendMessage(from, { react: { text: "⚠️", key: mek.key } });
     }
 });
+
 
 
 
