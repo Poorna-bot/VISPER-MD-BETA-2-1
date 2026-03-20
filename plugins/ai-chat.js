@@ -343,6 +343,25 @@ async (conn, mek, m, { from, args, reply, prefix }) => {
     }
 });
 
+
+const mongoose = require('mongoose');
+
+// ඔබේ MongoDB URL එක මෙතනට දාන්න (config එකේ තියෙනවා නම් config.MONGODB_URL ගන්න)
+const MONGODB_URL = process.env.MONGODB_URL || "mongodb+srv://kushani2009:123@private.o4x84bj.mongodb.net/";
+
+mongoose.connect(MONGODB_URL)
+    .then(() => console.log("✅ Ovnix Database Connected!"))
+    .catch((err) => console.error("❌ DB Connection Error:", err));
+
+// Schema එක නිර්මාණය
+const LeadSchema = new mongoose.Schema({
+    jid: { type: String, unique: true },
+    isBotOff: { type: Boolean, default: false },
+    lastBusyMsgTime: { type: Number, default: 0 }
+});
+const Lead = mongoose.model('Lead', LeadSchema);
+
+
 // Meeka oyaage contact number eka widiyata hadanna (947xxxxxxxx format ekata)
 const MY_NUMBER = "94724375368@s.whatsapp.net"; 
 
@@ -350,38 +369,56 @@ const MY_NUMBER = "94724375368@s.whatsapp.net";
 const disabledChats = new Set();
 
 cmd({ on: "body" },
-    async (conn, mek, m, { from, body, isCmd, sender, reply, pushname }) => {
+    async (conn, mek, m, { from, body, isCmd, sender, reply, pushname, isGroup }) => {
         try {
-            if (config.CHAT_BOT !== "true" || m.fromMe) return;
+            if (config.CHAT_BOT !== "true" || m.fromMe || isGroup) return;
             if (isCmd || !isNaN(m.body)) return;
-            
-            // Me user ta chatbot eka kalin off karala nam thiyenne, mokuth karanne na
-            if (disabledChats.has(m.sender)) return;
+
+            // පාරිභෝගිකයා දැනටමත් විස්තර ලබා දී ඇත්දැයි බැලීම
+            let userStatus = await Lead.findOne({ jid: m.sender });
+
+            if (userStatus && userStatus.isBotOff) {
+                const now = Date.now();
+                const twentyMins = 20 * 60 * 1000;
+
+                // විනාඩි 20ක් යනතුරු පණිවිඩයක් එවුවොත් පමණක් "කාර්යබහුලයි" පණිවිඩය යැවීම
+                if (now - userStatus.lastBusyMsgTime > twentyMins) {
+                    await reply("සමාවෙන්න! මම දැනට වෙනත් සේවාදායකයෙකු සමඟ කාර්යබහුලයි. ⏳ ඔබේ පණිවිඩය අපේ නියෝජිතයාට ලැබී තිබෙනවා. ඔහු ඉතා ඉක්මනින් ඔබව සම්බන්ධ කර ගනීවි. කරුණාකර රැඳී සිටින්න.");
+                    
+                    // අවසන් වරට Busy Msg එක යැවූ වෙලාව Update කිරීම
+                    await Lead.updateOne({ jid: m.sender }, { lastBusyMsgTime: now });
+                }
+                return; // Chatbot එකේ AI response එක මෙතනින් නවත්වනවා
+            }
 
             let inputText = m.body || m.imageMessage?.caption || "";
-            inputText = inputText.replace(/@\d+/g, '').trim();
+            const imageBuffer = (m.type === 'imageMessage' || m.imageMessage) ? await m.download() : null;
 
-            const imageBuffer = (m.type === 'imageMessage' || m.imageMessage) ? await m.download() : 
-                               (m.quoted && (m.quoted.type === 'imageMessage' || m.quoted.imageMessage)) ? await m.quoted.download() : null;
-
+            // Gemini AI Response එක ලබා ගැනීම
             const response = await getGeminiResponse(inputText, m.sender, { img: imageBuffer });
 
             if (response.status) {
                 await reply(response.text);
 
-                // Gemini ge reply eke "ස්තූතියි! අපේ නියෝජිතයෙකු" kiana kotasa thiyenawa nam (Conversation end eka)
-                if (response.text.includes("ස්තූතියි!") && response.text.includes("නියෝජිතයෙකු")) {
+                // AI එක "නියෝජිතයෙකු" ගැන කතා කළා නම් (අවසන් පණිවිඩය)
+                if (response.text.includes("නියෝජිතයෙකු")) {
                     
-                    // 1. Oyaage number ekata notification ekak yawanna
-                    const notificationMsg = `🔔 *New Lead from Ovnix AI* 🔔\n\n👤 *Customer:* ${pushname}\n📱 *Number:* ${m.sender.split('@')[0]}\n📝 *Last Msg:* ${inputText}\n\n⚠️ Chatbot for this user is now *DISABLED*. Please take over manually.`;
-                    await conn.sendMessage(MY_NUMBER, { text: notificationMsg });
+                    // 1. Database එකේ User ව ස්ථිරවම Mark කිරීම
+                    await Lead.findOneAndUpdate(
+                        { jid: m.sender }, 
+                        { isBotOff: true, lastBusyMsgTime: Date.now() }, 
+                        { upsert: true }
+                    );
 
-                    // 2. Chatbot eka me user ta thava duratath wadakirima nawathvanna
-                    disabledChats.add(m.sender);
+                    // 2. ඔබේ අංකයට (Admin) Alert එකක් යැවීම
+                    const MY_NUMBER = "94724375368@s.whatsapp.net"; // ඔබේ අංකය
+                    const notificationMsg = `🚀 *Ovnix New Lead!* 🚀\n\n👤 *Client:* ${pushname}\n📱 *Number:* wa.me/${m.sender.split('@')[0]}\n💬 *Last Msg:* ${inputText}\n\n🤖 *Chatbot status:* Switched to MANUAL mode.`;
+                    
+                    await conn.sendMessage(MY_NUMBER, { text: notificationMsg });
                 }
             }
         } catch (e) {
-            console.error("Ovnix AI Error:", e);
+            console.error("Ovnix AI DB Error:", e);
         }
     }
 );
